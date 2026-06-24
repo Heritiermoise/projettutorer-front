@@ -2,23 +2,40 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Building2, Users, Briefcase, Calendar,
-  DollarSign, FileText, TrendingUp, Target, Settings,
-  LogOut, Menu, X, Moon, Sun, Search, Bell,
-  UserCheck, Award, ClipboardList
+  DollarSign, LogOut, Menu, X, Moon, Sun, Search, Bell,
+  Target, UserCheck, Settings, FileText, BookOpen, Award, 
+  MessageSquare, TrendingUp, CheckSquare, BarChart3,
+  FileSignature, Plug, Headphones, Archive, Shield, Flag
 } from 'lucide-react'
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar
+  XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
 import { directeurNotifications } from '../../data/notifications'
-import { mockEmployes, mockContrats, mockPostes, mockStatsEvolution, mockEntreprises, mockServices, mockConges, mockFichesPaie } from '../../data/mockData'
+import { mockEmployes, mockContrats, mockPostes, mockStatsEvolution, mockEntreprises, mockServices } from '../../data/mockData'
 import { DirecteurEntreprisePage } from './DirecteurEntreprisePage'
 import { DirecteurMembresPage } from './DirecteurMembresPage'
 import { DirecteurServicesPage } from './DirecteurServicesPage'
 import { DirecteurStatistiquesPage } from './DirecteurStatistiquesPage'
 import { DirecteurNotificationsPage } from './DirecteurNotificationsPage'
 import { DirecteurParametresPage } from './DirecteurParametresPage'
+import { DirecteurPostesPage } from './DirecteurPostesPage'
+import { DirecteurCandidatsPage } from './DirecteurCandidatsPage'
+import { DirecteurOffresPage } from './DirecteurOffresPage'
+import { DirecteurEvaluationsPage } from './DirecteurEvaluationsPage'
+import { DirecteurFormationsPage } from './DirecteurFormationsPage'
+import { DirecteurOrganigrammePage } from './DirecteurOrganigrammePage'
+import { DirecteurPaieAvanceePage } from './DirecteurPaieAvanceePage'
+import { DirecteurOnboardingPage } from './DirecteurOnboardingPage'
+import { DirecteurCommunicationPage } from './DirecteurCommunicationPage'
+import { DirecteurAnalyticsPage } from './DirecteurAnalyticsPage'
+import { DirecteurSignaturePage } from './DirecteurSignaturePage'
+import { DirecteurIntegrationsPage } from './DirecteurIntegrationsPage'
+import { DirecteurTicketsPage } from './DirecteurTicketsPage'
+import { DirecteurArchivagePage } from './DirecteurArchivagePage'
+import { DirecteurAuditLogsPage } from './DirecteurAuditLogsPage'
+import { DirecteurJoursFeriesPage } from './DirecteurJoursFeriesPage'
 
 export const DirecteurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -47,8 +64,23 @@ export const DirecteurDashboard = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/directeur' },
     { icon: Building2, label: 'Mon Entreprise', id: 'entreprise', path: '/dashboard/directeur/entreprise' },
+    { icon: Briefcase, label: 'Postes', id: 'postes', path: '/dashboard/directeur/postes' },
+    { icon: FileText, label: 'Offres', id: 'offres', path: '/dashboard/directeur/offres' },
     { icon: Users, label: 'Membres', id: 'membres', path: '/dashboard/directeur/membres' },
-    { icon: Briefcase, label: 'Services', id: 'services', path: '/dashboard/directeur/services' },
+    { icon: UserCheck, label: 'Candidats', id: 'candidats', path: '/dashboard/directeur/candidats' },
+    { icon: CheckSquare, label: 'Onboarding', id: 'onboarding', path: '/dashboard/directeur/onboarding' },
+    { icon: Target, label: 'Evaluations', id: 'evaluations', path: '/dashboard/directeur/evaluations' },
+    { icon: BookOpen, label: 'Formations', id: 'formations', path: '/dashboard/directeur/formations' },
+    { icon: Award, label: 'Organigramme', id: 'organigramme', path: '/dashboard/directeur/organigramme' },
+    { icon: DollarSign, label: 'Paie Avancee', id: 'paie', path: '/dashboard/directeur/paie' },
+    { icon: MessageSquare, label: 'Communication', id: 'communication', path: '/dashboard/directeur/communication' },
+    { icon: BarChart3, label: 'Analytics', id: 'analytics', path: '/dashboard/directeur/analytics' },
+    { icon: FileSignature, label: 'Signature', id: 'signature', path: '/dashboard/directeur/signature' },
+    { icon: Plug, label: 'Integrations', id: 'integrations', path: '/dashboard/directeur/integrations' },
+    { icon: Headphones, label: 'Support', id: 'support', path: '/dashboard/directeur/support' },
+    { icon: Archive, label: 'Archivage', id: 'archivage', path: '/dashboard/directeur/archivage' },
+    { icon: Shield, label: 'Audit Logs', id: 'audit', path: '/dashboard/directeur/audit' },
+    { icon: Flag, label: 'Jours Feries', id: 'joursferies', path: '/dashboard/directeur/joursferies' },
     { icon: Calendar, label: 'Statistiques', id: 'stats', path: '/dashboard/directeur/stats' },
     { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/directeur/notifications' },
     { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/directeur/parametres' },
@@ -57,8 +89,23 @@ export const DirecteurDashboard = () => {
   const getCurrentSection = () => {
     const path = location.pathname
     if (path.includes('/entreprise')) return 'entreprise'
+    if (path.includes('/postes')) return 'postes'
+    if (path.includes('/offres')) return 'offres'
     if (path.includes('/membres')) return 'membres'
-    if (path.includes('/services')) return 'services'
+    if (path.includes('/candidats')) return 'candidats'
+    if (path.includes('/onboarding')) return 'onboarding'
+    if (path.includes('/evaluations')) return 'evaluations'
+    if (path.includes('/formations')) return 'formations'
+    if (path.includes('/organigramme')) return 'organigramme'
+    if (path.includes('/paie')) return 'paie'
+    if (path.includes('/communication')) return 'communication'
+    if (path.includes('/analytics')) return 'analytics'
+    if (path.includes('/signature')) return 'signature'
+    if (path.includes('/integrations')) return 'integrations'
+    if (path.includes('/support')) return 'support'
+    if (path.includes('/archivage')) return 'archivage'
+    if (path.includes('/audit')) return 'audit'
+    if (path.includes('/joursferies')) return 'joursferies'
     if (path.includes('/stats')) return 'stats'
     if (path.includes('/notifications')) return 'notifications'
     if (path.includes('/parametres')) return 'parametres'
@@ -76,30 +123,38 @@ export const DirecteurDashboard = () => {
     postesOccupes: mockPostes.filter(p => p.statut === 'Occupe').length,
     postesVacants: mockPostes.filter(p => p.statut === 'Vacant').length,
     recrutementMois: 12,
-    congesEnAttente: mockConges.filter(c => c.statut === 'En attente').length,
   }
 
   const kpiCards = [
     { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: '+12', color: 'from-amber-500 to-orange-600' },
     { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-green-500 to-emerald-600' },
     { icon: Briefcase, label: 'Postes Occupes', value: stats.postesOccupes + '/' + stats.postesTotal, change: stats.postesVacants + ' vacants', color: 'from-primary-500 to-purple-600' },
-    { icon: TrendingUp, label: 'Recrutements', value: stats.recrutementMois, change: '+3', color: 'from-pink-500 to-rose-600' },
+    { icon: Target, label: 'Recrutements', value: stats.recrutementMois, change: '+3', color: 'from-pink-500 to-rose-600' },
   ]
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'entreprise':
-        return <DirecteurEntreprisePage />
-      case 'membres':
-        return <DirecteurMembresPage />
-      case 'services':
-        return <DirecteurServicesPage />
-      case 'stats':
-        return <DirecteurStatistiquesPage />
-      case 'notifications':
-        return <DirecteurNotificationsPage />
-      case 'parametres':
-        return <DirecteurParametresPage />
+      case 'entreprise': return <DirecteurEntreprisePage />
+      case 'postes': return <DirecteurPostesPage />
+      case 'offres': return <DirecteurOffresPage />
+      case 'membres': return <DirecteurMembresPage />
+      case 'candidats': return <DirecteurCandidatsPage />
+      case 'onboarding': return <DirecteurOnboardingPage />
+      case 'evaluations': return <DirecteurEvaluationsPage />
+      case 'formations': return <DirecteurFormationsPage />
+      case 'organigramme': return <DirecteurOrganigrammePage />
+      case 'paie': return <DirecteurPaieAvanceePage />
+      case 'communication': return <DirecteurCommunicationPage />
+      case 'analytics': return <DirecteurAnalyticsPage />
+      case 'signature': return <DirecteurSignaturePage />
+      case 'integrations': return <DirecteurIntegrationsPage />
+      case 'support': return <DirecteurTicketsPage />
+      case 'archivage': return <DirecteurArchivagePage />
+      case 'audit': return <DirecteurAuditLogsPage />
+      case 'joursferies': return <DirecteurJoursFeriesPage />
+      case 'stats': return <DirecteurStatistiquesPage />
+      case 'notifications': return <DirecteurNotificationsPage />
+      case 'parametres': return <DirecteurParametresPage />
       default:
         return (
           <div className="space-y-6">
@@ -251,8 +306,8 @@ export const DirecteurDashboard = () => {
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium text-sm">{item.label}</span>
               </button>
             ))}
           </nav>
