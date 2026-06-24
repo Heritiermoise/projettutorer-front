@@ -1,0 +1,296 @@
+import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { 
+  LayoutDashboard, Users, FileText, DollarSign, Calendar,
+  Briefcase, LogOut, Menu, X, Moon, Sun, Search, Bell,
+  Clock, Award, UserCheck, UserPlus, Settings, ClipboardList
+} from 'lucide-react'
+import { 
+  ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip
+} from 'recharts'
+import { NotificationBell } from '../../components/NotificationBell'
+import { rhNotifications } from '../../data/notifications'
+import { mockEmployes, mockContrats, mockConges, mockStatsEvolution, mockServices, mockFichesPaie, mockPresences } from '../../data/mockData'
+import { RHEmployesPage } from './RHEmployesPage'
+import { RHContratsPage } from './RHContratsPage'
+import { RHPaiePage } from './RHPaiePage'
+import { RHCongesPage } from './RHCongesPage'
+import { RHPresencesPage } from './RHPresencesPage'
+import { RHAvantagesPage } from './RHAvantagesPage'
+import { RHRecrutementPage } from './RHRecrutementPage'
+import { RHNotificationsPage } from './RHNotificationsPage'
+import { RHParametresPage } from './RHParametresPage'
+
+export const RHDashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+  const [notifications, setNotifications] = useState(rhNotifications)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const toggleDark = () => {
+    setIsDark(!isDark)
+    document.documentElement.classList.toggle('dark')
+  }
+
+  const handleMarkAsRead = (id: number) => {
+    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n))
+  }
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })))
+  }
+
+  const handleDelete = (id: number) => {
+    setNotifications(notifications.filter(n => n.id !== id))
+  }
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/rh' },
+    { icon: Users, label: 'Employes', id: 'employes', path: '/dashboard/rh/employes' },
+    { icon: FileText, label: 'Contrats', id: 'contrats', path: '/dashboard/rh/contrats' },
+    { icon: DollarSign, label: 'Paie', id: 'paie', path: '/dashboard/rh/paie' },
+    { icon: Calendar, label: 'Conges', id: 'conges', path: '/dashboard/rh/conges' },
+    { icon: Clock, label: 'Presences', id: 'presences', path: '/dashboard/rh/presences' },
+    { icon: Award, label: 'Avantages', id: 'avantages', path: '/dashboard/rh/avantages' },
+    { icon: UserPlus, label: 'Recrutement', id: 'recrutement', path: '/dashboard/rh/recrutement' },
+    { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/rh/notifications' },
+    { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/rh/parametres' },
+  ]
+
+  const getCurrentSection = () => {
+    const path = location.pathname
+    if (path.includes('/employes')) return 'employes'
+    if (path.includes('/contrats')) return 'contrats'
+    if (path.includes('/paie')) return 'paie'
+    if (path.includes('/conges')) return 'conges'
+    if (path.includes('/presences')) return 'presences'
+    if (path.includes('/avantages')) return 'avantages'
+    if (path.includes('/recrutement')) return 'recrutement'
+    if (path.includes('/notifications')) return 'notifications'
+    if (path.includes('/parametres')) return 'parametres'
+    return 'dashboard'
+  }
+
+  const activeSection = getCurrentSection()
+
+  const stats = {
+    totalEmployes: mockEmployes.length,
+    contratsActifs: mockContrats.filter(c => c.statut === 'Actif').length,
+    congesEnAttente: mockConges.filter(c => c.statut === 'En attente').length,
+    masseSalariale: mockContrats.reduce((sum, c) => sum + c.salaire_base, 0),
+    presencesAujourdhui: mockPresences.filter(p => p.statut === 'Present').length,
+    offresActives: 3,
+  }
+
+  const kpiCards = [
+    { icon: Users, label: 'Total Employes', value: stats.totalEmployes, change: '+12', color: 'from-primary-500 to-purple-600' },
+    { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-accent-500 to-emerald-600' },
+    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-amber-500 to-orange-600' },
+    { icon: Calendar, label: 'Conges en attente', value: stats.congesEnAttente, change: '', color: 'from-pink-500 to-rose-600' },
+  ]
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'employes': return <RHEmployesPage />
+      case 'contrats': return <RHContratsPage />
+      case 'paie': return <RHPaiePage />
+      case 'conges': return <RHCongesPage />
+      case 'presences': return <RHPresencesPage />
+      case 'avantages': return <RHAvantagesPage />
+      case 'recrutement': return <RHRecrutementPage />
+      case 'notifications': return <RHNotificationsPage />
+      case 'parametres': return <RHParametresPage />
+      default:
+        return (
+          <div className="space-y-6">
+            <div className="mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Tableau de bord RH</h1>
+              <p className="text-slate-600 dark:text-slate-400">Gestion des ressources humaines</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {kpiCards.map((kpi, i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${kpi.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                      <kpi.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    {kpi.change && <span className="text-xs sm:text-sm font-semibold text-green-600 dark:text-green-400">{kpi.change}</span>}
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-1">{kpi.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{kpi.value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Evolution des effectifs</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={mockStatsEvolution.effectifs}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                    <XAxis dataKey="mois" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                    <Legend />
+                    <Line type="monotone" dataKey="employes" stroke="#10b981" strokeWidth={3} />
+                    <Line type="monotone" dataKey="nouveaux" stroke="#8b5cf6" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par service</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={mockStatsEvolution.repartitionServices} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+                      {mockStatsEvolution.repartitionServices.map((entry, index) => (
+                        <Cell key={'cell-' + index} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Derniers employes ajoutes</h3>
+                <div className="space-y-3">
+                  {mockEmployes.slice(0, 5).map((emp) => (
+                    <div key={emp.matricule} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-pink-100 dark:bg-pink-900/30'}`}>
+                          <span className={`font-bold ${emp.sexe === 'M' ? 'text-blue-600 dark:text-blue-300' : 'text-pink-600 dark:text-pink-300'}`}>{emp.prenom[0]}</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp.prenom} {emp.nom}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{emp.email}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">{emp.statut}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Demandes de conges</h3>
+                <div className="space-y-3">
+                  {mockConges.slice(0, 5).map((conge) => {
+                    const emp = mockEmployes.find(e => e.matricule === conge.matricule)
+                    return (
+                      <div key={conge.id_conge} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp?.prenom} {emp?.nom}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{conge.type_conge} - {conge.nombre_jours} jours</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          conge.statut === 'Approuve' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 
+                          conge.statut === 'En attente' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' : 
+                          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                        }`}>
+                          {conge.statut}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+    }
+  }
+
+  return (
+    <div className={isDark ? 'dark' : ''}>
+      <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
+        <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">RH Pro</span>
+                <p className="text-xs text-slate-500 dark:text-slate-400">RH</p>
+              </div>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden"><X className="w-6 h-6" /></button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.path)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                  activeSection === item.id 
+                    ? 'bg-gradient-to-r from-primary-500 to-purple-600 text-white shadow-lg' 
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium text-sm">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <button onClick={() => navigate('/')} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Deconnexion</span>
+            </button>
+          </div>
+        </aside>
+
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><Menu className="w-6 h-6" /></button>
+              <div className="flex-1 max-w-md mx-4 hidden md:block">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input type="text" placeholder="Rechercher un employe..." className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl border-0 focus:ring-2 focus:ring-primary-500" />
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <NotificationBell
+                  notifications={notifications}
+                  onMarkAsRead={handleMarkAsRead}
+                  onMarkAllAsRead={handleMarkAllAsRead}
+                  onDelete={handleDelete}
+                />
+                <button onClick={toggleDark} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+                  {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
+                </button>
+                <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold">RH</span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Grace Mbuyi</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Responsable RH</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+            {renderContent()}
+          </main>
+        </div>
+      </div>
+    </div>
+  )
+}
