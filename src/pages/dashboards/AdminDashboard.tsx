@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Building2, Users, Shield, Server, Settings,
-  LogOut, Menu, X, Moon, Sun, Search, Bell,
-  Mail
+  LogOut, Menu, X, Moon, Sun, Search, Bell, Mail, UserCheck
 } from 'lucide-react'
 import { NotificationBell } from '../../components/NotificationBell'
 import { adminNotifications } from '../../data/notifications'
@@ -13,6 +12,9 @@ import { AdminSecurityPage } from './AdminSecurityPage'
 import { AdminSystemPage } from './AdminSystemPage'
 import { AdminSettingsPage } from './AdminSettingsPage'
 import { AdminNotificationsPage } from './AdminNotificationsPage'
+import { AdminValidationUsersPage } from './AdminValidationUsersPage'
+import { RHAutomatisationPaiePage } from './RHAutomatisationPaiePage'
+import { RHArchivagePage } from './RHArchivagePage'
 
 export const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -42,9 +44,10 @@ export const AdminDashboard = () => {
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/admin' },
     { icon: Building2, label: 'Entreprises', id: 'entreprises', path: '/dashboard/admin/entreprises' },
     { icon: Users, label: 'Utilisateurs', id: 'users', path: '/dashboard/admin/users' },
+    { icon: UserCheck, label: 'Validations', id: 'validations', path: '/dashboard/admin/validations' },
     { icon: Shield, label: 'Securite', id: 'securite', path: '/dashboard/admin/securite' },
     { icon: Server, label: 'Systeme', id: 'systeme', path: '/dashboard/admin/systeme' },
-    { icon: Mail, label: 'Notifications', id: 'notifications', path: '/dashboard/admin/notifications' },
+    { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/admin/notifications' },
     { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/admin/parametres' },
   ]
 
@@ -52,6 +55,7 @@ export const AdminDashboard = () => {
     const path = location.pathname
     if (path.includes('/entreprises')) return 'entreprises'
     if (path.includes('/users')) return 'users'
+    if (path.includes('/validations')) return 'validations'
     if (path.includes('/securite')) return 'securite'
     if (path.includes('/systeme')) return 'systeme'
     if (path.includes('/notifications')) return 'notifications'
@@ -63,47 +67,57 @@ export const AdminDashboard = () => {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'entreprises':
-        return <AdminEntreprisesPage />
-      case 'users':
-        return <AdminUsersPage />
-      case 'securite':
-        return <AdminSecurityPage />
-      case 'systeme':
-        return <AdminSystemPage />
-      case 'notifications':
-        return <AdminNotificationsPage />
-      case 'parametres':
-        return <AdminSettingsPage />
+      case 'entreprises': return <AdminEntreprisesPage />
+      case 'users': return <AdminUsersPage />
+      case 'validations': return <AdminValidationUsersPage />
+      case 'securite': return <AdminSecurityPage />
+      case 'systeme': return <AdminSystemPage />
+      case 'notifications': return <AdminNotificationsPage />
+      case 'parametres': return <AdminSettingsPage />
       default:
         return (
           <div className="space-y-6">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Tableau de bord Administrateur</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Tableau de bord Administrateur</h1>
               <p className="text-slate-600 dark:text-slate-400">Vue d'ensemble complete du systeme</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {[
                 { icon: Users, label: 'Total Utilisateurs', value: '7', change: '+12%', color: 'from-primary-500 to-purple-600' },
                 { icon: Building2, label: 'Entreprises', value: '2', change: '+8%', color: 'from-accent-500 to-emerald-600' },
-                { icon: Shield, label: 'Alertes securite', value: '3', change: '-2', color: 'from-amber-500 to-orange-600' },
-                { icon: Server, label: 'Uptime', value: '99.9%', change: '+0.1%', color: 'from-pink-500 to-rose-600' },
+                { icon: UserCheck, label: 'En attente', value: '2', change: 'A valider', color: 'from-amber-500 to-orange-600' },
+                { icon: Shield, label: 'Securite', value: '99%', change: 'OK', color: 'from-pink-500 to-rose-600' },
               ].map((kpi, i) => (
-                <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${kpi.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                      <kpi.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold text-green-600 dark:text-green-400">{kpi.change}</span>
+                <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${kpi.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
+                    <kpi.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{kpi.label}</p>
-                  <p className="text-3xl font-bold text-slate-800 dark:text-white">{kpi.value}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-1">{kpi.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{kpi.value}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">{kpi.change}</p>
                 </div>
               ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Actions rapides</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { icon: UserCheck, label: 'Validations', path: '/dashboard/admin/validations', color: 'from-amber-500 to-orange-600' },
+                    { icon: Building2, label: 'Entreprises', path: '/dashboard/admin/entreprises', color: 'from-primary-500 to-purple-600' },
+                    { icon: Users, label: 'Utilisateurs', path: '/dashboard/admin/users', color: 'from-accent-500 to-emerald-600' },
+                    { icon: Shield, label: 'Securite', path: '/dashboard/admin/securite', color: 'from-pink-500 to-rose-600' },
+                  ].map((item, i) => (
+                    <button key={i} onClick={() => navigate(item.path)} className={`flex flex-col items-center justify-center p-4 bg-gradient-to-br ${item.color} text-white rounded-xl hover:shadow-lg transition-all`}>
+                      <item.icon className="w-6 h-6 mb-2" />
+                      <span className="text-sm font-semibold">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Activite recente</h3>
                 <div className="space-y-3">
@@ -121,27 +135,6 @@ export const AdminDashboard = () => {
                         <p className="text-xs text-slate-500 dark:text-slate-400">{item.time}</p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Acces rapide</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { icon: Building2, label: 'Entreprises', path: '/dashboard/admin/entreprises', color: 'from-primary-500 to-purple-600' },
-                    { icon: Users, label: 'Utilisateurs', path: '/dashboard/admin/users', color: 'from-accent-500 to-emerald-600' },
-                    { icon: Shield, label: 'Securite', path: '/dashboard/admin/securite', color: 'from-amber-500 to-orange-600' },
-                    { icon: Settings, label: 'Parametres', path: '/dashboard/admin/parametres', color: 'from-pink-500 to-rose-600' },
-                  ].map((item, i) => (
-                    <button
-                      key={i}
-                      onClick={() => navigate(item.path)}
-                      className={`flex flex-col items-center justify-center p-4 bg-gradient-to-br ${item.color} text-white rounded-xl hover:shadow-lg transition-all`}
-                    >
-                      <item.icon className="w-6 h-6 mb-2" />
-                      <span className="text-sm font-semibold">{item.label}</span>
-                    </button>
                   ))}
                 </div>
               </div>
@@ -180,7 +173,7 @@ export const AdminDashboard = () => {
                 }`}
               >
                 <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium text-sm">{item.label}</span>
               </button>
             ))}
           </nav>
@@ -228,7 +221,7 @@ export const AdminDashboard = () => {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
             {renderContent()}
           </main>
         </div>

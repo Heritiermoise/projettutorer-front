@@ -1,7 +1,7 @@
 import { PublicNavbar } from '../components/PublicNavbar'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, Crown, Upload, X, CheckCircle2, Star, Shield, Zap } from 'lucide-react'
+import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, Crown, Upload, X, CheckCircle2 } from 'lucide-react'
 
 export const CreateEntreprisePage = () => {
   const [formData, setFormData] = useState({
@@ -24,11 +24,6 @@ export const CreateEntreprisePage = () => {
 
   const handlePhotoChange = (type: 'profil' | 'couverture', file: File | null) => {
     if (file) {
-      const maxSize = type === 'profil' ? 2 * 1024 * 1024 : 5 * 1024 * 1024
-      if (file.size > maxSize) {
-        setError(`Image trop volumineuse. Max ${type === 'profil' ? '2MB' : '5MB'}`)
-        return
-      }
       const reader = new FileReader()
       reader.onloadend = () => {
         setPhotos({
@@ -42,16 +37,13 @@ export const CreateEntreprisePage = () => {
   }
 
   const removePhoto = (type: 'profil' | 'couverture') => {
-    setPhotos({
-      ...photos,
-      [type]: null,
-      ['preview' + (type === 'profil' ? 'Profil' : 'Couverture')]: '',
-    })
+    setPhotos({ ...photos, [type]: null, ['preview' + (type === 'profil' ? 'Profil' : 'Couverture')]: '' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    
     if (formData.password !== formData.password_confirmation) {
       setError('Les mots de passe ne correspondent pas')
       return
@@ -60,17 +52,64 @@ export const CreateEntreprisePage = () => {
       setError('Le mot de passe doit contenir au moins 6 caracteres')
       return
     }
+
     setLoading(true)
-    const user = { role: 'directeur', name: 'Directeur ' + formData.nom, email: formData.email, id_entreprise: Math.floor(Math.random() * 1000) + 1 }
-    localStorage.setItem('user', JSON.stringify(user))
-    setTimeout(() => { navigate('/dashboard/directeur'); setLoading(false) }, 1500)
+
+    // Recuperer les infos du user temporaire
+    const tempUser = JSON.parse(localStorage.getItem('temp_user') || '{}')
+    
+    // Creer l'entreprise et l'utilisateur directeur
+    const newEntreprise = {
+      id_entreprise: Date.now(),
+      nom: formData.nom,
+      nom_commercial: formData.nom_commercial || formData.nom,
+      email: formData.email,
+      telephone: formData.telephone,
+      adresse: formData.adresse,
+      description: formData.description,
+      code_entreprise: formData.nom.substring(0, 3).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
+      statut: 'Actif',
+      created_at: new Date().toISOString().split('T')[0],
+    }
+
+    const newDirecteur = {
+      id: Date.now(),
+      nom: tempUser.nom || 'Directeur',
+      post_nom: tempUser.post_nom || '',
+      prenom: tempUser.prenom || '',
+      name: `${tempUser.prenom || ''} ${tempUser.nom || ''}`,
+      email: tempUser.email || formData.email,
+      telephone: tempUser.telephone || formData.telephone,
+      adresse: tempUser.adresse || formData.adresse,
+      role: 'directeur',
+      statut: 'actif',
+      id_entreprise: newEntreprise.id_entreprise,
+      created_at: new Date().toISOString().split('T')[0],
+    }
+
+    // Sauvegarder
+    const entreprises = JSON.parse(localStorage.getItem('mock_entreprises') || '[]')
+    entreprises.push(newEntreprise)
+    localStorage.setItem('mock_entreprises', JSON.stringify(entreprises))
+
+    const users = JSON.parse(localStorage.getItem('mock_users') || '[]')
+    users.push(newDirecteur)
+    localStorage.setItem('mock_users', JSON.stringify(users))
+
+    // Connecter automatiquement le directeur
+    localStorage.setItem('user', JSON.stringify(newDirecteur))
+
+    setTimeout(() => {
+      setLoading(false)
+      // REDIRECTION DIRECTE VERS DASHBOARD DIRECTEUR
+      navigate('/dashboard/directeur')
+    }, 1500)
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-slate-900 dark:via-amber-900/20 dark:to-red-900/20">
       <PublicNavbar />
       
-      {/* Hero Section */}
       <section className="pt-32 pb-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/30 px-5 py-2.5 rounded-full shadow-lg border border-amber-200 dark:border-amber-800 mb-6">
@@ -82,25 +121,12 @@ export const CreateEntreprisePage = () => {
             <br />
             <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">en quelques clics</span>
           </h1>
-          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Lancez votre entreprise et beneficiez de tous les outils RH pour gerer votre equipe efficacement.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {[
-              { icon: Zap, text: "Creation rapide" },
-              { icon: Shield, text: "Donnees securisees" },
-              { icon: Star, text: "Support dedie" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center space-x-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-full shadow-sm">
-                <item.icon className="w-4 h-4 text-amber-600" />
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.text}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* Formulaire */}
       <section className="pb-16 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 sm:p-12 border border-slate-200 dark:border-slate-700">
@@ -109,7 +135,6 @@ export const CreateEntreprisePage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Photos */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Photos de l'entreprise (optionnel)</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
