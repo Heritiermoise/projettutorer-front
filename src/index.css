@@ -6,3 +6,30 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
 }
+@layer base {
+  :root {
+    color-scheme: light;
+    --site-bg: #f8fafc;
+    --site-surface: #ffffff;
+    --site-text: #0f172a;
+    --site-muted: #64748b;
+    --site-border: #e2e8f0;
+  }
+
+  html.dark {
+    color-scheme: dark;
+    --site-bg: #0f172a;
+    --site-surface: #111827;
+    --site-text: #f8fafc;
+    --site-muted: #94a3b8;
+    --site-border: #1f2937;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--site-bg);
+    color: var(--site-text);
+  }
+}

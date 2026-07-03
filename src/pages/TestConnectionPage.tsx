@@ -30,7 +30,7 @@ export const TestConnectionPage = () => {
       <div className="max-w-2xl mx-auto px-4">
         <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200 dark:border-slate-700">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-purple-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
               {status === 'loading' && <Loader2 className="w-8 h-8 text-white animate-spin" />}
               {status === 'success' && <CheckCircle2 className="w-8 h-8 text-white" />}
               {status === 'error' && <XCircle className="w-8 h-8 text-white" />}
@@ -45,28 +45,28 @@ export const TestConnectionPage = () => {
 
           <div className="space-y-4">
             <div className={`p-4 rounded-xl border-2 ${
-              status === 'loading' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' :
-              status === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
-              'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              status === 'loading' ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800' :
+              status === 'success' ? 'bg-accent-50 dark:bg-accent-900/20 border-accent-200 dark:border-accent-800' :
+              'bg-warm-50 dark:bg-warm-900/20 border-warm-200 dark:border-warm-800'
             }`}>
               <div className="flex items-start space-x-3">
-                {status === 'loading' && <Wifi className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5 animate-pulse" />}
-                {status === 'success' && <Wifi className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />}
-                {status === 'error' && <WifiOff className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />}
+                {status === 'loading' && <Wifi className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5 animate-pulse" />}
+                {status === 'success' && <Wifi className="w-5 h-5 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-0.5" />}
+                {status === 'error' && <WifiOff className="w-5 h-5 text-warm-600 dark:text-warm-400 flex-shrink-0 mt-0.5" />}
                 <div>
                   <p className={`font-semibold ${
-                    status === 'loading' ? 'text-blue-800 dark:text-blue-200' :
-                    status === 'success' ? 'text-green-800 dark:text-green-200' :
-                    'text-red-800 dark:text-red-200'
+                    status === 'loading' ? 'text-primary-800 dark:text-primary-200' :
+                    status === 'success' ? 'text-accent-800 dark:text-accent-200' :
+                    'text-warm-800 dark:text-warm-200'
                   }`}>
                     {status === 'loading' && 'Test en cours...'}
                     {status === 'success' && 'Connexion reussie !'}
                     {status === 'error' && 'Erreur de connexion'}
                   </p>
                   <p className={`text-sm mt-1 ${
-                    status === 'loading' ? 'text-blue-600 dark:text-blue-300' :
-                    status === 'success' ? 'text-green-600 dark:text-green-300' :
-                    'text-red-600 dark:text-red-300'
+                    status === 'loading' ? 'text-primary-600 dark:text-primary-300' :
+                    status === 'success' ? 'text-accent-600 dark:text-accent-300' :
+                    'text-warm-600 dark:text-warm-300'
                   }`}>
                     {message}
                   </p>
@@ -93,7 +93,7 @@ export const TestConnectionPage = () => {
               <div className="space-y-3">
                 <Link
                   to="/login"
-                  className="block w-full py-3 px-4 bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg text-center"
+                  className="block w-full py-3 px-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-lg text-center"
                 >
                   Aller a la page de connexion
                 </Link>

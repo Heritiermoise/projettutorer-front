@@ -9,15 +9,15 @@ export const Features = () => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { icon: Briefcase, title: "Recrutement intelligent", description: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-indigo-600", stats: "150+ candidatures/mois" },
-    { icon: FileText, title: "Gestion des contrats", description: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-accent-500 to-teal-600", stats: "100% digital" },
-    { icon: DollarSign, title: "Paie automatisee", description: "Calculez les salaires, gerez les primes et avantages. Bulletins generes automatiquement.", color: "from-emerald-500 to-green-600", stats: "Gain de 80% de temps" },
-    { icon: Calendar, title: "Conges & Absences", description: "Demandes de conges en ligne, validation en un clic, calendrier partage.", color: "from-purple-500 to-pink-500", stats: "Zero papier" },
-    { icon: UserCheck, title: "Presences & Pointage", description: "Pointage quotidien, suivi des retards et absences. Statistiques en temps reel.", color: "from-amber-500 to-orange-500", stats: "Temps reel" },
-    { icon: BarChart3, title: "Rapports & Statistiques", description: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-blue-500 to-cyan-500", stats: "+50 indicateurs" },
-    { icon: Shield, title: "Securite maximale", description: "Chiffrement de bout en bout, sauvegardes automatiques, conformite RGPD.", color: "from-rose-500 to-red-500", stats: "99.9% uptime" },
-    { icon: Bell, title: "Notifications intelligentes", description: "Alertes personnalisees pour les echeances, anniversaires, fin de contrat.", color: "from-violet-500 to-purple-600", stats: "Multi-canaux" },
-    { icon: Zap, title: "Automatisation puissante", description: "Workflows automatises, taches recurrentes, rappels intelligents.", color: "from-yellow-500 to-amber-500", stats: "100+ automatisations" }
+    { icon: Briefcase, title: "Recrutement intelligent", description: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-primary-700", stats: "150+ candidatures/mois" },
+    { icon: FileText, title: "Gestion des contrats", description: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-accent-500 to-accent-700", stats: "100% digital" },
+    { icon: DollarSign, title: "Paie automatisee", description: "Calculez les salaires, gerez les primes et avantages. Bulletins generes automatiquement.", color: "from-warm-500 to-warm-600", stats: "Gain de 80% de temps" },
+    { icon: Calendar, title: "Conges & Absences", description: "Demandes de conges en ligne, validation en un clic, calendrier partage.", color: "from-slate-500 to-slate-700", stats: "Zero papier" },
+    { icon: UserCheck, title: "Presences & Pointage", description: "Pointage quotidien, suivi des retards et absences. Statistiques en temps reel.", color: "from-primary-500 to-accent-500", stats: "Temps reel" },
+    { icon: BarChart3, title: "Rapports & Statistiques", description: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-accent-500 to-primary-600", stats: "+50 indicateurs" },
+    { icon: Shield, title: "Securite maximale", description: "Chiffrement de bout en bout, sauvegardes automatiques, conformite RGPD.", color: "from-slate-600 to-slate-800", stats: "99.9% uptime" },
+    { icon: Bell, title: "Notifications intelligentes", description: "Alertes personnalisees pour les echeances, anniversaires, fin de contrat.", color: "from-primary-600 to-accent-600", stats: "Multi-canaux" },
+    { icon: Zap, title: "Automatisation puissante", description: "Workflows automatises, taches recurrentes, rappels intelligents.", color: "from-warm-400 to-warm-600", stats: "100+ automatisations" }
   ];
 
   return (
@@ -67,7 +67,7 @@ export const Features = () => {
                 <p className="text-slate-600 leading-relaxed mb-4">{feature.description}</p>
 
                 <div className="inline-flex items-center space-x-2 bg-slate-50 group-hover:bg-primary-50 px-3 py-1.5 rounded-full transition-colors">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                  <div className="w-1.5 h-1.5 bg-accent-500 rounded-full animate-pulse"></div>
                   <span className="text-xs font-semibold text-slate-600 group-hover:text-primary-700">
                     {feature.stats}
                   </span>

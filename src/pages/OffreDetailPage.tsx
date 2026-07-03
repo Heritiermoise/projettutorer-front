@@ -62,7 +62,7 @@ export const OffreDetailPage = () => {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 py-12">
+      <section className="bg-gradient-to-r from-primary-600 to-accent-600 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start space-x-6">
             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -168,9 +168,9 @@ export const OffreDetailPage = () => {
               </button>
             </div>
 
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-6">
-              <h3 className="text-lg font-bold text-amber-800 dark:text-amber-200 mb-2">Processus de recrutement</h3>
-              <ol className="space-y-3 text-sm text-amber-700 dark:text-amber-300">
+            <div className="bg-warm-50 dark:bg-warm-900/20 border border-warm-200 dark:border-warm-800 rounded-2xl p-6">
+              <h3 className="text-lg font-bold text-warm-800 dark:text-warm-200 mb-2">Processus de recrutement</h3>
+              <ol className="space-y-3 text-sm text-warm-700 dark:text-warm-300">
                 <li className="flex items-start space-x-2">
                   <span className="font-bold">1.</span>
                   <span>Soumission de votre candidature</span>

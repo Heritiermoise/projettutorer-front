@@ -35,10 +35,10 @@ export const NotificationBell = ({ notifications, onMarkAsRead, onMarkAllAsRead,
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'success': return <CheckCircle2 className="w-5 h-5 text-green-600" />
-      case 'warning': return <AlertCircle className="w-5 h-5 text-amber-600" />
-      case 'error': return <X className="w-5 h-5 text-red-600" />
-      default: return <Info className="w-5 h-5 text-blue-600" />
+      case 'success': return <CheckCircle2 className="w-5 h-5 text-accent-600" />
+      case 'warning': return <AlertCircle className="w-5 h-5 text-warm-600" />
+      case 'error': return <X className="w-5 h-5 text-slate-600" />
+      default: return <Info className="w-5 h-5 text-primary-600" />
     }
   }
 
@@ -50,7 +50,7 @@ export const NotificationBell = ({ notifications, onMarkAsRead, onMarkAllAsRead,
       >
         <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute top-1 right-1 w-5 h-5 bg-warm-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

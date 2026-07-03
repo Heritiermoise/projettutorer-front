@@ -48,7 +48,7 @@ export const Hero = () => {
             >
               <span className="text-slate-800">Gerez votre</span>
               <br />
-              <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 bg-clip-text text-transparent bg-300% animate-gradient">
+                <span className="bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent bg-300% animate-gradient">
                 entreprise
               </span>
               <br />
@@ -121,9 +121,9 @@ export const Hero = () => {
               >
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-warm-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-primary-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-accent-400"></div>
                   </div>
                   <div className="text-xs text-slate-400">Dashboard RH Pro</div>
                 </div>
@@ -165,7 +165,7 @@ export const Hero = () => {
                 className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border border-slate-100"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>

@@ -18,10 +18,10 @@ export const Roles = () => {
         "Vue d'ensemble de l'entreprise",
         "Statistiques avancees"
       ],
-      color: "from-amber-400 to-orange-500",
-      bgColor: "bg-gradient-to-br from-amber-50 to-orange-50",
-      borderColor: "border-amber-200",
-      textColor: "text-amber-700"
+      color: "from-warm-400 to-warm-600",
+      bgColor: "bg-gradient-to-br from-warm-50 to-white",
+      borderColor: "border-warm-100",
+      textColor: "text-warm-700"
     },
     {
       icon: UserCog,
@@ -34,8 +34,8 @@ export const Roles = () => {
         "Gestion de la paie",
         "Suivi des contrats et documents"
       ],
-      color: "from-primary-500 to-indigo-600",
-      bgColor: "bg-gradient-to-br from-primary-50 to-indigo-50",
+      color: "from-primary-500 to-primary-700",
+      bgColor: "bg-gradient-to-br from-primary-50 to-white",
       borderColor: "border-primary-200",
       textColor: "text-primary-700",
       popular: true
@@ -51,8 +51,8 @@ export const Roles = () => {
         "Gestion d'equipe",
         "Evaluations performance"
       ],
-      color: "from-accent-500 to-teal-600",
-      bgColor: "bg-gradient-to-br from-accent-50 to-teal-50",
+      color: "from-accent-500 to-accent-700",
+      bgColor: "bg-gradient-to-br from-accent-50 to-white",
       borderColor: "border-accent-200",
       textColor: "text-accent-700"
     },
@@ -67,10 +67,10 @@ export const Roles = () => {
         "Documents personnels",
         "Messagerie RH"
       ],
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-gradient-to-br from-purple-50 to-pink-50",
-      borderColor: "border-purple-200",
-      textColor: "text-purple-700"
+      color: "from-slate-500 to-slate-700",
+      bgColor: "bg-gradient-to-br from-slate-50 to-white",
+      borderColor: "border-slate-200",
+      textColor: "text-slate-700"
     }
   ];
 
@@ -83,9 +83,9 @@ export const Roles = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center space-x-2 bg-purple-50 px-4 py-2 rounded-full mb-4">
-            <Users className="w-4 h-4 text-purple-600" />
-            <span className="text-sm font-semibold text-purple-700">Pour chaque role</span>
+          <div className="inline-flex items-center space-x-2 bg-primary-50 px-4 py-2 rounded-full mb-4">
+            <Users className="w-4 h-4 text-primary-600" />
+            <span className="text-sm font-semibold text-primary-700">Pour chaque role</span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold text-slate-800 mb-4">
             Une interface adaptee

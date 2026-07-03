@@ -89,7 +89,7 @@ export const Sidebar = ({ userRole, onLogout, isOpen, onClose }: SidebarProps) =
           <div className="p-4 border-t border-slate-800">
             <button
               onClick={onLogout}
-              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-warm-400 hover:bg-warm-500/10 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>Deconnexion</span>

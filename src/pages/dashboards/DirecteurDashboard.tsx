@@ -5,7 +5,9 @@ import {
   DollarSign, LogOut, Menu, X, Moon, Sun, Search, Bell,
   Target, UserCheck, Settings, FileText, BookOpen, Award, 
   MessageSquare, TrendingUp, CheckSquare, BarChart3,
-  FileSignature, Plug, Headphones, Archive, Shield, Flag
+  FileSignature, Plug, Headphones, Archive, Shield, Flag,
+  Send, Lock, Building, Clock, CheckCircle2, Heart,
+  Heart as HeartIcon, BookOpen as BookIcon, Users as UsersIcon, Clock as ClockIcon
 } from 'lucide-react'
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area,
@@ -36,6 +38,20 @@ import { DirecteurTicketsPage } from './DirecteurTicketsPage'
 import { DirecteurArchivagePage } from './DirecteurArchivagePage'
 import { DirecteurAuditLogsPage } from './DirecteurAuditLogsPage'
 import { DirecteurJoursFeriesPage } from './DirecteurJoursFeriesPage'
+import { DirecteurMessageriePage } from './DirecteurMessageriePage'
+import { DirecteurCalendrierPage } from './DirecteurCalendrierPage'
+import { DirecteurPermissionsPage } from './DirecteurPermissionsPage'
+import { DirecteurMesEntreprisesPage } from './DirecteurMesEntreprisesPage'
+import { DirecteurPointagePage } from './DirecteurPointagePage'
+import { DirecteurApprobationsPage } from './DirecteurApprobationsPage'
+import { DirecteurNotesFraisPage } from './DirecteurNotesFraisPage'
+import { DirecteurEquipementsPage } from './DirecteurEquipementsPage'
+import { DirecteurReconnaissancesPage } from './DirecteurReconnaissancesPage'
+import { DirecteurSondagesPage } from './DirecteurSondagesPage'
+import { DirecteurBienEtrePage } from './DirecteurBienEtrePage'
+import { DirecteurKnowledgeBasePage } from './DirecteurKnowledgeBasePage'
+import { DirecteurMentoratPage } from './DirecteurMentoratPage'
+import { DirecteurTimesheetPage } from './DirecteurTimesheetPage'
 
 export const DirecteurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -63,6 +79,7 @@ export const DirecteurDashboard = () => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/directeur' },
+    { icon: Building, label: 'Mes Entreprises', id: 'mesentreprises', path: '/dashboard/directeur/mesentreprises' },
     { icon: Building2, label: 'Mon Entreprise', id: 'entreprise', path: '/dashboard/directeur/entreprise' },
     { icon: Briefcase, label: 'Postes', id: 'postes', path: '/dashboard/directeur/postes' },
     { icon: FileText, label: 'Offres', id: 'offres', path: '/dashboard/directeur/offres' },
@@ -74,41 +91,37 @@ export const DirecteurDashboard = () => {
     { icon: Award, label: 'Organigramme', id: 'organigramme', path: '/dashboard/directeur/organigramme' },
     { icon: DollarSign, label: 'Paie Avancee', id: 'paie', path: '/dashboard/directeur/paie' },
     { icon: MessageSquare, label: 'Communication', id: 'communication', path: '/dashboard/directeur/communication' },
+    { icon: Send, label: 'Messagerie', id: 'messagerie', path: '/dashboard/directeur/messagerie' },
+    { icon: Calendar, label: 'Calendrier', id: 'calendrier', path: '/dashboard/directeur/calendrier' },
+    { icon: Clock, label: 'Pointage', id: 'pointage', path: '/dashboard/directeur/pointage' },
+    { icon: CheckCircle2, label: 'Approbations', id: 'approbations', path: '/dashboard/directeur/approbations' },
+    { icon: DollarSign, label: 'Notes de Frais', id: 'notesfrais', path: '/dashboard/directeur/notesfrais' },
+    { icon: Briefcase, label: 'Equipements', id: 'equipements', path: '/dashboard/directeur/equipements' },
+    { icon: Heart, label: 'Reconnaissances', id: 'reconnaissances', path: '/dashboard/directeur/reconnaissances' },
+    { icon: FileText, label: 'Sondages', id: 'sondages', path: '/dashboard/directeur/sondages' },
+    { icon: HeartIcon, label: 'Bien-etre', id: 'bienetre', path: '/dashboard/directeur/bienetre' },
+    { icon: BookIcon, label: 'Knowledge Base', id: 'kb', path: '/dashboard/directeur/kb' },
+    { icon: UsersIcon, label: 'Mentorat', id: 'mentorat', path: '/dashboard/directeur/mentorat' },
+    { icon: ClockIcon, label: 'Timesheets', id: 'timesheets', path: '/dashboard/directeur/timesheets' },
     { icon: BarChart3, label: 'Analytics', id: 'analytics', path: '/dashboard/directeur/analytics' },
     { icon: FileSignature, label: 'Signature', id: 'signature', path: '/dashboard/directeur/signature' },
     { icon: Plug, label: 'Integrations', id: 'integrations', path: '/dashboard/directeur/integrations' },
     { icon: Headphones, label: 'Support', id: 'support', path: '/dashboard/directeur/support' },
     { icon: Archive, label: 'Archivage', id: 'archivage', path: '/dashboard/directeur/archivage' },
     { icon: Shield, label: 'Audit Logs', id: 'audit', path: '/dashboard/directeur/audit' },
+    { icon: Lock, label: 'Permissions', id: 'permissions', path: '/dashboard/directeur/permissions' },
     { icon: Flag, label: 'Jours Feries', id: 'joursferies', path: '/dashboard/directeur/joursferies' },
-    { icon: Calendar, label: 'Statistiques', id: 'stats', path: '/dashboard/directeur/stats' },
+    { icon: TrendingUp, label: 'Statistiques', id: 'stats', path: '/dashboard/directeur/stats' },
     { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/directeur/notifications' },
     { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/directeur/parametres' },
   ]
 
   const getCurrentSection = () => {
     const path = location.pathname
-    if (path.includes('/entreprise')) return 'entreprise'
-    if (path.includes('/postes')) return 'postes'
-    if (path.includes('/offres')) return 'offres'
-    if (path.includes('/membres')) return 'membres'
-    if (path.includes('/candidats')) return 'candidats'
-    if (path.includes('/onboarding')) return 'onboarding'
-    if (path.includes('/evaluations')) return 'evaluations'
-    if (path.includes('/formations')) return 'formations'
-    if (path.includes('/organigramme')) return 'organigramme'
-    if (path.includes('/paie')) return 'paie'
-    if (path.includes('/communication')) return 'communication'
-    if (path.includes('/analytics')) return 'analytics'
-    if (path.includes('/signature')) return 'signature'
-    if (path.includes('/integrations')) return 'integrations'
-    if (path.includes('/support')) return 'support'
-    if (path.includes('/archivage')) return 'archivage'
-    if (path.includes('/audit')) return 'audit'
-    if (path.includes('/joursferies')) return 'joursferies'
-    if (path.includes('/stats')) return 'stats'
-    if (path.includes('/notifications')) return 'notifications'
-    if (path.includes('/parametres')) return 'parametres'
+    const sections = ['mesentreprises', 'entreprise', 'postes', 'offres', 'membres', 'candidats', 'onboarding', 'evaluations', 'formations', 'organigramme', 'paie', 'communication', 'messagerie', 'calendrier', 'pointage', 'approbations', 'notesfrais', 'equipements', 'reconnaissances', 'sondages', 'bienetre', 'kb', 'mentorat', 'timesheets', 'analytics', 'signature', 'integrations', 'support', 'archivage', 'audit', 'permissions', 'joursferies', 'stats', 'notifications', 'parametres']
+    for (const section of sections) {
+      if (path.includes('/' + section)) return section
+    }
     return 'dashboard'
   }
 
@@ -134,6 +147,7 @@ export const DirecteurDashboard = () => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case 'mesentreprises': return <DirecteurMesEntreprisesPage />
       case 'entreprise': return <DirecteurEntreprisePage />
       case 'postes': return <DirecteurPostesPage />
       case 'offres': return <DirecteurOffresPage />
@@ -145,12 +159,25 @@ export const DirecteurDashboard = () => {
       case 'organigramme': return <DirecteurOrganigrammePage />
       case 'paie': return <DirecteurPaieAvanceePage />
       case 'communication': return <DirecteurCommunicationPage />
+      case 'messagerie': return <DirecteurMessageriePage />
+      case 'calendrier': return <DirecteurCalendrierPage />
+      case 'pointage': return <DirecteurPointagePage />
+      case 'approbations': return <DirecteurApprobationsPage />
+      case 'notesfrais': return <DirecteurNotesFraisPage />
+      case 'equipements': return <DirecteurEquipementsPage />
+      case 'reconnaissances': return <DirecteurReconnaissancesPage />
+      case 'sondages': return <DirecteurSondagesPage />
+      case 'bienetre': return <DirecteurBienEtrePage />
+      case 'kb': return <DirecteurKnowledgeBasePage />
+      case 'mentorat': return <DirecteurMentoratPage />
+      case 'timesheets': return <DirecteurTimesheetPage />
       case 'analytics': return <DirecteurAnalyticsPage />
       case 'signature': return <DirecteurSignaturePage />
       case 'integrations': return <DirecteurIntegrationsPage />
       case 'support': return <DirecteurTicketsPage />
       case 'archivage': return <DirecteurArchivagePage />
       case 'audit': return <DirecteurAuditLogsPage />
+      case 'permissions': return <DirecteurPermissionsPage />
       case 'joursferies': return <DirecteurJoursFeriesPage />
       case 'stats': return <DirecteurStatistiquesPage />
       case 'notifications': return <DirecteurNotificationsPage />
@@ -210,67 +237,6 @@ export const DirecteurDashboard = () => {
                     <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
                   </PieChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Etat des postes</h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Occupes</span>
-                      <span className="font-semibold text-slate-800 dark:text-white">{stats.postesOccupes}</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-green-500 h-2 rounded-full" style={{ width: (stats.postesOccupes / stats.postesTotal * 100) + '%' }}></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Vacants</span>
-                      <span className="font-semibold text-slate-800 dark:text-white">{stats.postesVacants}</span>
-                    </div>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                      <div className="bg-amber-500 h-2 rounded-full" style={{ width: (stats.postesVacants / stats.postesTotal * 100) + '%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Parite H/F</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-2">
-                      <span className="text-2xl sm:text-3xl font-bold text-white">{stats.hommes}</span>
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Hommes</p>
-                    <p className="text-xs text-slate-500">{(stats.hommes / stats.totalMembres * 100).toFixed(1)}%</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center mb-2">
-                      <span className="text-2xl sm:text-3xl font-bold text-white">{stats.femmes}</span>
-                    </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Femmes</p>
-                    <p className="text-xs text-slate-500">{(stats.femmes / stats.totalMembres * 100).toFixed(1)}%</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Services</h3>
-                <div className="space-y-2">
-                  {mockServices.slice(0, 5).map((service) => (
-                    <div key={service.id_service} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
-                        <span className="text-sm text-slate-700 dark:text-slate-300">{service.nom}</span>
-                      </div>
-                      <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">{service.statut}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

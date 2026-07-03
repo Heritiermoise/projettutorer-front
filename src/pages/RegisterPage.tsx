@@ -74,13 +74,13 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-purple-50 to-accent-50 dark:from-slate-900 dark:via-primary-900/10 dark:to-accent-900/10">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-slate-50 to-accent-50 dark:from-slate-900 dark:via-primary-900/10 dark:to-accent-900/10">
       <PublicNavbar />
       
       <div className="pt-24 pb-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 via-purple-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white mb-2">Creer un compte</h1>
@@ -89,9 +89,9 @@ export const RegisterPage = () => {
 
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
             {/* Info importante */}
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl flex items-start space-x-3">
-              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-800 dark:text-blue-200">
+            <div className="mb-6 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl flex items-start space-x-3">
+              <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-primary-800 dark:text-primary-200">
                 <strong>Choisissez votre type de compte :</strong>
                 <ul className="mt-2 space-y-1 list-disc list-inside">
                   <li><strong>Utilisateur</strong> : Pour postuler aux offres et faire des demandes (validation par admin requise)</li>
@@ -101,16 +101,16 @@ export const RegisterPage = () => {
             </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl flex items-start space-x-3">
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              <div className="mb-6 p-4 bg-warm-50 dark:bg-warm-900/30 border border-warm-200 dark:border-warm-800 rounded-xl flex items-start space-x-3">
+                <AlertCircle className="w-5 h-5 text-warm-600 dark:text-warm-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-warm-700 dark:text-warm-300">{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-green-700 dark:text-green-300">{success}</p>
+              <div className="mb-6 p-4 bg-accent-50 dark:bg-accent-900/30 border border-accent-200 dark:border-accent-800 rounded-xl flex items-start space-x-3">
+                <CheckCircle2 className="w-5 h-5 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-accent-700 dark:text-accent-300">{success}</p>
               </div>
             )}
 
@@ -147,8 +147,8 @@ export const RegisterPage = () => {
 
                   <label className={`relative cursor-pointer p-4 rounded-xl border-2 transition-all ${
                     formData.role === 'directeur' 
-                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' 
-                      : 'border-slate-200 dark:border-slate-600 hover:border-amber-300'
+                      ? 'border-warm-500 bg-warm-50 dark:bg-warm-900/20' 
+                      : 'border-slate-200 dark:border-slate-600 hover:border-warm-300'
                   }`}>
                     <input
                       type="radio"
@@ -160,7 +160,7 @@ export const RegisterPage = () => {
                     />
                     <div className="flex items-center space-x-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        formData.role === 'directeur' ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-700'
+                        formData.role === 'directeur' ? 'bg-warm-500' : 'bg-slate-200 dark:bg-slate-700'
                       }`}>
                         <Crown className={`w-6 h-6 ${formData.role === 'directeur' ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
                       </div>
@@ -245,7 +245,7 @@ export const RegisterPage = () => {
                 </div>
               </div>
 
-              <button type="submit" className="w-full py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 hover:from-primary-700 hover:via-purple-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2">
+              <button type="submit" className="w-full py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2">
                 <UserPlus className="w-5 h-5" />
                 <span>{formData.role === 'directeur' ? 'Continuer vers la creation d\'entreprise' : 'Creer mon compte'}</span>
               </button>

@@ -26,16 +26,16 @@ export const HowItWorks = () => {
       icon: Users,
       title: "Invitez votre equipe",
       description: "Ajoutez vos employes, attribuez les roles et personnalisez les acces.",
-      color: "from-purple-500 to-purple-600",
-      bgColor: "bg-purple-50",
+      color: "from-warm-500 to-warm-600",
+      bgColor: "bg-warm-50",
       number: "03"
     },
     {
       icon: Rocket,
       title: "Gerez tout simplement",
       description: "Recrutement, contrats, paie, conges : tout est centralise et automatise.",
-      color: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50",
+      color: "from-slate-500 to-slate-700",
+      bgColor: "bg-slate-50",
       number: "04"
     }
   ];

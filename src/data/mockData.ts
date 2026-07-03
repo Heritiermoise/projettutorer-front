@@ -119,12 +119,12 @@ export const mockStatsEvolution = {
     { mois: 'Jun', candidatures: 58, embauches: 11 },
   ],
   repartitionServices: [
-    { name: 'Informatique', value: 35, color: '#8b5cf6' },
-    { name: 'RH', value: 15, color: '#10b981' },
+    { name: 'Informatique', value: 35, color: '#3b82f6' },
+    { name: 'RH', value: 15, color: '#06b6d4' },
     { name: 'Finance', value: 20, color: '#f59e0b' },
-    { name: 'Marketing', value: 12, color: '#ec4899' },
-    { name: 'Direction', value: 8, color: '#3b82f6' },
-    { name: 'Commercial', value: 10, color: '#ef4444' },
+    { name: 'Marketing', value: 12, color: '#64748b' },
+    { name: 'Direction', value: 8, color: '#2563eb' },
+    { name: 'Commercial', value: 10, color: '#0e7490' },
   ],
   activiteSysteme: [
     { jour: 'Lun', connexions: 145, actions: 890 },

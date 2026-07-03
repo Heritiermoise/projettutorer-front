@@ -85,10 +85,10 @@ export const RHDashboard = () => {
   }
 
   const kpiCards = [
-    { icon: Users, label: 'Total Employes', value: stats.totalEmployes, change: '+12', color: 'from-primary-500 to-purple-600' },
-    { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-accent-500 to-emerald-600' },
-    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-amber-500 to-orange-600' },
-    { icon: Calendar, label: 'Conges en attente', value: stats.congesEnAttente, change: '', color: 'from-pink-500 to-rose-600' },
+    { icon: Users, label: 'Total Employes', value: stats.totalEmployes, change: '+12', color: 'from-primary-500 to-primary-700' },
+    { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-accent-500 to-accent-700' },
+    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-warm-500 to-warm-600' },
+    { icon: Calendar, label: 'Conges en attente', value: stats.congesEnAttente, change: '', color: 'from-slate-500 to-slate-700' },
   ]
 
   const renderContent = () => {
@@ -135,8 +135,8 @@ export const RHDashboard = () => {
                     <YAxis stroke="#9ca3af" />
                     <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
                     <Legend />
-                    <Line type="monotone" dataKey="employes" stroke="#10b981" strokeWidth={3} />
-                    <Line type="monotone" dataKey="nouveaux" stroke="#8b5cf6" strokeWidth={2} />
+                    <Line type="monotone" dataKey="employes" stroke="#3b82f6" strokeWidth={3} />
+                    <Line type="monotone" dataKey="nouveaux" stroke="#06b6d4" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -163,8 +163,8 @@ export const RHDashboard = () => {
                   {mockEmployes.slice(0, 5).map((emp) => (
                     <div key={emp.matricule} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-pink-100 dark:bg-pink-900/30'}`}>
-                          <span className={`font-bold ${emp.sexe === 'M' ? 'text-blue-600 dark:text-blue-300' : 'text-pink-600 dark:text-pink-300'}`}>{emp.prenom[0]}</span>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-primary-100 dark:bg-primary-900/30' : 'bg-accent-100 dark:bg-accent-900/30'}`}>
+                          <span className={`font-bold ${emp.sexe === 'M' ? 'text-primary-600 dark:text-primary-300' : 'text-accent-600 dark:text-accent-300'}`}>{emp.prenom[0]}</span>
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp.prenom} {emp.nom}</p>
@@ -185,8 +185,8 @@ export const RHDashboard = () => {
                     return (
                       <div key={conge.id_conge} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+                          <div className="w-10 h-10 bg-warm-100 dark:bg-warm-900/30 rounded-full flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-warm-600 dark:text-warm-300" />
                           </div>
                           <div>
                             <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp?.prenom} {emp?.nom}</p>
@@ -217,11 +217,11 @@ export const RHDashboard = () => {
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">RH Pro</span>
+                <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">RH Pro</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400">RH</p>
               </div>
             </div>
@@ -235,7 +235,7 @@ export const RHDashboard = () => {
                 onClick={() => navigate(item.path)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
-                    ? 'bg-gradient-to-r from-primary-500 to-purple-600 text-white shadow-lg' 
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-lg' 
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >

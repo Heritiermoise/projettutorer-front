@@ -10,6 +10,7 @@ import { AdminDashboard } from './pages/dashboards/AdminDashboard'
 import { DirecteurDashboard } from './pages/dashboards/DirecteurDashboard'
 import { RHDashboard } from './pages/dashboards/RHDashboard'
 import { EmployeDashboard } from './pages/dashboards/EmployeDashboard'
+import { UtilisateurDashboard } from './pages/dashboards/UtilisateurDashboard'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/dashboard/directeur/*" element={<DirecteurDashboard />} />
         <Route path="/dashboard/rh/*" element={<RHDashboard />} />
         <Route path="/dashboard/employe/*" element={<EmployeDashboard />} />
+        <Route path="/dashboard/utilisateur/*" element={<UtilisateurDashboard />} />
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

@@ -164,15 +164,15 @@ export const HomePage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Briefcase, title: "Recrutement", desc: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-indigo-600" },
-              { icon: FileText, title: "Contrats", desc: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-accent-500 to-teal-600" },
-              { icon: DollarSign, title: "Paie", desc: "Calculez les salaires, gerez les primes. Bulletins generes automatiquement.", color: "from-emerald-500 to-green-600" },
-              { icon: Calendar, title: "Conges", desc: "Demandes en ligne, validation en un clic, calendrier partage.", color: "from-purple-500 to-pink-500" },
-              { icon: Users, title: "Employes", desc: "Gestion complete des employes, services et postes de votre entreprise.", color: "from-amber-500 to-orange-500" },
-              { icon: BarChart3, title: "Rapports", desc: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-blue-500 to-cyan-500" },
-              { icon: Shield, title: "Securite", desc: "Chiffrement de bout en bout, sauvegardes automatiques, RGPD.", color: "from-rose-500 to-red-500" },
-              { icon: Bell, title: "Notifications", desc: "Alertes personnalisees pour les echeances et evenements importants.", color: "from-violet-500 to-purple-600" },
-              { icon: TrendingUp, title: "Statistiques", desc: "Analyses avancees, evolution des effectifs, masse salariale.", color: "from-yellow-500 to-amber-500" },
+              { icon: Briefcase, title: "Recrutement", desc: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-primary-700" },
+              { icon: FileText, title: "Contrats", desc: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-accent-500 to-accent-700" },
+              { icon: DollarSign, title: "Paie", desc: "Calculez les salaires, gerez les primes. Bulletins generes automatiquement.", color: "from-warm-500 to-warm-600" },
+              { icon: Calendar, title: "Conges", desc: "Demandes en ligne, validation en un clic, calendrier partage.", color: "from-slate-500 to-slate-700" },
+              { icon: Users, title: "Employes", desc: "Gestion complete des employes, services et postes de votre entreprise.", color: "from-primary-500 to-accent-500" },
+              { icon: BarChart3, title: "Rapports", desc: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-accent-500 to-primary-600" },
+              { icon: Shield, title: "Securite", desc: "Chiffrement de bout en bout, sauvegardes automatiques, RGPD.", color: "from-slate-600 to-slate-800" },
+              { icon: Bell, title: "Notifications", desc: "Alertes personnalisees pour les echeances et evenements importants.", color: "from-primary-600 to-accent-600" },
+              { icon: TrendingUp, title: "Statistiques", desc: "Analyses avancees, evolution des effectifs, masse salariale.", color: "from-warm-400 to-warm-600" },
             ].map((feature, i) => (
               <div key={i} className="group bg-white rounded-2xl p-8 border border-slate-100 hover:border-primary-200 shadow-sm hover:shadow-xl transition-all">
                 <div className={
@@ -239,10 +239,10 @@ export const HomePage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Users, title: "Directeur", desc: "Vision strategique et KPIs", color: "from-amber-500 to-orange-500" },
-              { icon: Briefcase, title: "RH", desc: "Gestion quotidienne complete", color: "from-primary-500 to-indigo-600" },
-              { icon: Building2, title: "Manager", desc: "Management d'equipe", color: "from-accent-500 to-teal-600" },
-              { icon: FileText, title: "Employe", desc: "Espace personnel complet", color: "from-purple-500 to-pink-500" },
+              { icon: Users, title: "Directeur", desc: "Vision strategique et KPIs", color: "from-warm-500 to-warm-600" },
+              { icon: Briefcase, title: "RH", desc: "Gestion quotidienne complete", color: "from-primary-500 to-primary-700" },
+              { icon: Building2, title: "Manager", desc: "Management d'equipe", color: "from-accent-500 to-accent-700" },
+              { icon: FileText, title: "Employe", desc: "Espace personnel complet", color: "from-slate-500 to-slate-700" },
             ].map((role, i) => (
               <div key={i} className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 border border-slate-200 hover:shadow-xl transition-all">
                 <div className={

@@ -48,11 +48,11 @@ export const PublicNavbar = () => {
         <div className="flex justify-between items-center h-16 sm:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-primary-500 via-purple-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 bg-clip-text text-transparent">
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
                 RH Pro
               </span>
               <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 -mt-1 hidden sm:block">Enterprise Suite</p>
@@ -100,7 +100,7 @@ export const PublicNavbar = () => {
             </Link>
             <Link 
               to="/register"
-              className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 hover:from-primary-700 hover:via-purple-700 hover:to-accent-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               <UserPlus className="w-4 h-4" />
               <span>S'inscrire</span>
@@ -155,7 +155,7 @@ export const PublicNavbar = () => {
               <Link to="/register" className="block w-full text-center px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-full font-semibold shadow-lg">
                 S'inscrire
               </Link>
-              <Link to="/create-entreprise" className="block w-full text-center px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full font-semibold shadow-lg flex items-center justify-center space-x-2">
+              <Link to="/create-entreprise" className="w-full px-5 py-3 bg-gradient-to-r from-warm-500 to-warm-600 text-white rounded-full font-semibold shadow-lg flex items-center justify-center space-x-2">
                 <Briefcase className="w-4 h-4" />
                 <span>Creer mon entreprise</span>
               </Link>

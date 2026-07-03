@@ -100,16 +100,16 @@ export const mockAnalyticsData = {
     { mois: 'Jun', effectif: 148, recrutements: 10, depart: 3 }
   ],
   turnoverReasons: [
-    { name: 'Meilleure opportunite', value: 45, color: '#ef4444' },
-    { name: 'Salaire', value: 25, color: '#f59e0b' },
-    { name: 'Management', value: 15, color: '#8b5cf6' },
-    { name: 'Autre', value: 15, color: '#10b981' }
+    { name: 'Meilleure opportunite', value: 45, color: '#3b82f6' },
+    { name: 'Salaire', value: 25, color: '#06b6d4' },
+    { name: 'Management', value: 15, color: '#f59e0b' },
+    { name: 'Autre', value: 15, color: '#64748b' }
   ],
   repartitionContrats: [
-    { name: 'CDI', value: 75, color: '#10b981' },
-    { name: 'CDD', value: 15, color: '#f59e0b' },
-    { name: 'Stage', value: 7, color: '#3b82f6' },
-    { name: 'Freelance', value: 3, color: '#8b5cf6' }
+    { name: 'CDI', value: 75, color: '#3b82f6' },
+    { name: 'CDD', value: 15, color: '#06b6d4' },
+    { name: 'Stage', value: 7, color: '#f59e0b' },
+    { name: 'Freelance', value: 3, color: '#64748b' }
   ],
   kpis: [
     { label: 'Taux de turnover', value: '8.5%', change: '-2.1%', trend: 'down', icon: 'TrendingDown' },

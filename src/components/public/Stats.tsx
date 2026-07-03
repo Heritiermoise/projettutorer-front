@@ -6,14 +6,14 @@ export const Stats = () => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const stats = [
-    { icon: Users, value: "10,000+", label: "Utilisateurs actifs", color: "from-primary-500 to-indigo-600" },
-    { icon: Building2, value: "500+", label: "Entreprises", color: "from-accent-500 to-teal-600" },
-    { icon: TrendingUp, value: "99%", label: "Satisfaction client", color: "from-emerald-500 to-green-600" },
-    { icon: Award, value: "24/7", label: "Support technique", color: "from-amber-500 to-orange-500" }
+    { icon: Users, value: "10,000+", label: "Utilisateurs actifs", color: "from-primary-500 to-primary-700" },
+    { icon: Building2, value: "500+", label: "Entreprises", color: "from-accent-500 to-accent-700" },
+    { icon: TrendingUp, value: "99%", label: "Satisfaction client", color: "from-warm-400 to-warm-600" },
+    { icon: Award, value: "24/7", label: "Support technique", color: "from-slate-500 to-slate-700" }
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900 via-primary-900 to-slate-900 relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-br from-slate-950 via-primary-950 to-slate-900 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-500/20 rounded-full blur-3xl"></div>
