@@ -104,7 +104,7 @@ export const EmployeNotificationsPage = () => {
                 { id: 'drafts', label: 'Brouillons', count: 1, icon: Paperclip },
                 { id: 'templates', label: 'Modeles', count: 2, icon: MessageSquare },
               ].map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 flex items-center justify-center space-x-1 py-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-secondary-600 border-b-2 border-secondary-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)} className={`flex-1 flex items-center justify-center space-x-1 py-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-secondary-600 border-b-2 border-secondary-600' : 'text-slate-600 dark:text-slate-400'}`}>
                   <tab.icon className="w-4 h-4" /><span>{tab.label}</span>
                   {tab.count > 0 && <span className="ml-1 px-1.5 py-0.5 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded-full text-xs">{tab.count}</span>}
                 </button>

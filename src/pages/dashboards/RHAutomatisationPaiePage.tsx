@@ -79,7 +79,7 @@ export const RHAutomatisationPaiePage = () => {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
                 className={`flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold whitespace-nowrap transition-colors ${
                   activeTab === tab.id
                     ? 'text-primary-600 border-b-2 border-primary-600'
@@ -156,7 +156,7 @@ export const RHAutomatisationPaiePage = () => {
                   <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par methode</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
-                      <Pie data={methodeData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+                      <Pie data={methodeData} cx="50%" cy="50%" innerRadius={50} outerRadius={90} paddingAngle={5} dataKey="value" label={({ name, percent = 0 }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
                         {methodeData.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
                       </Pie>
                       <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />

@@ -60,7 +60,7 @@ export const RHContratsPage = () => {
         {[
           { label: 'Total contrats', value: stats.total, color: 'from-primary-500 to-purple-600', icon: FileText },
           { label: 'Contrats actifs', value: stats.actifs, color: 'from-green-500 to-emerald-600', icon: FileText },
-          { label: 'CDI', value: stats.cdi, color: 'from-blue-500 to-blue-600', icon: FileText },
+          { label: 'CDI', value: stats.cd, color: 'from-blue-500 to-blue-600', icon: FileText },
           { label: 'CDD', value: stats.cdd, color: 'from-amber-500 to-orange-600', icon: FileText },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Clock, Calendar, CheckCircle2, XCircle, AlertCircle, Plus, Eye, Filter, Download } from 'lucide-react'
-import { mockTimesheets, Timesheet } from '../../data/phase7Data'
+import { mockTimesheets } from '../../data/phase7Data'
+import type { Timesheet } from '../../data/phase7Data'
 
 export const DirecteurTimesheetPage = () => {
   const [timesheets] = useState<Timesheet[]>(mockTimesheets)

@@ -104,7 +104,7 @@ export const RHNotificationsPage = () => {
                 { id: 'drafts', label: 'Brouillons', count: 1, icon: Paperclip },
                 { id: 'templates', label: 'Modeles', count: 2, icon: MessageSquare },
               ].map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 flex items-center justify-center space-x-1 py-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-600 dark:text-slate-400'}`}>
+                <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)} className={`flex-1 flex items-center justify-center space-x-1 py-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-600 dark:text-slate-400'}`}>
                   <tab.icon className="w-4 h-4" /><span>{tab.label}</span>
                   {tab.count > 0 && <span className="ml-1 px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-xs">{tab.count}</span>}
                 </button>

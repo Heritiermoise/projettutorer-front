@@ -98,7 +98,7 @@ export const RHPresencesPage = () => {
           <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={presenceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+              <Pie data={presenceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent = 0 }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
                 {presenceData.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />

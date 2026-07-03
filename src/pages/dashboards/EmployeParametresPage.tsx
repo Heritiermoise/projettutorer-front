@@ -39,7 +39,7 @@ export const EmployeParametresPage = () => {
         <div className="border-b border-slate-200 dark:border-slate-700">
           <div className="flex overflow-x-auto">
             {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-secondary-600 border-b-2 border-secondary-600' : 'text-slate-600 dark:text-slate-400 hover:text-secondary-600'}`}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as typeof activeTab)} className={`flex items-center space-x-2 px-4 sm:px-6 py-4 font-semibold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-secondary-600 border-b-2 border-secondary-600' : 'text-slate-600 dark:text-slate-400 hover:text-secondary-600'}`}>
                 <tab.icon className="w-4 h-4" /><span>{tab.label}</span>
               </button>
             ))}
