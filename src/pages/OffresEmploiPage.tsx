@@ -2,12 +2,34 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Briefcase, Search, MapPin, DollarSign, Calendar, Users, Building2, Clock, Eye } from 'lucide-react'
 import { mockOffresEmploi, mockEntreprises } from '../data/mockData'
+import { offreAPI, entrepriseAPI } from '../services/api'
+import { useEffect } from 'react'
 
 export const OffresEmploiPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
+  const [offres, setOffres] = useState(mockOffresEmploi)
+  const [entreprises, setEntreprises] = useState(mockEntreprises)
 
-  const filteredOffres = mockOffresEmploi.filter(offre => {
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [offresResponse, entreprisesResponse] = await Promise.all([
+          offreAPI.getPubliees(),
+          entrepriseAPI.getAll(),
+        ])
+        setOffres(offresResponse.offres || offresResponse || mockOffresEmploi)
+        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || mockEntreprises)
+      } catch {
+        setOffres(mockOffresEmploi)
+        setEntreprises(mockEntreprises)
+      }
+    }
+
+    load()
+  }, [])
+
+  const filteredOffres = offres.filter(offre => {
     const matchesSearch = offre.titre.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          offre.description.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesSearch
@@ -45,7 +67,7 @@ export const OffresEmploiPage = () => {
             Trouvez votre emploi de reve
           </h1>
           <p className="text-lg sm:text-xl text-white/90 mb-8">
-            {mockOffresEmploi.length} offres d'emploi disponibles
+            {offres.length} offres d'emploi disponibles
           </p>
           <div className="max-w-3xl mx-auto">
             <div className="relative">
@@ -78,7 +100,7 @@ export const OffresEmploiPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredOffres.map(offre => {
-              const entreprise = mockEntreprises.find(e => e.id_entreprise === offre.id_entreprise)
+              const entreprise = entreprises.find(e => e.id_entreprise === offre.id_entreprise)
               return (
                 <div key={offre.id_offre} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
                   <div className="flex items-start justify-between mb-4">

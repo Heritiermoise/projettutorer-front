@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { FileText, Plus, Search, Eye, Edit, Trash2, BarChart3, Clock, Users, CheckCircle2 } from 'lucide-react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts'
-import { mockSondages, Sondage } from '../../data/phase7Data'
+import { mockSondages } from '../../data/phase7Data'
+import type { Sondage } from '../../data/phase7Data'
 
 export const DirecteurSondagesPage = () => {
   const [sondages] = useState<Sondage[]>(mockSondages)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Users, Calendar, Award, Plus, Eye, Clock, CheckCircle2, PauseCircle } from 'lucide-react'
-import { mockBinomesMentorat, BinomeMentorat } from '../../data/phase7Data'
+import { mockBinomesMentorat } from '../../data/phase7Data'
+import type { BinomeMentorat } from '../../data/phase7Data'
 
 export const DirecteurMentoratPage = () => {
   const [binomes] = useState<BinomeMentorat[]>(mockBinomesMentorat)

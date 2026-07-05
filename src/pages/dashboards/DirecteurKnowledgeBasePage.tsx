@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BookOpen, Search, Plus, Eye, Edit, ThumbsUp, MessageCircle, Calendar, Tag } from 'lucide-react'
-import { mockArticlesKB, mockCategoriesKB, ArticleKnowledgeBase } from '../../data/phase7Data'
+import { mockArticlesKB, mockCategoriesKB } from '../../data/phase7Data'
+import type { ArticleKnowledgeBase } from '../../data/phase7Data'
 
 export const DirecteurKnowledgeBasePage = () => {
   const [articles] = useState<ArticleKnowledgeBase[]>(mockArticlesKB)

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText } from 'lucide-react'
+import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
 import { mockOffresEmploi, mockEntreprises } from '../data/mockData'
+import { useEffect } from 'react'
+import { offreAPI, entrepriseAPI, candidatureAPI } from '../services/api'
 
 export const OffreDetailPage = () => {
   const { id } = useParams()
@@ -17,8 +19,28 @@ export const OffreDetailPage = () => {
     lettre_motivation: '',
   })
 
-  const offre = mockOffresEmploi.find(o => o.id_offre === parseInt(id || '0'))
-  const entreprise = mockEntreprises.find(e => e.id_entreprise === offre?.id_entreprise)
+  const [offre, setOffre] = useState<any>(null)
+  const [entreprise, setEntreprise] = useState<any>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const offreResponse = await offreAPI.getById(parseInt(id || '0'))
+        const currentOffre = offreResponse.offre || offreResponse
+        setOffre(currentOffre)
+
+        const entrepriseResponse = await entrepriseAPI.getById(currentOffre.id_entreprise)
+        setEntreprise(entrepriseResponse.entreprise || entrepriseResponse)
+      } catch {
+        const fallbackOffre = mockOffresEmploi.find(o => o.id_offre === parseInt(id || '0'))
+        const fallbackEntreprise = mockEntreprises.find(e => e.id_entreprise === fallbackOffre?.id_entreprise)
+        setOffre(fallbackOffre || null)
+        setEntreprise(fallbackEntreprise || null)
+      }
+    }
+
+    load()
+  }, [id])
 
   if (!offre || !entreprise) {
     return (
@@ -32,11 +54,16 @@ export const OffreDetailPage = () => {
     )
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Votre postulation a été envoyée avec succès ! Vous serez contacté pour un entretien.')
-    setShowPostulationModal(false)
-    navigate('/offres')
+    try {
+      await candidatureAPI.updateStatut(Number(id), 'Soumise')
+      alert('Votre postulation a été envoyée avec succès ! Vous serez contacté pour un entretien.')
+      setShowPostulationModal(false)
+      navigate('/offres')
+    } catch {
+      alert('Impossible de soumettre la candidature pour le moment.')
+    }
   }
 
   return (

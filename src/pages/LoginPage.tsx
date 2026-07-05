@@ -2,6 +2,7 @@ import { PublicNavbar } from '../components/PublicNavbar'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Building2, Mail, Lock, Eye, EyeOff, Users, LogIn } from 'lucide-react'
+import { authService } from '../services/authService'
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -16,8 +17,14 @@ export const LoginPage = () => {
     { email: 'employe@demo.com', password: 'password', role: 'employe', name: 'Employé' },
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const result = await authService.login(email, password)
+    if (result.success && result.user) {
+      navigate(`/dashboard/${result.user.role}`)
+      return
+    }
+
     const account = testAccounts.find(a => a.email === email && a.password === password)
     if (account) {
       localStorage.setItem('user', JSON.stringify({ 

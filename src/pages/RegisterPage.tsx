@@ -2,6 +2,7 @@ import { PublicNavbar } from '../components/PublicNavbar'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { authService } from '../services/authService'
 
 export const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -18,7 +19,7 @@ export const RegisterPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -32,9 +33,8 @@ export const RegisterPage = () => {
       return
     }
 
-    if (formData.role === 'directeur') {
-      // Redirection vers creation entreprise
-      localStorage.setItem('temp_user', JSON.stringify({
+    try {
+      const result = await authService.register({
         nom: formData.nom,
         post_nom: formData.post_nom,
         prenom: formData.prenom,
@@ -42,34 +42,28 @@ export const RegisterPage = () => {
         telephone: formData.telephone,
         adresse: formData.adresse,
         password: formData.password,
-      }))
-      navigate('/create-entreprise')
-    } else {
-      // Utilisateur : inscription avec statut en_attente
-      const newUser = {
-        id: Date.now(),
-        nom: formData.nom,
-        post_nom: formData.post_nom,
-        prenom: formData.prenom,
-        name: `${formData.prenom} ${formData.nom}`,
-        email: formData.email,
-        telephone: formData.telephone,
-        adresse: formData.adresse,
-        role: 'utilisateur',
-        statut: 'en_attente',
-        password: formData.password,
-        created_at: new Date().toISOString().split('T')[0],
+        password_confirmation: formData.password_confirmation,
+        role: formData.role,
+        statut: 'actif',
+      })
+
+      if (!result.success) {
+        setError(result.message || 'Erreur lors de l\'inscription')
+        return
       }
-      
-      const users = JSON.parse(localStorage.getItem('mock_users') || '[]')
-      users.push(newUser)
-      localStorage.setItem('mock_users', JSON.stringify(users))
-      
-      setSuccess('Inscription reussie ! Votre compte est en attente de validation par l\'administrateur. Vous recevrez un email avec votre mot de passe une fois valide.')
-      
+
+      if (formData.role === 'directeur') {
+        localStorage.setItem('temp_user', JSON.stringify(result.user))
+        navigate('/create-entreprise')
+        return
+      }
+
+      setSuccess('Inscription reussie ! Vous pouvez maintenant vous connecter.')
       setTimeout(() => {
         navigate('/login')
-      }, 4000)
+      }, 1500)
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de l\'inscription')
     }
   }
 

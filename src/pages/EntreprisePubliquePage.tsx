@@ -2,12 +2,34 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Building2, MapPin, Mail, Phone, Calendar, Briefcase, DollarSign, Users, ArrowLeft, Eye, Clock, Globe, Award, CheckCircle2 } from 'lucide-react'
 import { mockEntreprises, mockOffresEmploi } from '../data/mockData'
+import { useEffect } from 'react'
+import { entrepriseAPI, offreAPI } from '../services/api'
 
 export const EntreprisePubliquePage = () => {
   const { code } = useParams()
   const [filterOffre, setFilterOffre] = useState('all')
+  const [entreprises, setEntreprises] = useState(mockEntreprises)
+  const [offres, setOffres] = useState(mockOffresEmploi)
 
-  const entreprise = mockEntreprises.find(e => 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [entreprisesResponse, offresResponse] = await Promise.all([
+          entrepriseAPI.getAll(),
+          offreAPI.getPubliees(),
+        ])
+        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || mockEntreprises)
+        setOffres(offresResponse.offres || offresResponse || mockOffresEmploi)
+      } catch {
+        setEntreprises(mockEntreprises)
+        setOffres(mockOffresEmploi)
+      }
+    }
+
+    load()
+  }, [])
+
+  const entreprise = entreprises.find(e => 
     e.code_entreprise === code || e.id_entreprise.toString() === code
   )
 
@@ -26,7 +48,7 @@ export const EntreprisePubliquePage = () => {
     )
   }
 
-  const offresEntreprise = mockOffresEmploi.filter(o => o.id_entreprise === entreprise.id_entreprise)
+  const offresEntreprise = offres.filter(o => o.id_entreprise === entreprise.id_entreprise)
   const filteredOffres = filterOffre === 'all' 
     ? offresEntreprise 
     : offresEntreprise.filter(o => o.statut === filterOffre)

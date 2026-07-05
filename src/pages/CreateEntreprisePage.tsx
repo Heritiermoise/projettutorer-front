@@ -2,6 +2,7 @@ import { PublicNavbar } from '../components/PublicNavbar'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Building2, Mail, Lock, Eye, EyeOff, Phone, MapPin, Crown, Upload, X, CheckCircle2 } from 'lucide-react'
+import { entrepriseAPI } from '../services/api'
 
 export const CreateEntreprisePage = () => {
   const [formData, setFormData] = useState({
@@ -55,55 +56,29 @@ export const CreateEntreprisePage = () => {
 
     setLoading(true)
 
-    // Recuperer les infos du user temporaire
     const tempUser = JSON.parse(localStorage.getItem('temp_user') || '{}')
-    
-    // Creer l'entreprise et l'utilisateur directeur
-    const newEntreprise = {
-      id_entreprise: Date.now(),
-      nom: formData.nom,
-      nom_commercial: formData.nom_commercial || formData.nom,
-      email: formData.email,
-      telephone: formData.telephone,
-      adresse: formData.adresse,
-      description: formData.description,
-      code_entreprise: formData.nom.substring(0, 3).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase(),
-      statut: 'Actif',
-      created_at: new Date().toISOString().split('T')[0],
-    }
 
-    const newDirecteur = {
-      id: Date.now(),
-      nom: tempUser.nom || 'Directeur',
-      post_nom: tempUser.post_nom || '',
-      prenom: tempUser.prenom || '',
-      name: `${tempUser.prenom || ''} ${tempUser.nom || ''}`,
-      email: tempUser.email || formData.email,
-      telephone: tempUser.telephone || formData.telephone,
-      adresse: tempUser.adresse || formData.adresse,
-      role: 'directeur',
-      statut: 'actif',
-      id_entreprise: newEntreprise.id_entreprise,
-      created_at: new Date().toISOString().split('T')[0],
-    }
+    try {
+      const response = await entrepriseAPI.create({
+        nom: formData.nom,
+        nom_commercial: formData.nom_commercial || formData.nom,
+        email: formData.email,
+        telephone: formData.telephone,
+        adresse: formData.adresse,
+        description: formData.description,
+      })
 
-    // Sauvegarder
-    const entreprises = JSON.parse(localStorage.getItem('mock_entreprises') || '[]')
-    entreprises.push(newEntreprise)
-    localStorage.setItem('mock_entreprises', JSON.stringify(entreprises))
+      const user = tempUser && Object.keys(tempUser).length > 0 ? tempUser : JSON.parse(localStorage.getItem('user') || '{}')
+      const linkedUser = { ...user, id_entreprise: response.entreprise?.id_entreprise ?? response.id_entreprise }
+      localStorage.setItem('user', JSON.stringify(linkedUser))
+      localStorage.removeItem('temp_user')
 
-    const users = JSON.parse(localStorage.getItem('mock_users') || '[]')
-    users.push(newDirecteur)
-    localStorage.setItem('mock_users', JSON.stringify(users))
-
-    // Connecter automatiquement le directeur
-    localStorage.setItem('user', JSON.stringify(newDirecteur))
-
-    setTimeout(() => {
       setLoading(false)
-      // REDIRECTION DIRECTE VERS DASHBOARD DIRECTEUR
       navigate('/dashboard/directeur')
-    }, 1500)
+    } catch (err: any) {
+      setLoading(false)
+      setError(err.message || 'Erreur lors de la creation de l\'entreprise')
+    }
   }
 
   return (
