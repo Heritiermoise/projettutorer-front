@@ -20,7 +20,7 @@ export const LoginPage = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      navigate('/app/dashboard');
+      navigate('/dashboard');
     } else {
       setError(result.message || 'Erreur de connexion');
     }

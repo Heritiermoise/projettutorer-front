@@ -116,10 +116,10 @@ export const AdminNotificationsPage = () => {
             
             <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
               {[
-                { id: 'inbox', label: 'Recus', count: messages.filter(m => !m.read).length, icon: Inbox },
-                { id: 'sent', label: 'Envoyes', count: sentMessages.length, icon: Send },
-                { id: 'drafts', label: 'Brouillons', count: 1, icon: Paperclip },
-                { id: 'templates', label: 'Modeles', count: 3, icon: MessageSquare },
+                  { id: 'inbox' as const, label: 'Recus', count: messages.filter(m => !m.read).length, icon: Inbox },
+                  { id: 'sent' as const, label: 'Envoyes', count: sentMessages.length, icon: Send },
+                  { id: 'drafts' as const, label: 'Brouillons', count: 1, icon: Paperclip },
+                  { id: 'templates' as const, label: 'Modeles', count: 3, icon: MessageSquare },
               ].map(tab => (
                 <button
                   key={tab.id}

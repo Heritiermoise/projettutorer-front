@@ -27,7 +27,8 @@ export const DirecteurJoursFeriesPage = () => {
     e.preventDefault()
     const newJour: JourFerie = {
       id: Date.now(),
-      ...formData
+      ...formData,
+      type: formData.type as JourFerie['type']
     }
     setJoursFeries([...joursFeries, newJour])
     setShowCreateModal(false)
@@ -48,6 +49,12 @@ export const DirecteurJoursFeriesPage = () => {
     if (type === 'Entreprise') return <Building2 className="w-4 h-4" />
     return <Globe className="w-4 h-4" />
   }
+
+  const tabs = [
+    { id: 'all' as const, label: 'Tous' },
+    { id: 'National' as const, label: 'Nationaux' },
+    { id: 'Entreprise' as const, label: 'Entreprise' },
+  ]
 
   return (
     <div className="space-y-6">

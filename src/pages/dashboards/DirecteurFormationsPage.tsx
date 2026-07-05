@@ -53,6 +53,8 @@ export const DirecteurFormationsPage = () => {
     const newFormation: Formation = {
       id: Date.now(),
       ...formData,
+      type: formData.type as Formation['type'],
+      categorie: formData.categorie as Formation['categorie'],
       duree_heures: parseInt(formData.duree_heures),
       cout: parseInt(formData.cout),
       places_total: parseInt(formData.places_total),
@@ -85,6 +87,12 @@ export const DirecteurFormationsPage = () => {
     if (type === 'En_ligne') return '💻'
     return '🔄'
   }
+
+  const tabs = [
+    { id: 'catalogue' as const, label: 'Catalogue' },
+    { id: 'inscriptions' as const, label: 'Inscriptions' },
+    { id: 'stats' as const, label: 'Statistiques' },
+  ]
 
   return (
     <div className="space-y-6">
@@ -259,7 +267,7 @@ export const DirecteurFormationsPage = () => {
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par categorie</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
-                      <Pie data={categorieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      <Pie data={categorieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
                         {categorieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { 
-  Shield, ShieldAlert, AlertTriangle, CheckCircle2, XCircle,
+  Shield, ShieldAlert, AlertTriangle, CheckCircle2, XCircle, MoreVertical, Mail,
   Eye, Search, Filter, Activity, Lock, Unlock, Ban, 
   Globe, Key, Fingerprint, WifiOff, Server, Clock
 } from 'lucide-react'
@@ -103,11 +103,11 @@ export const AdminSecurityPage = () => {
         <div className="border-b border-slate-200 dark:border-slate-700">
           <div className="flex overflow-x-auto">
             {[
-              { id: 'overview', label: 'Vue d\'ensemble', icon: Activity },
-              { id: 'logs', label: 'Journaux', icon: Clock },
-              { id: 'ips', label: 'IPs & Firewall', icon: WifiOff },
-              { id: '2fa', label: '2FA & Access', icon: Key },
-              { id: 'vulnerabilities', label: 'Vulnerabilites', icon: ShieldAlert },
+              { id: 'overview' as const, label: 'Vue d\'ensemble', icon: Activity },
+              { id: 'logs' as const, label: 'Journaux', icon: Clock },
+              { id: 'ips' as const, label: 'IPs & Firewall', icon: WifiOff },
+              { id: '2fa' as const, label: '2FA & Access', icon: Key },
+              { id: 'vulnerabilities' as const, label: 'Vulnerabilites', icon: ShieldAlert },
             ].map(tab => (
               <button
                 key={tab.id}

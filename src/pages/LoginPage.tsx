@@ -1,41 +1,46 @@
 import { PublicNavbar } from '../components/PublicNavbar'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Mail, Lock, Eye, EyeOff, Users, LogIn } from 'lucide-react'
+import { Building2, Mail, Lock, Eye, EyeOff, Users, LogIn, Loader2 } from 'lucide-react'
 import { authService } from '../services/authService'
+import { Toast } from '../components/ui/Toast'
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const navigate = useNavigate()
 
-  const testAccounts = [
+  const testAccounts = useMemo(() => [
     { email: 'admin@demo.com', password: 'password', role: 'admin', name: 'Administrateur' },
     { email: 'directeur@demo.com', password: 'password', role: 'directeur', name: 'Directeur' },
     { email: 'rh@demo.com', password: 'password', role: 'rh', name: 'RH Manager' },
     { email: 'employe@demo.com', password: 'password', role: 'employe', name: 'Employé' },
-  ]
+  ], [])
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('registered') === '1') {
+      setToast({ type: 'success', message: 'Compte créé avec succès. Vous pouvez vous connecter.' })
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+    setToast({ type: 'info', message: 'Connexion en cours...' })
+
     const result = await authService.login(email, password)
     if (result.success && result.user) {
-      navigate(`/dashboard/${result.user.role}`)
-      return
+      setToast({ type: 'success', message: 'Connexion réussie. Redirection en cours...' })
+      const dashboardRole = result.user.role
+      setTimeout(() => navigate(`/dashboard/${dashboardRole}`), 700)
+    } else {
+      setToast({ type: 'error', message: result.message || 'Email ou mot de passe incorrect' })
     }
 
-    const account = testAccounts.find(a => a.email === email && a.password === password)
-    if (account) {
-      localStorage.setItem('user', JSON.stringify({ 
-        role: account.role, 
-        name: account.name,
-        email: account.email 
-      }))
-      navigate(`/dashboard/${account.role}`)
-    } else {
-      alert('Email ou mot de passe incorrect')
-    }
+    setLoading(false)
   }
 
   const fillCredentials = (acc: typeof testAccounts[0]) => {
@@ -55,6 +60,8 @@ export const LoginPage = () => {
               </div>
               <h1 className="text-2xl font-bold text-slate-800 mb-2">Connexion RH Pro</h1>
             </div>
+
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -96,10 +103,11 @@ export const LoginPage = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center space-x-2"
+                disabled={loading}
+                className="w-full py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <LogIn className="w-5 h-5" />
-                <span>Se connecter</span>
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
+                <span>{loading ? 'Connexion en cours...' : 'Se connecter'}</span>
               </button>
             </form>
 

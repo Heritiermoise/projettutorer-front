@@ -1,14 +1,30 @@
 import { useState } from 'react'
 import { Briefcase, Plus, Search, Edit, Trash2, Users, CheckCircle2, XCircle, X, Building2, DollarSign } from 'lucide-react'
 
+type Poste = {
+  id: number
+  titre: string
+  type: 'CDI' | 'CDD' | 'Stage' | 'Freelance'
+  niveau: 'Junior' | 'Mid' | 'Senior' | 'Manager'
+  departement: string
+  nombre_postes: number
+  postes_occupes: number
+  salaire_min: number
+  salaire_max: number
+  description: string
+  competences: string
+  statut: 'Actif' | 'Inactif'
+  date_creation: string
+}
+
 export const DirecteurPostesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [selectedPoste, setSelectedPoste] = useState<any>(null)
+  const [selectedPoste, setSelectedPoste] = useState<Poste | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
 
-  const [postes, setPostes] = useState([
+  const [postes, setPostes] = useState<Poste[]>([
     { id: 1, titre: 'Developpeur Full Stack', type: 'CDI', niveau: 'Senior', departement: 'Informatique', nombre_postes: 2, postes_occupes: 1, salaire_min: 1500, salaire_max: 2500, description: 'Developpement d\'applications web', competences: 'React, Node.js, PostgreSQL', statut: 'Actif', date_creation: '2026-01-15' },
     { id: 2, titre: 'Responsable RH', type: 'CDI', niveau: 'Manager', departement: 'Ressources Humaines', nombre_postes: 1, postes_occupes: 1, salaire_min: 2000, salaire_max: 3000, description: 'Gestion du personnel', competences: 'Management, Droit du travail', statut: 'Actif', date_creation: '2026-01-20' },
     { id: 3, titre: 'Comptable', type: 'CDI', niveau: 'Junior', departement: 'Finance', nombre_postes: 1, postes_occupes: 0, salaire_min: 1000, salaire_max: 1500, description: 'Gestion comptable', competences: 'Excel, Sage', statut: 'Actif', date_creation: '2026-02-01' },
@@ -16,7 +32,7 @@ export const DirecteurPostesPage = () => {
   ])
 
   const [formData, setFormData] = useState({
-    titre: '', type: 'CDI', niveau: 'Junior', departement: '', nombre_postes: 1,
+    titre: '', type: 'CDI', niveau: 'Junior', departement: '', nombre_postes: '1',
     description: '', competences: '', salaire_min: '', salaire_max: '',
   })
 
@@ -36,19 +52,21 @@ export const DirecteurPostesPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const newPoste = {
+    const newPoste: Poste = {
       id: Date.now(),
       ...formData,
+      type: formData.type as Poste['type'],
+      niveau: formData.niveau as Poste['niveau'],
       nombre_postes: parseInt(formData.nombre_postes),
-      salaire_min: parseInt(formData.salaire_min),
-      salaire_max: parseInt(formData.salaire_max),
+      salaire_min: formData.salaire_min ? parseInt(formData.salaire_min) : 0,
+      salaire_max: formData.salaire_max ? parseInt(formData.salaire_max) : 0,
       postes_occupes: 0,
       statut: 'Actif',
       date_creation: new Date().toISOString().split('T')[0],
     }
     setPostes([...postes, newPoste])
     setShowCreateModal(false)
-    setFormData({ titre: '', type: 'CDI', niveau: 'Junior', departement: '', nombre_postes: 1, description: '', competences: '', salaire_min: '', salaire_max: '' })
+    setFormData({ titre: '', type: 'CDI', niveau: 'Junior', departement: '', nombre_postes: '1', description: '', competences: '', salaire_min: '', salaire_max: '' })
     alert('Poste cree avec succes !')
   }
 
@@ -229,7 +247,7 @@ export const DirecteurPostesPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type</label>
-                  <select value={selectedPoste.type} onChange={(e) => setSelectedPoste({...selectedPoste, type: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                  <select value={selectedPoste.type} onChange={(e) => setSelectedPoste(selectedPoste ? { ...selectedPoste, type: e.target.value as Poste['type'] } : selectedPoste)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                     <option value="CDI">CDI</option>
                     <option value="CDD">CDD</option>
                     <option value="Stage">Stage</option>
@@ -237,7 +255,7 @@ export const DirecteurPostesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Niveau</label>
-                  <select value={selectedPoste.niveau} onChange={(e) => setSelectedPoste({...selectedPoste, niveau: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                  <select value={selectedPoste.niveau} onChange={(e) => setSelectedPoste(selectedPoste ? { ...selectedPoste, niveau: e.target.value as Poste['niveau'] } : selectedPoste)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                     <option value="Junior">Junior</option>
                     <option value="Mid">Mid-Level</option>
                     <option value="Senior">Senior</option>
@@ -247,7 +265,7 @@ export const DirecteurPostesPage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Statut</label>
-                <select value={selectedPoste.statut} onChange={(e) => setSelectedPoste({...selectedPoste, statut: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                <select value={selectedPoste.statut} onChange={(e) => setSelectedPoste(selectedPoste ? { ...selectedPoste, statut: e.target.value as Poste['statut'] } : selectedPoste)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                   <option value="Actif">Actif</option>
                   <option value="Inactif">Inactif</option>
                 </select>

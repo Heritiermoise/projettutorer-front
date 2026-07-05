@@ -12,7 +12,7 @@ export const DirecteurTicketsPage = () => {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newMessage, setNewMessage] = useState('')
-  const [formData, setFormData] = useState({ titre: '', description: '', categorie: 'Administratif', priorite: 'Moyenne' })
+  const [formData, setFormData] = useState<{ titre: string; description: string; categorie: TicketSupport['categorie']; priorite: TicketSupport['priorite'] }>({ titre: '', description: '', categorie: 'Administratif', priorite: 'Moyenne' })
 
   const filteredTickets = tickets.filter(t => {
     const matchesStatut = filterStatut === 'all' || t.statut === filterStatut
@@ -291,7 +291,7 @@ export const DirecteurTicketsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Categorie</label>
-                  <select value={formData.categorie} onChange={(e) => setFormData({...formData, categorie: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                  <select value={formData.categorie} onChange={(e) => setFormData({...formData, categorie: e.target.value as TicketSupport['categorie']})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                     <option value="Administratif">Administratif</option>
                     <option value="Technique">Technique</option>
                     <option value="Paie">Paie</option>
@@ -302,7 +302,7 @@ export const DirecteurTicketsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Priorite</label>
-                  <select value={formData.priorite} onChange={(e) => setFormData({...formData, priorite: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                  <select value={formData.priorite} onChange={(e) => setFormData({...formData, priorite: e.target.value as TicketSupport['priorite']})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                     <option value="Basse">Basse</option>
                     <option value="Moyenne">Moyenne</option>
                     <option value="Haute">Haute</option>

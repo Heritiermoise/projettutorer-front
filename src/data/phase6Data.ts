@@ -96,7 +96,7 @@ export const mockPointages: Pointage[] = [
   { id: 1, employe_id: 'EMP-001', employe_nom: 'Moise Vita', date: '2026-06-25', heure_arrivee: '08:00', heure_depart: '17:00', latitude: -11.6609, longitude: 27.4794, adresse: 'Lubumbashi, RDC', statut: 'Present', heures_travaillees: 9 },
   { id: 2, employe_id: 'EMP-002', employe_nom: 'Grace Mbuyi', date: '2026-06-25', heure_arrivee: '08:15', heure_depart: '17:00', statut: 'Retard', heures_travaillees: 8.75 },
   { id: 3, employe_id: 'EMP-003', employe_nom: 'David Kasongo', date: '2026-06-25', heure_arrivee: '08:00', heure_depart: '18:30', latitude: -11.6609, longitude: 27.4794, adresse: 'Lubumbashi, RDC', statut: 'Present', heures_travaillees: 10.5 },
-  { id: 4, employe_id: 'EMP-004', employe_nom: 'Pierre Kabongo', date: '2026-06-25', statut: 'Conge', heures_travaillees: 0 },
+  { id: 4, employe_id: 'EMP-004', employe_nom: 'Pierre Kabongo', date: '2026-06-25', heure_arrivee: '', heure_depart: '', statut: 'Conge', heures_travaillees: 0 },
   { id: 5, employe_id: 'EMP-005', employe_nom: 'Marie Tshimanga', date: '2026-06-24', heure_arrivee: '08:00', heure_depart: '17:00', statut: 'Present', heures_travaillees: 9 }
 ]
 

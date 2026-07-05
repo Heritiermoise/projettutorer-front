@@ -35,6 +35,14 @@ export const AdminSystemPage = () => {
     { name: 'Views', value: 35, color: '#f59e0b' }, { name: 'Data', value: 25, color: '#ef4444' },
   ]
 
+  const tabs = [
+    { id: 'overview' as const, label: 'Ressources', icon: Activity },
+    { id: 'database' as const, label: 'Base de donnees', icon: Database },
+    { id: 'cache' as const, label: 'Cache', icon: Zap },
+    { id: 'jobs' as const, label: 'Taches', icon: Clock },
+    { id: 'backups' as const, label: 'Sauvegardes', icon: RotateCcw },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -91,13 +99,7 @@ export const AdminSystemPage = () => {
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
         <div className="border-b border-slate-200 dark:border-slate-700">
           <div className="flex overflow-x-auto">
-            {[
-              { id: 'overview', label: 'Ressources', icon: Activity },
-              { id: 'database', label: 'Base de donnees', icon: Database },
-              { id: 'cache', label: 'Cache', icon: Zap },
-              { id: 'jobs', label: 'Taches', icon: Clock },
-              { id: 'backups', label: 'Sauvegardes', icon: RotateCcw },
-            ].map(tab => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -177,7 +179,7 @@ export const AdminSystemPage = () => {
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition du cache</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={cacheData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+                    <Pie data={cacheData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                       {cacheData.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
                     </Pie>
                     <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />

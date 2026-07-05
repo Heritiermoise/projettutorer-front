@@ -137,7 +137,7 @@ export const AdminUsersPage = () => {
           <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition des roles</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={roleDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+              <Pie data={roleDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                 {roleDistribution.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />

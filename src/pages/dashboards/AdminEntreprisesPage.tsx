@@ -3,7 +3,7 @@ import {
   Building2, Search, Filter, Eye, Trash2, Edit, Download, 
   MapPin, Mail, Phone, Calendar, Users, TrendingUp, 
   CheckCircle2, XCircle, Clock, MoreVertical, BarChart3,
-  Globe, Shield, Star, ArrowUpDown, Grid, List
+  Globe, Shield, Star, ArrowUpDown, Grid, List, FileText
 } from 'lucide-react'
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -257,7 +257,7 @@ export const AdminEntreprisesPage = () => {
           <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par statut</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie data={statsData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+              <Pie data={statsData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                 {statsData.map((entry, index) => (
                   <Cell key={'cell-' + index} fill={entry.color} />
                 ))}

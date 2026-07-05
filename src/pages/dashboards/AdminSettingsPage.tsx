@@ -17,13 +17,13 @@ export const AdminSettingsPage = () => {
   }
 
   const tabs = [
-    { id: 'general', label: 'General', icon: Settings },
-    { id: 'appearance', label: 'Apparence', icon: Palette },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Securite', icon: Shield },
-    { id: 'email', label: 'Email & SMS', icon: Mail },
-    { id: 'integrations', label: 'Integrations', icon: Code },
-    { id: 'legal', label: 'Legal & RGPD', icon: Database },
+    { id: 'general' as const, label: 'General', icon: Settings },
+    { id: 'appearance' as const, label: 'Apparence', icon: Palette },
+    { id: 'notifications' as const, label: 'Notifications', icon: Bell },
+    { id: 'security' as const, label: 'Securite', icon: Shield },
+    { id: 'email' as const, label: 'Email & SMS', icon: Mail },
+    { id: 'integrations' as const, label: 'Integrations', icon: Code },
+    { id: 'legal' as const, label: 'Legal & RGPD', icon: Database },
   ]
 
   return (

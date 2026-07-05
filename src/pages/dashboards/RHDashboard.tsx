@@ -145,7 +145,7 @@ export const RHDashboard = () => {
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par service</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={mockStatsEvolution.repartitionServices} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent = 0 }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+                    <Pie data={mockStatsEvolution.repartitionServices} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                       {mockStatsEvolution.repartitionServices.map((entry, index) => (
                         <Cell key={'cell-' + index} fill={entry.color} />
                       ))}

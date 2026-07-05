@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Api, CheckCircle2, XCircle, Clock, Copy, Check, Search, Filter, BookOpen, Server, Shield, Users, Briefcase, DollarSign, Calendar, FileText, MessageSquare, Bell, Settings } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, Copy, Check, Search, Filter, BookOpen, Server, Shield, Users, Briefcase, DollarSign, Calendar, FileText, MessageSquare, Bell, Settings } from 'lucide-react'
 
 interface ApiEndpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
@@ -261,7 +261,7 @@ export const ApiDocumentationPage = () => {
           <div className="relative">
             <div className="flex items-center space-x-4 mb-4">
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30">
-                <Api className="w-8 h-8" />
+                <Server className="w-8 h-8" />
               </div>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold">Documentation API</h1>
@@ -358,7 +358,7 @@ export const ApiDocumentationPage = () => {
 
         {filteredEndpoints.length === 0 && (
           <div className="text-center py-12">
-            <Api className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+            <Server className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
             <p className="text-slate-500 dark:text-slate-400">Aucun endpoint trouvé</p>
           </div>
         )}

@@ -1,5 +1,5 @@
 // Service API principal
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 // Types
 export interface User {
@@ -89,6 +89,33 @@ export interface Contrat {
   id_entreprise: number;
 }
 
+export const testBackendConnection = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/user`, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message: `Backend inaccessible (${response.status})`,
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Connexion backend etablie avec succes',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Impossible de joindre le backend',
+    };
+  }
+};
+
 // Fonction de requête API générique
 export const apiRequest = async (
   endpoint: string,
@@ -96,11 +123,16 @@ export const apiRequest = async (
 ): Promise<any> => {
   const token = localStorage.getItem('auth_token');
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    ...options.headers,
   };
+
+  if (options.headers) {
+    new Headers(options.headers).forEach((value, key) => {
+      headers[key] = value;
+    });
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

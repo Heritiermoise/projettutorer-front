@@ -77,8 +77,8 @@ export const TestConnectionPage = () => {
             <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">URL du backend :</p>
               <code className="text-xs text-slate-600 dark:text-slate-400 break-all">
-                https://rhmanager-877l.onrender.com/Api/
-              </code>
+                  {import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}
+                </code>
             </div>
 
             <button

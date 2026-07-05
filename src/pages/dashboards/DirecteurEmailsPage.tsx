@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Mail, Search, CheckCircle2, XCircle, Star, Trash2, Eye, Clock, Calendar, Users, Briefcase, DollarSign, Filter, X, Send, Edit, Plus } from 'lucide-react'
-import { emailService, EmailNotification, EmailTemplate } from '../../services/emailNotificationService'
+import { emailService } from '../../services/emailNotificationService'
+import type { EmailNotification, EmailTemplate } from '../../services/emailNotificationService'
 
 export const DirecteurEmailsPage = () => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'templates' | 'stats'>('inbox')
@@ -108,9 +109,9 @@ export const DirecteurEmailsPage = () => {
         <div className="border-b border-slate-200 dark:border-slate-700">
           <div className="flex overflow-x-auto">
             {[
-              { id: 'inbox', label: 'Boite de reception', icon: Mail, count: notifications.length },
-              { id: 'templates', label: 'Modeles email', icon: Edit, count: templates.length },
-              { id: 'stats', label: 'Statistiques', icon: Star, count: null },
+              { id: 'inbox' as const, label: 'Boite de reception', icon: Mail, count: notifications.length },
+              { id: 'templates' as const, label: 'Modeles email', icon: Edit, count: templates.length },
+              { id: 'stats' as const, label: 'Statistiques', icon: Star, count: null },
             ].map(tab => (
               <button
                 key={tab.id}

@@ -10,7 +10,7 @@ export const DirecteurSignaturePage = () => {
   const [selectedDoc, setSelectedDoc] = useState<DocumentSignature | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [showSendModal, setShowSendModal] = useState(false)
-  const [formData, setFormData] = useState({ titre: '', type: 'Contrat', signataire: '', signataire_email: '' })
+  const [formData, setFormData] = useState<{ titre: string; type: DocumentSignature['type']; signataire: string; signataire_email: string }>({ titre: '', type: 'Contrat', signataire: '', signataire_email: '' })
 
   const filteredDocs = documents.filter(d => {
     const matchesStatut = filterStatut === 'all' || d.statut === filterStatut
@@ -278,7 +278,7 @@ export const DirecteurSignaturePage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type</label>
-                <select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                <select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value as DocumentSignature['type']})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
                   <option value="Contrat">Contrat</option>
                   <option value="Avenant">Avenant</option>
                   <option value="Attestation">Attestation</option>

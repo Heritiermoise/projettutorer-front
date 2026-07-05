@@ -32,6 +32,12 @@ export const DirecteurOnboardingPage = () => {
     return <AlertCircle className="w-5 h-5 text-slate-400" />
   }
 
+  const tabs = [
+    { id: 'all' as const, label: 'Tous' },
+    { id: 'active' as const, label: 'Actifs' },
+    { id: 'done' as const, label: 'Termines' },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -49,7 +55,7 @@ export const DirecteurOnboardingPage = () => {
         {[
           { label: 'En integration', value: stats.total, icon: Users, color: 'from-amber-500 to-orange-600' },
           { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Terminees', value: stats.terminees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
+          { label: 'Terminees', value: stats.termines, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
           { label: 'Total taches', value: stats.tachesTotal, icon: Target, color: 'from-purple-500 to-pink-600' },
           { label: 'Taches faites', value: `${stats.tachesTerminees}/${stats.tachesTotal}`, icon: CheckCircle2, color: 'from-emerald-500 to-teal-600' }
         ].map((stat, i) => (

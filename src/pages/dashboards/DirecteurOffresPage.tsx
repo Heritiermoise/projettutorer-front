@@ -45,6 +45,7 @@ export const DirecteurOffresPage = () => {
       id: Date.now(),
       poste_id: 0,
       ...formData,
+      remote: formData.remote as OffrePublication['remote'],
       salaire_min: parseInt(formData.salaire_min),
       salaire_max: parseInt(formData.salaire_max),
       date_publication: new Date().toISOString().split('T')[0],
@@ -84,6 +85,13 @@ export const DirecteurOffresPage = () => {
     }
     return colors[statut] || colors['Brouillon']
   }
+
+  const tabs = [
+    { id: 'all' as const, label: 'Toutes' },
+    { id: 'published' as const, label: 'Publiées' },
+    { id: 'draft' as const, label: 'Brouillons' },
+    { id: 'expired' as const, label: 'Expirées' },
+  ]
 
   return (
     <div className="space-y-6">

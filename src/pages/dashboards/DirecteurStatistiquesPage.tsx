@@ -88,7 +88,7 @@ export const DirecteurStatistiquesPage = () => {
           <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition H/F</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
-              <Pie data={repartitionSexe} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+              <Pie data={repartitionSexe} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                 {repartitionSexe.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
@@ -112,7 +112,7 @@ export const DirecteurStatistiquesPage = () => {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Recrutements</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={mockStatsEvolution.recruitments || mockStatsEvolution.effectifs}>
+            <LineChart data={mockStatsEvolution.recrutements}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
               <XAxis dataKey="mois" stroke="#9ca3af" style={{ fontSize: '12px' }} />
               <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />

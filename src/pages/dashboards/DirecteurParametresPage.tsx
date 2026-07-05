@@ -12,10 +12,10 @@ export const DirecteurParametresPage = () => {
   }
 
   const tabs = [
-    { id: 'entreprise', label: 'Entreprise', icon: Building2 },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Securite', icon: Shield },
-    { id: 'appearance', label: 'Apparence', icon: Palette },
+    { id: 'entreprise' as const, label: 'Entreprise', icon: Building2 },
+    { id: 'notifications' as const, label: 'Notifications', icon: Bell },
+    { id: 'security' as const, label: 'Securite', icon: Shield },
+    { id: 'appearance' as const, label: 'Apparence', icon: Palette },
   ]
 
   return (

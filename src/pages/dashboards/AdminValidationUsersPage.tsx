@@ -1,6 +1,21 @@
 import { useState } from 'react'
 import { Users, Search, CheckCircle2, XCircle, Clock, Mail, Phone, MapPin, Eye, Key, Shield, UserCheck } from 'lucide-react'
 
+type PendingUser = {
+  id: number
+  nom: string
+  post_nom: string
+  prenom: string
+  email: string
+  telephone: string
+  adresse: string
+  role: string
+  statut: 'en_attente' | 'valide' | 'refuse'
+  date_inscription: string
+  role_attribue?: string
+  mot_de_passe?: string
+}
+
 export const AdminValidationUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
@@ -9,7 +24,7 @@ export const AdminValidationUsersPage = () => {
   const [generatedPassword, setGeneratedPassword] = useState('')
 
   // Simulation des utilisateurs en attente
-  const [pendingUsers, setPendingUsers] = useState([
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([
     { id: 1, nom: 'Ngoy', post_nom: 'Kabuya', prenom: 'Alain', email: 'alain@mail.com', telephone: '+243 900 111 222', adresse: 'Lubumbashi', role: 'utilisateur', statut: 'en_attente', date_inscription: '2026-06-20' },
     { id: 2, nom: 'Lunda', post_nom: 'Mfumu', prenom: 'Beatrice', email: 'beatrice@mail.com', telephone: '+243 900 333 444', adresse: 'Kinshasa', role: 'utilisateur', statut: 'en_attente', date_inscription: '2026-06-21' },
     { id: 3, nom: 'Tshibasu', post_nom: 'Kalonji', prenom: 'Christian', email: 'chris@mail.com', telephone: '+243 900 555 666', adresse: 'Lubumbashi', role: 'utilisateur', statut: 'valide', date_inscription: '2026-06-15', role_attribue: 'employe' },
@@ -46,6 +61,7 @@ export const AdminValidationUsersPage = () => {
   }
 
   const confirmValidation = (role: string) => {
+    if (!selectedUser) return
     setPendingUsers(pendingUsers.map(u => 
       u.id === selectedUser.id 
         ? { ...u, statut: 'valide', role_attribue: role, mot_de_passe: generatedPassword }

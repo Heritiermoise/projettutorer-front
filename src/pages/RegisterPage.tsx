@@ -1,8 +1,9 @@
 import { PublicNavbar } from '../components/PublicNavbar'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { authService } from '../services/authService'
+import { Toast } from '../components/ui/Toast'
 
 export const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +14,15 @@ export const RegisterPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (success) {
+      setToast({ type: 'success', message: success })
+    }
+  }, [success])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -23,6 +32,8 @@ export const RegisterPage = () => {
     e.preventDefault()
     setError('')
     setSuccess('')
+    setLoading(true)
+    setToast({ type: 'info', message: 'Inscription en cours...' })
 
     if (formData.password !== formData.password_confirmation) {
       setError('Les mots de passe ne correspondent pas')
@@ -49,21 +60,27 @@ export const RegisterPage = () => {
 
       if (!result.success) {
         setError(result.message || 'Erreur lors de l\'inscription')
+        setToast({ type: 'error', message: result.message || 'Erreur lors de l\'inscription' })
         return
       }
 
       if (formData.role === 'directeur') {
         localStorage.setItem('temp_user', JSON.stringify(result.user))
-        navigate('/create-entreprise')
+        setToast({ type: 'success', message: 'Compte directeur créé. Création de l’entreprise en cours...' })
+        setTimeout(() => navigate('/create-entreprise'), 800)
         return
       }
 
       setSuccess('Inscription reussie ! Vous pouvez maintenant vous connecter.')
+      setToast({ type: 'success', message: 'Inscription reussie ! Vous pouvez maintenant vous connecter.' })
       setTimeout(() => {
-        navigate('/login')
+        navigate('/login?registered=1')
       }, 1500)
     } catch (err: any) {
       setError(err.message || 'Erreur lors de l\'inscription')
+      setToast({ type: 'error', message: err.message || 'Erreur lors de l\'inscription' })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -82,6 +99,8 @@ export const RegisterPage = () => {
           </div>
 
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
             {/* Info importante */}
             <div className="mb-6 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl flex items-start space-x-3">
               <Info className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
@@ -239,9 +258,9 @@ export const RegisterPage = () => {
                 </div>
               </div>
 
-              <button type="submit" className="w-full py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2">
-                <UserPlus className="w-5 h-5" />
-                <span>{formData.role === 'directeur' ? 'Continuer vers la creation d\'entreprise' : 'Creer mon compte'}</span>
+              <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
+                <span>{loading ? 'Inscription en cours...' : (formData.role === 'directeur' ? 'Continuer vers la creation d\'entreprise' : 'Creer mon compte')}</span>
               </button>
             </form>
 

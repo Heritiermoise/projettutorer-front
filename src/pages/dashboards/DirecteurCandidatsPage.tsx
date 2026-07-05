@@ -1,10 +1,26 @@
 import { useState } from 'react'
 import { Users, Search, CheckCircle2, XCircle, Clock, Mail, Phone, MapPin, Key, Shield, UserCheck, Briefcase, Calendar, Eye, X } from 'lucide-react'
 
+type Candidat = {
+  id: number
+  nom: string
+  prenom: string
+  email: string
+  telephone: string
+  adresse: string
+  poste_postule: string
+  statut: 'en_attente' | 'entretien_planifie' | 'valide' | 'refuse'
+  date_candidature: string
+  entretien: { date: string; heure: string; type: string; resultat?: string } | null
+  role_attribue?: string
+  poste_attribue?: string
+  mot_de_passe?: string
+}
+
 export const DirecteurCandidatsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
-  const [selectedCandidat, setSelectedCandidat] = useState<any>(null)
+  const [selectedCandidat, setSelectedCandidat] = useState<Candidat | null>(null)
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [showEntretienModal, setShowEntretienModal] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState('')
@@ -18,7 +34,7 @@ export const DirecteurCandidatsPage = () => {
     { id: 4, titre: 'Designer UX/UI', disponibles: 0 },
   ]
 
-  const [candidats, setCandidats] = useState([
+  const [candidats, setCandidats] = useState<Candidat[]>([
     { id: 1, nom: 'Ngoy', prenom: 'Alain', email: 'alain@mail.com', telephone: '+243 900 111 222', adresse: 'Lubumbashi', poste_postule: 'Developpeur Full Stack', statut: 'en_attente', date_candidature: '2026-06-20', entretien: null },
     { id: 2, nom: 'Lunda', prenom: 'Beatrice', email: 'beatrice@mail.com', telephone: '+243 900 333 444', adresse: 'Kinshasa', poste_postule: 'Designer UX/UI', statut: 'entretien_planifie', date_candidature: '2026-06-21', entretien: { date: '2026-06-26', heure: '14:00', type: 'Visio' } },
     { id: 3, nom: 'Tshibasu', prenom: 'Christian', email: 'chris@mail.com', telephone: '+243 900 555 666', adresse: 'Lubumbashi', poste_postule: 'Comptable', statut: 'valide', date_candidature: '2026-06-15', role_attribue: 'employe', poste_attribue: 'Comptable', entretien: { date: '2026-06-20', heure: '09:00', type: 'Presentiel', resultat: 'Reussi' } },
@@ -59,6 +75,7 @@ export const DirecteurCandidatsPage = () => {
 
   const handleConfirmEntretien = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!selectedCandidat) return
     setCandidats(candidats.map(c => 
       c.id === selectedCandidat.id 
         ? { ...c, statut: 'entretien_planifie', entretien: entretienData }
@@ -79,6 +96,7 @@ export const DirecteurCandidatsPage = () => {
   }
 
   const handleConfirmValidation = () => {
+    if (!selectedCandidat) return
     if (!selectedPoste) {
       alert('Veuillez selectionner un poste disponible')
       return

@@ -143,7 +143,7 @@ export const DirecteurSondagesPage = () => {
                       { name: 'Evenement', value: 1, color: '#10b981' },
                       { name: 'Formation', value: 1, color: '#8b5cf6' },
                       { name: 'General', value: 1, color: '#3b82f6' }
-                    ]} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}>
+                      ]} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
                       {[
                         { name: 'RH', value: 2, color: '#f59e0b' },
                         { name: 'Evenement', value: 1, color: '#10b981' },

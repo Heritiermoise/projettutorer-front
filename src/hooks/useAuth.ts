@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { authAPI, entrepriseAPI } from '../services/api';
 
 export interface User {
   id: number;
@@ -60,9 +60,10 @@ export const useAuth = () => {
     }
     
     try {
-      const data = await api.login(email, password);
+      const data = await authAPI.login(email, password);
       if (data.token && data.user) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         return { success: true, user: data.user };
@@ -89,9 +90,10 @@ export const useAuth = () => {
         redirectPath = '/create-entreprise';
       }
       
-      const result = await api.register(registerData);
+      const result = await authAPI.register(registerData);
       if (result.token && result.user) {
         localStorage.setItem('token', result.token);
+        localStorage.setItem('auth_token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         setUser(result.user);
         return { success: true, user: result.user, redirect: redirectPath };
@@ -109,7 +111,7 @@ export const useAuth = () => {
     }
     
     try {
-      const result = await api.createEntreprise(formData);
+      const result = await entrepriseAPI.create(formData as any);
       
       if (result.user) {
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -122,7 +124,7 @@ export const useAuth = () => {
       
       if (result.status === 'success') {
         try {
-          const userData: any = await api.getUser();
+          const userData: any = await authAPI.getUser();
           if (userData && userData.user) {
             localStorage.setItem('user', JSON.stringify(userData.user));
             setUser(userData.user);
@@ -142,11 +144,12 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await api.logout();
+      await authAPI.logout();
     } catch (e) {
       console.error('Logout error:', e);
     } finally {
       localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       setUser(null);
       navigate('/login');

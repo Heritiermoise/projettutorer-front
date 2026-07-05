@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { Mail, Send, Inbox, Star, Trash2, Archive, Reply, Search, Paperclip, MessageSquare, ArrowLeft, Bold, Italic, Smile } from 'lucide-react'
 import { EmojiPicker } from '../../components/EmojiPicker'
 import { directeurNotifications } from '../../data/notifications'
-
 export const DirecteurNotificationsPage = () => {
   const [activeTab, setActiveTab] = useState<'inbox' | 'sent' | 'drafts' | 'templates'>('inbox')
   const [selectedMessage, setSelectedMessage] = useState<any>(null)
@@ -26,7 +25,7 @@ export const DirecteurNotificationsPage = () => {
 
   const handleSendReply = () => {
     if (!replyText.trim() || !selectedMessage) return
-    
+
     const newSent = {
       id: Date.now(),
       to: selectedMessage.from,
@@ -36,16 +35,16 @@ export const DirecteurNotificationsPage = () => {
       date: 'A l\'instant',
       read: true,
     }
-    
+
     setSentMessages([newSent, ...sentMessages])
     setReplyText('')
     setShowEmojiPicker(false)
-    
+
     const msgIndex = messages.findIndex(m => m.id === selectedMessage.id)
     if (msgIndex !== -1) {
       messages[msgIndex].read = true
     }
-    
+
     alert('Message envoye avec succes a ' + selectedMessage.email)
   }
 
@@ -64,10 +63,17 @@ export const DirecteurNotificationsPage = () => {
     }
   }
 
-  const filteredMessages = messages.filter(m => 
+  const filteredMessages = messages.filter(m =>
     m.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.from.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const tabs = [
+    { id: 'inbox' as const, label: 'Recus', count: messages.filter(m => !m.read).length, icon: Inbox },
+    { id: 'sent' as const, label: 'Envoyes', count: sentMessages.length, icon: Send },
+    { id: 'drafts' as const, label: 'Brouillons', count: 1, icon: Paperclip },
+    { id: 'templates' as const, label: 'Modeles', count: 2, icon: MessageSquare },
+  ]
 
   const currentMessages = activeTab === 'sent' ? sentMessages : filteredMessages
 
@@ -107,12 +113,7 @@ export const DirecteurNotificationsPage = () => {
               </div>
             </div>
             <div className="flex border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
-              {[
-                { id: 'inbox', label: 'Recus', count: messages.filter(m => !m.read).length, icon: Inbox },
-                { id: 'sent', label: 'Envoyes', count: sentMessages.length, icon: Send },
-                { id: 'drafts', label: 'Brouillons', count: 1, icon: Paperclip },
-                { id: 'templates', label: 'Modeles', count: 2, icon: MessageSquare },
-              ].map(tab => (
+              {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 flex items-center justify-center space-x-1 py-3 px-2 text-xs sm:text-sm font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-amber-600 border-b-2 border-amber-600' : 'text-slate-600 dark:text-slate-400'}`}>
                   <tab.icon className="w-4 h-4" /><span>{tab.label}</span>
                   {tab.count > 0 && <span className="ml-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs">{tab.count}</span>}

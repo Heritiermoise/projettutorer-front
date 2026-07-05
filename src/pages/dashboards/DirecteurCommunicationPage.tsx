@@ -25,6 +25,7 @@ export const DirecteurCommunicationPage = () => {
     const newAnnonce: Annonce = {
       id: Date.now(),
       ...formData,
+      categorie: formData.categorie as Annonce['categorie'],
       auteur: 'Moise Vita (DG)',
       date: new Date().toISOString().split('T')[0],
       likes: 0,
@@ -49,6 +50,13 @@ export const DirecteurCommunicationPage = () => {
     }
     return colors[categorie] || colors['General']
   }
+
+  const tabs = [
+    { id: 'all' as const, label: 'Toutes' },
+    { id: 'published' as const, label: 'Publiées' },
+    { id: 'draft' as const, label: 'Brouillons' },
+    { id: 'expired' as const, label: 'Archivées' },
+  ]
 
   return (
     <div className="space-y-6">
