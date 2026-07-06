@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, entrepriseAPI } from '../services/api';
+import { API_BASE_URL } from '../config/api';
 
 export interface User {
   id: number;
@@ -42,7 +43,7 @@ export const useAuth = () => {
 
   const checkBackendStatus = async () => {
     try {
-      const ok = await fetch('http://localhost:8000/api/user', {
+      const ok = await fetch(`${API_BASE_URL}/user`, {
         headers: { 'Accept': 'application/json' },
       }).then(() => true).catch(() => false);
       setBackendOk(ok);

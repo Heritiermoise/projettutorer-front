@@ -1,5 +1,5 @@
 // Service API principal
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import { API_BASE_URL } from '../config/api';
 
 // Types
 export interface User {
@@ -97,16 +97,11 @@ export const testBackendConnection = async () => {
       },
     });
 
-    if (!response.ok) {
-      return {
-        success: false,
-        message: `Backend inaccessible (${response.status})`,
-      };
-    }
-
     return {
       success: true,
-      message: 'Connexion backend etablie avec succes',
+      message: response.ok
+        ? 'Connexion backend etablie avec succes'
+        : `Backend accessible (HTTP ${response.status})`,
     };
   } catch (error) {
     return {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthLayout } from '../components/layout/AuthLayout';
 import { testBackendConnection } from '../services/api';
+import { API_BASE_URL } from '../config/api';
 import { CheckCircle2, XCircle, Loader2, Wifi, WifiOff } from 'lucide-react';
 
 export const TestConnectionPage = () => {
@@ -77,8 +78,8 @@ export const TestConnectionPage = () => {
             <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">URL du backend :</p>
               <code className="text-xs text-slate-600 dark:text-slate-400 break-all">
-                  {import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}
-                </code>
+                {API_BASE_URL}
+              </code>
             </div>
 
             <button

@@ -1,6 +1,19 @@
 // Configuration API
+const DEFAULT_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api';
+
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
+export const API_BASE_URL = (() => {
+  if (!rawApiBaseUrl) {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  const normalizedBaseUrl = rawApiBaseUrl.replace(/\/$/, '');
+  return normalizedBaseUrl.endsWith('/api') ? normalizedBaseUrl : `${normalizedBaseUrl}/api`;
+})();
+
 export const API_CONFIG = {
-  BASE_URL: 'http://127.0.0.1:8000/api',
+  BASE_URL: API_BASE_URL,
   TIMEOUT: 30000,
   HEADERS: {
     'Content-Type': 'application/json',
