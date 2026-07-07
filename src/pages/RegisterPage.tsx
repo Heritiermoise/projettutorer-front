@@ -1,7 +1,7 @@
 import { PublicNavbar } from '../components/PublicNavbar'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { authService } from '../services/authService'
 import { Toast } from '../components/ui/Toast'
 
@@ -36,14 +36,12 @@ export const RegisterPage = () => {
       return
     }
     if (formData.password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caracteres')
-      setToast({ type: 'error', message: 'Le mot de passe doit contenir au moins 6 caracteres' })
+      setError('Le mot de passe doit contenir au moins 6 caractères')
+      setToast({ type: 'error', message: 'Le mot de passe doit contenir au moins 6 caractères' })
       return
     }
 
-    if (loading) {
-      return
-    }
+    if (loading) return
 
     setError('')
     setSuccess('')
@@ -61,30 +59,38 @@ export const RegisterPage = () => {
         password: formData.password,
         password_confirmation: formData.password_confirmation,
         role: formData.role,
-        statut: 'actif',
       })
 
-      if (!result.success) {
-        setError(result.message || 'Erreur lors de l\'inscription')
-        setToast({ type: 'error', message: result.message || 'Erreur lors de l\'inscription' })
+      if (!result || result.success === false) {
+        setError(result?.message || "Erreur lors de l'inscription")
+        setToast({ type: 'error', message: result?.message || "Erreur lors de l'inscription" })
         return
       }
 
+      // Stockage global du Jeton API (Requis pour l'appel au CRUD Entreprise ou Profil)
+      if (result.token) {
+        localStorage.setItem('auth_token', result.token)
+        localStorage.setItem('user', JSON.stringify(result.user))
+      }
+
+      // REDIRECTION SELON LE RÔLE choisi
       if (formData.role === 'directeur') {
         localStorage.setItem('temp_user', JSON.stringify(result.user))
-        setToast({ type: 'success', message: 'Compte directeur créé. Création de l’entreprise en cours...' })
-        setTimeout(() => navigate('/create-entreprise'), 800)
+        setToast({ type: 'success', message: 'Compte directeur créé ! Redirection vers la création de l’entreprise...' })
+        setTimeout(() => navigate('/create-entreprise'), 1000)
         return
       }
 
-      setSuccess('Inscription reussie ! Vous pouvez maintenant vous connecter.')
-      setToast({ type: 'success', message: 'Inscription reussie ! Vous pouvez maintenant vous connecter.' })
+      // Pour l'utilisateur standard (qui est 'en_attente')
+      setSuccess('Inscription réussie ! Votre compte est en attente de validation par un administrateur.')
+      setToast({ type: 'success', message: 'Compte créé ! Redirection vers la page de connexion...' })
       setTimeout(() => {
         navigate('/login?registered=1')
-      }, 1500)
+      }, 2000)
+
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'inscription')
-      setToast({ type: 'error', message: err.message || 'Erreur lors de l\'inscription' })
+      setError(err.message || "Erreur lors de l'inscription")
+      setToast({ type: 'error', message: err.message || "Erreur lors de l'inscription" })
     } finally {
       setLoading(false)
     }
@@ -100,8 +106,8 @@ export const RegisterPage = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white mb-2">Creer un compte</h1>
-            <p className="text-slate-600 dark:text-slate-300">Rejoignez RH Pro en quelques etapes</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white mb-2">Créer un compte</h1>
+            <p className="text-slate-600 dark:text-slate-300">Rejoignez RH Pro en quelques étapes</p>
           </div>
 
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-8 border border-slate-200 dark:border-slate-700">
@@ -114,7 +120,7 @@ export const RegisterPage = () => {
                 <strong>Choisissez votre type de compte :</strong>
                 <ul className="mt-2 space-y-1 list-disc list-inside">
                   <li><strong>Utilisateur</strong> : Pour postuler aux offres et faire des demandes (validation par admin requise)</li>
-                  <li><strong>Directeur</strong> : Pour creer et gerer votre entreprise</li>
+                  <li><strong>Directeur</strong> : Pour créer et gérer votre entreprise</li>
                 </ul>
               </div>
             </div>
@@ -134,7 +140,7 @@ export const RegisterPage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Selection du role */}
+              {/* Sélection du rôle */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Type de compte *</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -185,7 +191,7 @@ export const RegisterPage = () => {
                       </div>
                       <div>
                         <p className="font-bold text-slate-800 dark:text-white">Directeur</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-400">Creer et gerer une entreprise</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">Créer et gérer une entreprise</p>
                       </div>
                     </div>
                   </label>
@@ -210,10 +216,10 @@ export const RegisterPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Prenom *</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Prénom *</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="Votre prenom" required />
+                  <input type="text" name="prenom" value={formData.prenom} onChange={handleChange} className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="Votre prénom" required />
                 </div>
               </div>
 
@@ -226,7 +232,7 @@ export const RegisterPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Telephone *</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Téléphone *</label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input type="tel" name="telephone" value={formData.telephone} onChange={handleChange} className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="+243 ..." required />
@@ -236,7 +242,7 @@ export const RegisterPage = () => {
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Adresse *</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input type="text" name="adresse" value={formData.adresse} onChange={handleChange} className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="Votre adresse" required />
                 </div>
               </div>
@@ -246,7 +252,7 @@ export const RegisterPage = () => {
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mot de passe *</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className="w-full pl-11 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="Min. 6 caracteres" required minLength={6} />
+                    <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className="w-full pl-11 pr-12 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" placeholder="Min. 6 caractères" required minLength={6} />
                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -266,12 +272,12 @@ export const RegisterPage = () => {
 
               <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed">
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
-                <span>{loading ? 'Inscription en cours...' : (formData.role === 'directeur' ? 'Continuer vers la creation d\'entreprise' : 'Creer mon compte')}</span>
+                <span>{loading ? 'Inscription en cours...' : (formData.role === 'directeur' ? "Continuer vers la création d'entreprise" : 'Créer mon compte')}</span>
               </button>
             </form>
 
             <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
-              Deja un compte ?{' '}
+              Déjà un compte ?{' '}
               <Link to="/login" className="text-primary-600 hover:text-primary-700 font-bold">Se connecter</Link>
             </div>
           </div>
