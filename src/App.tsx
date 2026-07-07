@@ -5,12 +5,12 @@ import { RegisterPage } from './pages/RegisterPage'
 import { CreateEntreprisePage } from './pages/CreateEntreprisePage'
 import { OffresEmploiPage } from './pages/OffresEmploiPage'
 import { OffreDetailPage } from './pages/OffreDetailPage'
-import { EntreprisePubliquePage } from './pages/EntreprisePubliquePage'
+import { DashboardConnecte } from './pages/DashboardConnecte'
 import { AdminDashboard } from './pages/dashboards/AdminDashboard'
 import { DirecteurDashboard } from './pages/dashboards/DirecteurDashboard'
 import { RHDashboard } from './pages/dashboards/RHDashboard'
 import { EmployeDashboard } from './pages/dashboards/EmployeDashboard'
-import { UtilisateurDashboard } from './pages/dashboards/UtilisateurDashboard'
+import { ChatWidget } from './components/chat/ChatWidget'
 
 function App() {
   return (
@@ -22,14 +22,16 @@ function App() {
         <Route path="/create-entreprise" element={<CreateEntreprisePage />} />
         <Route path="/offres" element={<OffresEmploiPage />} />
         <Route path="/offres/:id" element={<OffreDetailPage />} />
-        <Route path="/entreprise/:code" element={<EntreprisePubliquePage />} />
+        <Route path="/dashboard-connecte" element={<DashboardConnecte />} />
         <Route path="/dashboard/admin/*" element={<AdminDashboard />} />
         <Route path="/dashboard/directeur/*" element={<DirecteurDashboard />} />
         <Route path="/dashboard/rh/*" element={<RHDashboard />} />
         <Route path="/dashboard/employe/*" element={<EmployeDashboard />} />
-        <Route path="/dashboard/utilisateur/*" element={<UtilisateurDashboard />} />
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
       </Routes>
+      
+      {/* Assistant virtuel flottant - visible sur toutes les pages */}
+      <ChatWidget />
     </BrowserRouter>
   )
 }

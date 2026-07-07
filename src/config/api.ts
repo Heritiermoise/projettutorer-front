@@ -1,5 +1,5 @@
 // Configuration API
-const DEFAULT_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api/';
+const DEFAULT_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api';
 
 const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
