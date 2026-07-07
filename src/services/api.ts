@@ -24,6 +24,66 @@ api.interceptors.request.use((config) => {
 
 export default api;
 
+const buildUrl = (path: string) => `${API_BASE_URL}${path}`;
+
+const normalizeResponseError = async (response: Response) => {
+  const errorData = await response.json().catch(() => ({}));
+  return new Error(errorData.message || `HTTP ${response.status}`);
+};
+
+const requestJson = async (
+  path: string,
+  options: RequestInit = {}
+): Promise<any> => {
+  const token = localStorage.getItem('auth_token');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+
+  if (options.headers) {
+    new Headers(options.headers).forEach((value, key) => {
+      headers[key] = value;
+    });
+  }
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildUrl(path), {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw await normalizeResponseError(response);
+  }
+
+  return await response.json();
+};
+
+const requestWithFallback = async (
+  paths: string[],
+  options: RequestInit = {}
+): Promise<any> => {
+  let lastError: unknown;
+
+  for (const path of paths) {
+    try {
+      return await requestJson(path, options);
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : '';
+      if (!message.includes('404')) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Route introuvable');
+};
+
 
 // Types
 export interface User {
@@ -67,6 +127,86 @@ export interface Employe {
   statut: string;
   id_poste: number;
   id_entreprise: number;
+}
+
+export interface Candidat {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone?: string;
+  adresse?: string;
+  statut: string;
+  id_entreprise?: number;
+}
+
+export interface FichePaie {
+  id: number;
+  matricule: string;
+  mois_paiement: string;
+  annee_paiement: string;
+  montant: number;
+  statut: string;
+  id_entreprise?: number;
+}
+
+export interface Avantage {
+  id: number;
+  matricule: string;
+  libelle: string;
+  description?: string;
+  type_avantage: string;
+  valeur?: string;
+  date_expiration?: string;
+  statut: string;
+  id_entreprise?: number;
+}
+
+export interface Document {
+  id: number;
+  matricule: string;
+  type_document: string;
+  fichier: string;
+  statut: string;
+  id_entreprise?: number;
+}
+
+export interface Presence {
+  id: number;
+  matricule: string;
+  date_presence: string;
+  heure_arrivee?: string;
+  heure_depart?: string;
+  statut: string;
+  justification?: string | null;
+  id_entreprise?: number;
+}
+
+export interface Postulation {
+  id: number;
+  cv?: string;
+  lettre?: string;
+  statut: string;
+  id_candidat?: number;
+  id_offre?: number;
+  id_entreprise?: number;
+}
+
+export interface Entretien {
+  id: number;
+  date: string;
+  heure: string;
+  type: string;
+  resultat?: string;
+  id_candidat?: number;
+  id_offre?: number;
+  id_entreprise?: number;
+}
+
+export interface Participant {
+  matricule: string;
+  id_entretien: number;
+  statut?: string;
 }
 
 export interface OffreEmploi {
@@ -115,7 +255,7 @@ export interface Contrat {
 
 export const testBackendConnection = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/user`, {
+    const response = await fetch(buildUrl('/user'), {
       headers: {
         Accept: 'application/json',
       },
@@ -140,35 +280,8 @@ export const apiRequest = async (
   endpoint: string,
   options: RequestInit = {}
 ): Promise<any> => {
-  const token = localStorage.getItem('auth_token');
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-
-  if (options.headers) {
-    new Headers(options.headers).forEach((value, key) => {
-      headers[key] = value;
-    });
-  }
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP ${response.status}`);
-    }
-
-    return await response.json();
+    return await requestJson(endpoint, options);
   } catch (error) {
     console.error('API Error:', error);
     throw error;
@@ -180,7 +293,7 @@ export const apiRequest = async (
 // ═══════════════════════════════════════════════════════════════
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await apiRequest('/auth/login', {
+    const response = await requestWithFallback(['/auth/login', '/login'], {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -192,20 +305,20 @@ export const authAPI = {
   },
 
   register: async (userData: any) => {
-    return await apiRequest('/auth/register', {
+    return await requestWithFallback(['/auth/register', '/register'], {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   },
 
   logout: async () => {
-    await apiRequest('/auth/logout', { method: 'POST' });
+    await requestWithFallback(['/auth/logout', '/logout'], { method: 'POST' });
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
   },
 
   getUser: async () => {
-    return await apiRequest('/auth/user');
+    return await requestWithFallback(['/auth/user', '/user']);
   },
 };
 
@@ -259,6 +372,10 @@ export const employeAPI = {
     return await apiRequest(`/employes/${id}`);
   },
 
+  getByMatricule: async (matricule: string) => {
+    return await apiRequest(`/employes/${matricule}`);
+  },
+
   create: async (data: Partial<Employe>) => {
     return await apiRequest('/employes', {
       method: 'POST',
@@ -297,6 +414,10 @@ export const offreAPI = {
     return await apiRequest(`/offres/${id}`);
   },
 
+  getByOffreId: async (id: string | number) => {
+    return await apiRequest(`/offres/${id}`);
+  },
+
   create: async (data: Partial<OffreEmploi>) => {
     return await apiRequest('/offres', {
       method: 'POST',
@@ -317,10 +438,354 @@ export const offreAPI = {
     });
   },
 
-  postuler: async (offreId: number, candidatureData: any) => {
+  postuler: async (offreId: number, candidatureData: FormData | Record<string, any>) => {
+    if (candidatureData instanceof FormData) {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(buildUrl(`/offres/${offreId}/postuler`), {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          Accept: 'application/json',
+        },
+        body: candidatureData,
+      });
+
+      if (!response.ok) {
+        throw await normalizeResponseError(response);
+      }
+
+      return await response.json();
+    }
+
     return await apiRequest(`/offres/${offreId}/postuler`, {
       method: 'POST',
       body: JSON.stringify(candidatureData),
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// CANDIDATS
+// ═══════════════════════════════════════════════════════════════
+export const candidatAPI = {
+  getAll: async () => {
+    return await apiRequest('/candidats');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/candidats/${id}`);
+  },
+
+  create: async (data: Partial<Candidat>) => {
+    return await apiRequest('/candidats', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Candidat>) => {
+    return await apiRequest(`/candidats/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/candidats/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// FICHES DE PAIE
+// ═══════════════════════════════════════════════════════════════
+export const fichesPaieAPI = {
+  getAll: async () => {
+    return await apiRequest('/fiches_paies');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/fiches_paies/${id}`);
+  },
+
+  create: async (data: Partial<FichePaie>) => {
+    return await apiRequest('/fiches_paies', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<FichePaie>) => {
+    return await apiRequest(`/fiches_paies/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/fiches_paies/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// AVANTAGES
+// ═══════════════════════════════════════════════════════════════
+export const avantageAPI = {
+  getAll: async () => {
+    return await apiRequest('/avantages');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/avantages/${id}`);
+  },
+
+  create: async (data: Partial<Avantage>) => {
+    return await apiRequest('/avantages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Avantage>) => {
+    return await apiRequest(`/avantages/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/avantages/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// DOCUMENTS
+// ═══════════════════════════════════════════════════════════════
+export const documentAPI = {
+  getAll: async () => {
+    return await apiRequest('/documents');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/documents/${id}`);
+  },
+
+  create: async (data: Partial<Document> | FormData) => {
+    if (data instanceof FormData) {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(buildUrl('/documents'), {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+          Accept: 'application/json',
+        },
+        body: data,
+      });
+
+      if (!response.ok) {
+        throw await normalizeResponseError(response);
+      }
+
+      return await response.json();
+    }
+
+    return await apiRequest('/documents', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Document>) => {
+    return await apiRequest(`/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/documents/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  upload: async (formData: FormData) => {
+    return await documentAPI.create(formData);
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PRESENCES
+// ═══════════════════════════════════════════════════════════════
+export const presenceAPI = {
+  getAll: async () => {
+    return await apiRequest('/presences');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/presences/${id}`);
+  },
+
+  create: async (data: Partial<Presence>) => {
+    return await apiRequest('/presences', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Presence>) => {
+    return await apiRequest(`/presences/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/presences/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  pointer: async (data: any) => {
+    return await apiRequest('/presences/pointer', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// POSTULATIONS
+// ═══════════════════════════════════════════════════════════════
+export const postulationAPI = {
+  getAll: async () => {
+    return await apiRequest('/postulations');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/postulations/${id}`);
+  },
+
+  create: async (data: Partial<Postulation>) => {
+    return await apiRequest('/postulations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Postulation>) => {
+    return await apiRequest(`/postulations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/postulations/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ENTRETIENS
+// ═══════════════════════════════════════════════════════════════
+export const entretienAPI = {
+  getAll: async () => {
+    return await apiRequest('/entretiens');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/entretiens/${id}`);
+  },
+
+  create: async (data: Partial<Entretien>) => {
+    return await apiRequest('/entretiens', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Entretien>) => {
+    return await apiRequest(`/entretiens/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/entretiens/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PARTICIPANTS
+// ═══════════════════════════════════════════════════════════════
+export const participantAPI = {
+  getAll: async () => {
+    return await apiRequest('/participants');
+  },
+
+  getById: async (matricule: string, idEntretien: number) => {
+    return await apiRequest(`/participants/${matricule}/${idEntretien}`);
+  },
+
+  create: async (data: Participant) => {
+    return await apiRequest('/participants', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (matricule: string, idEntretien: number, data: Partial<Participant>) => {
+    return await apiRequest(`/participants/${matricule}/${idEntretien}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (matricule: string, idEntretien: number) => {
+    return await apiRequest(`/participants/${matricule}/${idEntretien}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════════════════════
+export const userAPI = {
+  getAll: async () => {
+    return await apiRequest('/users');
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/users/${id}`);
+  },
+
+  create: async (data: any) => {
+    return await apiRequest('/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: any) => {
+    return await apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/users/${id}`, {
+      method: 'DELETE',
     });
   },
 };
@@ -355,129 +820,5 @@ export const congeAPI = {
     return await apiRequest(`/conges/${id}/refuser`, {
       method: 'PUT',
     });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// CONTRATS
-// ═══════════════════════════════════════════════════════════════
-export const contratAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/contrats?entreprise_id=${entrepriseId}` : '/contrats';
-    return await apiRequest(url);
-  },
-
-  create: async (data: Partial<Contrat>) => {
-    return await apiRequest('/contrats', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Contrat>) => {
-    return await apiRequest(`/contrats/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// SERVICES
-// ═══════════════════════════════════════════════════════════════
-export const serviceAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/services?entreprise_id=${entrepriseId}` : '/services';
-    return await apiRequest(url);
-  },
-
-  create: async (data: any) => {
-    return await apiRequest('/services', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// POSTES
-// ═══════════════════════════════════════════════════════════════
-export const posteAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/postes?entreprise_id=${entrepriseId}` : '/postes';
-    return await apiRequest(url);
-  },
-
-  create: async (data: any) => {
-    return await apiRequest('/postes', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// CANDIDATURES
-// ═══════════════════════════════════════════════════════════════
-export const candidatureAPI = {
-  getAll: async (offreId?: number) => {
-    const url = offreId ? `/candidatures?offre_id=${offreId}` : '/candidatures';
-    return await apiRequest(url);
-  },
-
-  updateStatut: async (id: number, statut: string) => {
-    return await apiRequest(`/candidatures/${id}/statut`, {
-      method: 'PUT',
-      body: JSON.stringify({ statut }),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// PRESENCES
-// ═══════════════════════════════════════════════════════════════
-export const presenceAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/presences?entreprise_id=${entrepriseId}` : '/presences';
-    return await apiRequest(url);
-  },
-
-  pointer: async (data: any) => {
-    return await apiRequest('/presences/pointer', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// DOCUMENTS
-// ═══════════════════════════════════════════════════════════════
-export const documentAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/documents?entreprise_id=${entrepriseId}` : '/documents';
-    return await apiRequest(url);
-  },
-
-  upload: async (formData: FormData) => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/documents/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-    return await response.json();
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// DASHBOARD STATS
-// ═══════════════════════════════════════════════════════════════
-export const dashboardAPI = {
-  getStats: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/dashboard/stats?entreprise_id=${entrepriseId}` : '/dashboard/stats';
-    return await apiRequest(url);
   },
 };

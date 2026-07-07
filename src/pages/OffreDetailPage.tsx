@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
 import { mockOffresEmploi, mockEntreprises } from '../data/mockData'
 import { useEffect } from 'react'
-import { offreAPI, entrepriseAPI, candidatureAPI } from '../services/api'
+import { offreAPI, entrepriseAPI } from '../services/api'
 
 export const OffreDetailPage = () => {
   const { id } = useParams()
@@ -57,7 +57,19 @@ export const OffreDetailPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await candidatureAPI.updateStatut(Number(id), 'Soumise')
+      const candidatureData = new FormData()
+      candidatureData.append('nom', formData.nom)
+      candidatureData.append('post_nom', formData.post_nom)
+      candidatureData.append('prenom', formData.prenom)
+      candidatureData.append('email', formData.email)
+      candidatureData.append('telephone', formData.telephone)
+      candidatureData.append('lettre_motivation', formData.lettre_motivation)
+
+      if (formData.cv) {
+        candidatureData.append('cv', formData.cv)
+      }
+
+      await offreAPI.postuler(Number(id), candidatureData)
       alert('Votre postulation a été envoyée avec succès ! Vous serez contacté pour un entretien.')
       setShowPostulationModal(false)
       navigate('/offres')

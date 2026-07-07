@@ -30,26 +30,32 @@ export const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setSuccess('')
-    setLoading(true)
-    setToast({ type: 'info', message: 'Inscription en cours...' })
-
     if (formData.password !== formData.password_confirmation) {
       setError('Les mots de passe ne correspondent pas')
+      setToast({ type: 'error', message: 'Les mots de passe ne correspondent pas' })
       return
     }
     if (formData.password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caracteres')
+      setToast({ type: 'error', message: 'Le mot de passe doit contenir au moins 6 caracteres' })
       return
     }
+
+    if (loading) {
+      return
+    }
+
+    setError('')
+    setSuccess('')
+    setLoading(true)
+    setToast({ type: 'info', message: 'Inscription en cours...' })
 
     try {
       const result = await authService.register({
         nom: formData.nom,
         post_nom: formData.post_nom,
         prenom: formData.prenom,
-        email: formData.email,
+        email: formData.email.trim().toLowerCase(),
         telephone: formData.telephone,
         adresse: formData.adresse,
         password: formData.password,
