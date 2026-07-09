@@ -14,7 +14,8 @@ export const DashboardPage = () => {
         it: '/dashboard/admin',
         directeur: '/dashboard/directeur',
         rh: '/dashboard/rh',
-        manager: '/dashboard/manager',
+        manager: '/dashboard/directeur',
+        utilisateur: '/dashboard/employe',
         employe: '/dashboard/employe',
       };
       const path = paths[user.role] || '/dashboard';

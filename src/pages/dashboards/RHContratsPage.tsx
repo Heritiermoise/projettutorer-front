@@ -1,15 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileText, Search, Plus, Eye, Edit, Trash2, Download, Filter, Calendar, DollarSign, User, X } from 'lucide-react'
-import { mockContrats, mockEmployes, mockPostes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHContratsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
   const [filterStatut, setFilterStatut] = useState('all')
   const [selectedContrat, setSelectedContrat] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const filteredContrats = mockContrats.filter(c => {
-    const emp = mockEmployes.find(e => e.matricule === c.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const contrats = dashboardData?.contrats || []
+  const employes = dashboardData?.employes || []
+  const postes = dashboardData?.postes || []
+
+  const filteredContrats = contrats.filter((c: any) => {
+    const emp = employes.find((e: any) => e.matricule === c.matricule)
     const matchesSearch = c.contrat.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          emp?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          emp?.prenom.toLowerCase().includes(searchTerm.toLowerCase())
@@ -19,22 +28,22 @@ export const RHContratsPage = () => {
   })
 
   const getEmployeName = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }
 
   const getPosteTitle = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     if (!emp) return 'N/A'
-    const poste = mockPostes.find(p => p.id_poste === emp.id_poste)
+    const poste = postes.find((p: any) => p.id_poste === emp.id_poste)
     return poste?.titre_poste || 'N/A'
   }
 
   const stats = {
-    total: mockContrats.length,
-    actifs: mockContrats.filter(c => c.statut === 'Actif').length,
-    cd: mockContrats.filter(c => c.type === 'CDI').length,
-    cdd: mockContrats.filter(c => c.type === 'CDD').length,
+    total: contrats.length,
+    actifs: contrats.filter((c: any) => c.statut === 'Actif').length,
+    cd: contrats.filter((c: any) => c.type === 'CDI').length,
+    cdd: contrats.filter((c: any) => c.type === 'CDD').length,
   }
 
   return (

@@ -5,6 +5,7 @@ import {
   Briefcase, LogOut, Menu, X, UserCog, User, 
   Shield, Server, Bell, Moon, Sun
 } from 'lucide-react';
+import { clearDashboardContextCache } from '../../services/dashboardData';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -67,6 +68,7 @@ export const DashboardLayout = ({ children, userRole, userName, onLogout }: Dash
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    clearDashboardContextCache();
     onLogout();
     navigate('/login');
   };

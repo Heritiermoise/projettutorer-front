@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
-import { mockOffresEmploi, mockEntreprises } from '../data/mockData'
 import { useEffect } from 'react'
 import { offreAPI, entrepriseAPI } from '../services/api'
 
@@ -32,10 +31,8 @@ export const OffreDetailPage = () => {
         const entrepriseResponse = await entrepriseAPI.getById(currentOffre.id_entreprise)
         setEntreprise(entrepriseResponse.entreprise || entrepriseResponse)
       } catch {
-        const fallbackOffre = mockOffresEmploi.find(o => o.id_offre === parseInt(id || '0'))
-        const fallbackEntreprise = mockEntreprises.find(e => e.id_entreprise === fallbackOffre?.id_entreprise)
-        setOffre(fallbackOffre || null)
-        setEntreprise(fallbackEntreprise || null)
+        setOffre(null)
+        setEntreprise(null)
       }
     }
 

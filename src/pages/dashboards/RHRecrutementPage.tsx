@@ -1,18 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Briefcase, Search, Plus, Eye, User, Mail, Phone, Calendar, FileText, X } from 'lucide-react'
-import { mockOffresEmploi, mockCandidats, mockPostulations } from '../../data/mockData'
+import { candidatAPI, postulationAPI, offreAPI } from '../../services/api'
 
 export const RHRecrutementPage = () => {
   const [activeTab, setActiveTab] = useState<'offres' | 'candidats' | 'postulations'>('offres')
   const [searchTerm, setSearchTerm] = useState('')
+  const [offres, setOffres] = useState<any[]>([])
+  const [candidats, setCandidats] = useState<any[]>([])
+  const [postulations, setPostulations] = useState<any[]>([])
 
-  const filteredOffres = mockOffresEmploi.filter(o => o.titre.toLowerCase().includes(searchTerm.toLowerCase()))
-  const filteredCandidats = mockCandidats.filter(c => c.nom.toLowerCase().includes(searchTerm.toLowerCase()) || c.prenom.toLowerCase().includes(searchTerm.toLowerCase()))
+  useEffect(() => {
+    Promise.all([offreAPI.getAll(), candidatAPI.getAll(), postulationAPI.getAll()])
+      .then(([offresResponse, candidatsResponse, postulationsResponse]) => {
+        setOffres(offresResponse.offres || offresResponse || [])
+        setCandidats(candidatsResponse.candidats || candidatsResponse || [])
+        setPostulations(postulationsResponse.postulations || postulationsResponse || [])
+      })
+      .catch(() => {
+        setOffres([])
+        setCandidats([])
+        setPostulations([])
+      })
+  }, [])
+
+  const filteredOffres = offres.filter(o => o.titre.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredCandidats = candidats.filter(c => c.nom.toLowerCase().includes(searchTerm.toLowerCase()) || c.prenom.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const stats = {
-    offresActives: mockOffresEmploi.filter(o => o.statut === 'Publiee').length,
-    totalCandidats: mockCandidats.length,
-    postulations: mockPostulations.length,
+    offresActives: offres.filter(o => o.statut === 'Publiee').length,
+    totalCandidats: candidats.length,
+    postulations: postulations.length,
   }
 
   return (
@@ -111,9 +128,9 @@ export const RHRecrutementPage = () => {
 
           {activeTab === 'postulations' && (
             <div className="space-y-3">
-              {mockPostulations.map(post => {
-                const candidat = mockCandidats.find(c => c.id_candidat === post.id_candidat)
-                const offre = mockOffresEmploi.find(o => o.id_offre === post.id_offre)
+              {postulations.map(post => {
+                const candidat = candidats.find(c => c.id_candidat === post.id_candidat)
+                const offre = offres.find(o => o.id_offre === post.id_offre)
                 return (
                   <div key={post.id_postulation} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center justify-between mb-2">

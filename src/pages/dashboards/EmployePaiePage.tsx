@@ -1,14 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DollarSign, Search, Download, Eye, Calendar, FileText, TrendingUp } from 'lucide-react'
-import { mockFichesPaie, mockEmployes } from '../../data/mockData'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployePaiePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterAnnee, setFilterAnnee] = useState('all')
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const user = mockEmployes[3] || { matricule: 'EMP-J1K2L3' }
-  const userPaies = mockFichesPaie.filter(p => p.matricule === user.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
+  const userPaies = (dashboardData?.fichesPaie || []).filter((p: any) => p.matricule === user.matricule)
 
   const filteredPaies = userPaies.filter(p => {
     const matchesSearch = p.mois_paiement.toLowerCase().includes(searchTerm.toLowerCase())

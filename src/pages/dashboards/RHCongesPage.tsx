@@ -1,19 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Calendar, Search, Plus, Eye, CheckCircle2, XCircle, Clock, User, Filter, X } from 'lucide-react'
-import { mockConges, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHCongesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
   const [filterStatut, setFilterStatut] = useState('all')
   const [selectedConge, setSelectedConge] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const conges = dashboardData?.conges || []
+  const employes = dashboardData?.employes || []
 
   const getEmployeName = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }
 
-  const filteredConges = mockConges.filter(c => {
+  const filteredConges = conges.filter((c: any) => {
     const emp = getEmployeName(c.matricule)
     const matchesSearch = emp.toLowerCase().includes(searchTerm.toLowerCase()) || c.type_conge.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === 'all' || c.type_conge === filterType
@@ -22,10 +30,10 @@ export const RHCongesPage = () => {
   })
 
   const stats = {
-    total: mockConges.length,
-    approuves: mockConges.filter(c => c.statut === 'Approuve').length,
-    enAttente: mockConges.filter(c => c.statut === 'En attente').length,
-    refuses: mockConges.filter(c => c.statut === 'Refuse').length,
+    total: conges.length,
+    approuves: conges.filter((c: any) => c.statut === 'Approuve').length,
+    enAttente: conges.filter((c: any) => c.statut === 'En attente').length,
+    refuses: conges.filter((c: any) => c.statut === 'Refuse').length,
   }
 
   const handleApprouver = (id: number) => {

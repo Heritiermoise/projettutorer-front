@@ -56,8 +56,6 @@ export const CreateEntreprisePage = () => {
 
     setLoading(true)
 
-    const tempUser = JSON.parse(localStorage.getItem('temp_user') || '{}')
-
     try {
       const response = await entrepriseAPI.create({
         nom: formData.nom,
@@ -68,13 +66,23 @@ export const CreateEntreprisePage = () => {
         description: formData.description,
       })
 
-      const user = tempUser && Object.keys(tempUser).length > 0 ? tempUser : JSON.parse(localStorage.getItem('user') || '{}')
-      const linkedUser = { ...user, id_entreprise: response.entreprise?.id_entreprise ?? response.id_entreprise }
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      const entrepriseId = response.entreprise?.id_entreprise ?? response.id_entreprise ?? response.entreprise?.id
+      const linkedUser = {
+        ...storedUser,
+        ...(response.user ?? {}),
+        role: 'directeur',
+        id_entreprise: entrepriseId ?? storedUser.id_entreprise ?? null,
+      }
+
       localStorage.setItem('user', JSON.stringify(linkedUser))
-      localStorage.removeItem('temp_user')
+      if (response.token) {
+        localStorage.setItem('token', response.token)
+        localStorage.setItem('auth_token', response.token)
+      }
 
       setLoading(false)
-      navigate('/dashboard/directeur')
+      navigate(response.redirect || '/dashboard/directeur', { replace: true })
     } catch (err: any) {
       setLoading(false)
       setError(err.message || 'Erreur lors de la creation de l\'entreprise')

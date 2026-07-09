@@ -1,20 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DollarSign, Search, Plus, Eye, Download, Filter, User, Calendar, TrendingUp, X, FileText } from 'lucide-react'
-import { mockFichesPaie, mockEmployes } from '../../data/mockData'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHPaiePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMois, setFilterMois] = useState('all')
   const [filterStatut, setFilterStatut] = useState('all')
   const [selectedPaie, setSelectedPaie] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const fichesPaie = dashboardData?.fichesPaie || []
+  const employes = dashboardData?.employes || []
 
   const getEmployeName = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }
 
-  const filteredPaies = mockFichesPaie.filter(p => {
+  const filteredPaies = fichesPaie.filter((p: any) => {
     const emp = getEmployeName(p.matricule)
     const matchesSearch = emp.toLowerCase().includes(searchTerm.toLowerCase()) || p.mois_paiement.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesMois = filterMois === 'all' || p.mois_paiement === filterMois
@@ -23,15 +31,15 @@ export const RHPaiePage = () => {
   })
 
   const stats = {
-    total: mockFichesPaie.length,
-    payees: mockFichesPaie.filter(p => p.statut === 'Payee').length,
-    enAttente: mockFichesPaie.filter(p => p.statut === 'En attente').length,
-    totalMontant: mockFichesPaie.reduce((sum, p) => sum + p.montant, 0),
+    total: fichesPaie.length,
+    payees: fichesPaie.filter((p: any) => p.statut === 'Payee').length,
+    enAttente: fichesPaie.filter((p: any) => p.statut === 'En attente').length,
+    totalMontant: fichesPaie.reduce((sum: number, p: any) => sum + Number(p.montant || 0), 0),
   }
 
   const moisData = ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Jun'].map(mois => ({
     mois: mois.substring(0, 3),
-    montant: mockFichesPaie.filter(p => p.mois_paiement === mois).reduce((sum, p) => sum + p.montant, 0)
+    montant: fichesPaie.filter((p: any) => p.mois_paiement === mois).reduce((sum: number, p: any) => sum + Number(p.montant || 0), 0)
   }))
 
   return (

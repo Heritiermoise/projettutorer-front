@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Users, FileText, DollarSign, Calendar,
@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
 import { rhNotifications } from '../../data/notifications'
-import { mockEmployes, mockContrats, mockConges, mockStatsEvolution, mockServices, mockFichesPaie, mockPresences } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 import { RHEmployesPage } from './RHEmployesPage'
 import { RHContratsPage } from './RHContratsPage'
 import { RHPaiePage } from './RHPaiePage'
@@ -26,8 +26,28 @@ export const RHDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [notifications, setNotifications] = useState(rhNotifications)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    let mounted = true
+    loadDashboardContext()
+      .then((context) => {
+        if (mounted) {
+          setDashboardData(context)
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false)
+        }
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -75,13 +95,21 @@ export const RHDashboard = () => {
 
   const activeSection = getCurrentSection()
 
+  const employes = dashboardData?.employes || []
+  const contrats = dashboardData?.contrats || []
+  const conges = dashboardData?.conges || []
+  const presences = dashboardData?.presences || []
+  const services = dashboardData?.services || []
+  const postes = dashboardData?.postes || []
+  const fichesPaie = dashboardData?.fichesPaie || []
+
   const stats = {
-    totalEmployes: mockEmployes.length,
-    contratsActifs: mockContrats.filter(c => c.statut === 'Actif').length,
-    congesEnAttente: mockConges.filter(c => c.statut === 'En attente').length,
-    masseSalariale: mockContrats.reduce((sum, c) => sum + c.salaire_base, 0),
-    presencesAujourdhui: mockPresences.filter(p => p.statut === 'Present').length,
-    offresActives: 3,
+    totalEmployes: employes.length,
+    contratsActifs: contrats.filter((c: any) => c.statut === 'Actif').length,
+    congesEnAttente: conges.filter((c: any) => c.statut === 'En attente').length,
+    masseSalariale: contrats.reduce((sum: number, c: any) => sum + Number(c.salaire_base || 0), 0),
+    presencesAujourdhui: presences.filter((p: any) => p.statut === 'Present').length,
+    offresActives: dashboardData?.offres?.length || 0,
   }
 
   const kpiCards = [
@@ -129,7 +157,7 @@ export const RHDashboard = () => {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Evolution des effectifs</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={mockStatsEvolution.effectifs}>
+                  <LineChart data={[]}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
                     <XAxis dataKey="mois" stroke="#9ca3af" />
                     <YAxis stroke="#9ca3af" />
@@ -145,8 +173,8 @@ export const RHDashboard = () => {
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par service</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={mockStatsEvolution.repartitionServices} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
-                      {mockStatsEvolution.repartitionServices.map((entry, index) => (
+                    <Pie data={services.map((service: any) => ({ name: service.nom, value: employes.filter((e: any) => postes.some((p: any) => p.id_service === service.id_service && p.id_poste === e.id_poste)).length, color: '#f59e0b' }))} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
+                      {services.map((entry: any, index: number) => (
                         <Cell key={'cell-' + index} fill={entry.color} />
                       ))}
                     </Pie>
@@ -160,7 +188,7 @@ export const RHDashboard = () => {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Derniers employes ajoutes</h3>
                 <div className="space-y-3">
-                  {mockEmployes.slice(0, 5).map((emp) => (
+                  {employes.slice(0, 5).map((emp: any) => (
                     <div key={emp.matricule} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-primary-100 dark:bg-primary-900/30' : 'bg-accent-100 dark:bg-accent-900/30'}`}>
@@ -180,8 +208,8 @@ export const RHDashboard = () => {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Demandes de conges</h3>
                 <div className="space-y-3">
-                  {mockConges.slice(0, 5).map((conge) => {
-                    const emp = mockEmployes.find(e => e.matricule === conge.matricule)
+                  {conges.slice(0, 5).map((conge: any) => {
+                    const emp = employes.find((e: any) => e.matricule === conge.matricule)
                     return (
                       <div key={conge.id_conge} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                         <div className="flex items-center space-x-3">

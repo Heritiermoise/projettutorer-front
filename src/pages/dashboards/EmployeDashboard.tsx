@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, DollarSign, Calendar, Clock, FileText,
@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
 import { employeNotifications } from '../../data/notifications'
-import { mockFichesPaie, mockConges, mockPresences, mockDocuments, mockAvantages, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 import { EmployeCongesPage } from './EmployeCongesPage'
 import { EmployeDocumentsPage } from './EmployeDocumentsPage'
 import { EmployeNotificationsPage } from './EmployeNotificationsPage'
@@ -24,15 +24,35 @@ export const EmployeDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [notifications, setNotifications] = useState(employeNotifications)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
 
-  const user = mockEmployes[3] || { prenom: 'Marie', nom: 'Tshimanga', matricule: 'EMP-J1K2L3', role: 'employe' }
-  const userPaies = mockFichesPaie.filter(p => p.matricule === user.matricule)
-  const userConges = mockConges.filter(c => c.matricule === user.matricule)
-  const userPresences = mockPresences.filter(p => p.matricule === user.matricule)
-  const userDocuments = mockDocuments.filter(d => d.matricule === user.matricule)
-  const userAvantages = mockAvantages.filter(a => a.matricule === user.matricule)
+  useEffect(() => {
+    let mounted = true
+    loadDashboardContext()
+      .then((context) => {
+        if (mounted) {
+          setDashboardData(context)
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false)
+        }
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const user = dashboardData?.user || { prenom: 'Utilisateur', nom: 'RH', matricule: 'N/A', role: 'employe' }
+  const userPaies = (dashboardData?.fichesPaie || []).filter((p: any) => p.matricule === user.matricule)
+  const userConges = (dashboardData?.conges || []).filter((c: any) => c.matricule === user.matricule)
+  const userPresences = (dashboardData?.presences || []).filter((p: any) => p.matricule === user.matricule)
+  const userDocuments = (dashboardData?.documents || []).filter((d: any) => d.matricule === user.matricule)
+  const userAvantages = (dashboardData?.avantages || []).filter((a: any) => a.matricule === user.matricule)
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -279,6 +299,9 @@ export const EmployeDashboard = () => {
 
   return (
     <div className={isDark ? 'dark' : ''}>
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center">Chargement des données réelles...</div>
+      ) : null}
       <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">

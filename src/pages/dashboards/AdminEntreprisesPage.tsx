@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { 
   Building2, Search, Filter, Eye, Trash2, Edit, Download, 
   MapPin, Mail, Phone, Calendar, Users, TrendingUp, 
@@ -9,7 +9,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
-import { mockEntreprises, mockUsers, mockEmployes, mockContrats } from '../../data/mockData'
+import { entrepriseAPI } from '../../services/api'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const AdminEntreprisesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -17,25 +18,57 @@ export const AdminEntreprisesPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedEntreprise, setSelectedEntreprise] = useState<any>(null)
   const [sortBy, setSortBy] = useState<'nom' | 'date' | 'employes'>('date')
+  const [entreprises, setEntreprises] = useState<any[]>([])
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const filteredEntreprises = mockEntreprises.filter(e => {
+  useEffect(() => {
+    let mounted = true
+
+    Promise.all([
+      entrepriseAPI.getAll().catch(() => ({})),
+      loadDashboardContext().catch(() => ({ users: [], employes: [], contrats: [] })),
+    ]).then(([entreprisesResponse, context]) => {
+      if (!mounted) {
+        return
+      }
+
+      const list = Array.isArray(entreprisesResponse)
+        ? entreprisesResponse
+        : Array.isArray(entreprisesResponse?.entreprises)
+          ? entreprisesResponse.entreprises
+          : []
+
+      setEntreprises(list)
+      setDashboardData(context)
+    })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const users = dashboardData?.users || []
+  const employes = dashboardData?.employes || []
+  const contrats = dashboardData?.contrats || []
+
+  const filteredEntreprises = useMemo(() => entreprises.filter((e: any) => {
     const matchesSearch = e.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          e.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatut = filterStatut === 'all' || e.statut === filterStatut
     return matchesSearch && matchesStatut
-  })
+  }), [entreprises, searchTerm, filterStatut])
 
   const getEntrepriseStats = (entrepriseId: number) => {
-    const users = mockUsers.filter(u => u.id_entreprise === entrepriseId)
-    const employes = mockEmployes.filter(e => e.id_entreprise === entrepriseId)
-    const contrats = mockContrats.filter(c => c.id_entreprise === entrepriseId)
-    return { users: users.length, employes: employes.length, contrats: contrats.length }
+    const usersForEntreprise = users.filter((u: any) => u.id_entreprise === entrepriseId)
+    const employesForEntreprise = employes.filter((e: any) => e.id_entreprise === entrepriseId)
+    const contratsForEntreprise = contrats.filter((c: any) => c.id_entreprise === entrepriseId)
+    return { users: usersForEntreprise.length, employes: employesForEntreprise.length, contrats: contratsForEntreprise.length }
   }
 
   const statsData = [
-    { name: 'Actives', value: mockEntreprises.filter(e => e.statut === 'Actif').length, color: '#10b981' },
-    { name: 'Inactives', value: mockEntreprises.filter(e => e.statut === 'Inactif').length, color: '#ef4444' },
-    { name: 'En attente', value: mockEntreprises.filter(e => e.statut === 'En_entente').length, color: '#f59e0b' },
+    { name: 'Actives', value: filteredEntreprises.filter((e: any) => e.statut === 'Actif').length, color: '#10b981' },
+    { name: 'Inactives', value: filteredEntreprises.filter((e: any) => e.statut === 'Inactif').length, color: '#ef4444' },
+    { name: 'En attente', value: filteredEntreprises.filter((e: any) => e.statut === 'En_entente').length, color: '#f59e0b' },
   ]
 
   const evolutionData = [
@@ -167,7 +200,7 @@ export const AdminEntreprisesPage = () => {
               <div>
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Utilisateurs de l'entreprise</h3>
                 <div className="space-y-3">
-                  {mockUsers.filter(u => u.id_entreprise === selectedEntreprise.id_entreprise).map(user => (
+                  {users.filter((u: any) => u.id_entreprise === selectedEntreprise.id_entreprise).map((user: any) => (
                     <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
@@ -211,21 +244,21 @@ export const AdminEntreprisesPage = () => {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <Building2 className="w-8 h-8 text-primary-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockEntreprises.length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{filteredEntreprises.length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Total entreprises</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockEntreprises.filter(e => e.statut === 'Actif').length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{filteredEntreprises.filter((e: any) => e.statut === 'Actif').length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Entreprises actives</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <Users className="w-8 h-8 text-accent-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockUsers.filter(u => u.id_entreprise).length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{users.filter((u: any) => u.id_entreprise).length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Utilisateurs en entreprise</p>
         </div>

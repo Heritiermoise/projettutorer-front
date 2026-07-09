@@ -2,7 +2,7 @@ import { PublicNavbar } from '../components/PublicNavbar'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
-import { authService } from '../services/authService'
+import { useAuth } from '../hooks/useAuth'
 import { Toast } from '../components/ui/Toast'
 
 export const RegisterPage = () => {
@@ -17,6 +17,7 @@ export const RegisterPage = () => {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const navigate = useNavigate()
+  const { register } = useAuth()
 
   useEffect(() => {
     if (success) {
@@ -51,7 +52,7 @@ export const RegisterPage = () => {
 
     try {
       // Appel du service vers /api/register
-      const result = await authService.register({
+      const result = await register({
         nom: formData.nom,
         post_nom: formData.post_nom,
         prenom: formData.prenom,
@@ -81,7 +82,7 @@ export const RegisterPage = () => {
       if (formData.role === 'directeur') {
         localStorage.setItem('temp_user', JSON.stringify(result.user))
         setToast({ type: 'success', message: 'Compte directeur créé avec succès ! Redirection...' })
-        setTimeout(() => navigate('/create-entreprise'), 1500)
+        setTimeout(() => navigate(result.redirect || '/dashboard/directeur', { replace: true }), 1500)
         return
       }
 
@@ -89,7 +90,7 @@ export const RegisterPage = () => {
       setSuccess('Inscription réussie ! Votre compte est en attente de validation par un administrateur.')
       setToast({ type: 'success', message: 'Compte créé ! Redirection vers la page de connexion...' })
       setTimeout(() => {
-        navigate('/login?registered=1')
+        navigate(result.redirect || '/login?registered=1')
       }, 2500)
 
     } catch (err: any) {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Building2, Users, Briefcase, Calendar,
@@ -14,8 +14,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
-import { directeurNotifications } from '../../data/notifications'
-import { mockEmployes, mockContrats, mockPostes, mockStatsEvolution, mockEntreprises, mockServices } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 import { DirecteurEntreprisePage } from './DirecteurEntreprisePage'
 import { DirecteurMembresPage } from './DirecteurMembresPage'
 import { DirecteurServicesPage } from './DirecteurServicesPage'
@@ -56,9 +55,31 @@ import { DirecteurTimesheetPage } from './DirecteurTimesheetPage'
 export const DirecteurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
-  const [notifications, setNotifications] = useState(directeurNotifications)
+  const [notifications, setNotifications] = useState<Array<{ id: number; title: string; message: string; type: 'info' | 'success' | 'warning' | 'error'; date: string; read: boolean }>>([])
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    let mounted = true
+
+    loadDashboardContext()
+      .then((context) => {
+        if (mounted) {
+          setDashboardData(context)
+        }
+      })
+      .finally(() => {
+        if (mounted) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -81,6 +102,7 @@ export const DirecteurDashboard = () => {
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/directeur' },
     { icon: Building, label: 'Mes Entreprises', id: 'mesentreprises', path: '/dashboard/directeur/mesentreprises' },
     { icon: Building2, label: 'Mon Entreprise', id: 'entreprise', path: '/dashboard/directeur/entreprise' },
+    { icon: Briefcase, label: 'Services', id: 'services', path: '/dashboard/directeur/services' },
     { icon: Briefcase, label: 'Postes', id: 'postes', path: '/dashboard/directeur/postes' },
     { icon: FileText, label: 'Offres', id: 'offres', path: '/dashboard/directeur/offres' },
     { icon: Users, label: 'Membres', id: 'membres', path: '/dashboard/directeur/membres' },
@@ -109,7 +131,7 @@ export const DirecteurDashboard = () => {
     { icon: Headphones, label: 'Support', id: 'support', path: '/dashboard/directeur/support' },
     { icon: Archive, label: 'Archivage', id: 'archivage', path: '/dashboard/directeur/archivage' },
     { icon: Shield, label: 'Audit Logs', id: 'audit', path: '/dashboard/directeur/audit' },
-    { icon: Lock, label: 'Permissions', id: 'permissions', path: '/dashboard/directeur/permissions' },
+    { icon: Lock, label: 'Roles', id: 'permissions', path: '/dashboard/directeur/permissions' },
     { icon: Flag, label: 'Jours Feries', id: 'joursferies', path: '/dashboard/directeur/joursferies' },
     { icon: TrendingUp, label: 'Statistiques', id: 'stats', path: '/dashboard/directeur/stats' },
     { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/directeur/notifications' },
@@ -118,7 +140,7 @@ export const DirecteurDashboard = () => {
 
   const getCurrentSection = () => {
     const path = location.pathname
-    const sections = ['mesentreprises', 'entreprise', 'postes', 'offres', 'membres', 'candidats', 'onboarding', 'evaluations', 'formations', 'organigramme', 'paie', 'communication', 'messagerie', 'calendrier', 'pointage', 'approbations', 'notesfrais', 'equipements', 'reconnaissances', 'sondages', 'bienetre', 'kb', 'mentorat', 'timesheets', 'analytics', 'signature', 'integrations', 'support', 'archivage', 'audit', 'permissions', 'joursferies', 'stats', 'notifications', 'parametres']
+    const sections = ['mesentreprises', 'entreprise', 'services', 'postes', 'offres', 'membres', 'candidats', 'onboarding', 'evaluations', 'formations', 'organigramme', 'paie', 'communication', 'messagerie', 'calendrier', 'pointage', 'approbations', 'notesfrais', 'equipements', 'reconnaissances', 'sondages', 'bienetre', 'kb', 'mentorat', 'timesheets', 'analytics', 'signature', 'integrations', 'support', 'archivage', 'audit', 'permissions', 'joursferies', 'stats', 'notifications', 'parametres']
     for (const section of sections) {
       if (path.includes('/' + section)) return section
     }
@@ -127,28 +149,84 @@ export const DirecteurDashboard = () => {
 
   const activeSection = getCurrentSection()
 
+  const employes = dashboardData?.employes || []
+  const postes = dashboardData?.postes || []
+  const services = dashboardData?.services || []
+  const contrats = dashboardData?.contrats || []
+  const currentUser = dashboardData?.user || {}
+  const entrepriseName = dashboardData?.entreprise?.nom || 'votre entreprise'
+
+  const notificationsReelles = useMemo(() => {
+    const items: Array<{ id: number; title: string; message: string; type: 'info' | 'success' | 'warning' | 'error'; date: string; read: boolean }> = []
+
+    if (dashboardData?.conges?.some((conge: any) => conge.statut === 'En attente')) {
+      items.push({ id: 1, title: 'Conges en attente', message: 'Des demandes de congé nécessitent une validation.', type: 'warning', date: 'Récemment', read: false })
+    }
+
+    if (dashboardData?.offres?.some((offre: any) => offre.statut === 'Publiée')) {
+      items.push({ id: 2, title: 'Offres actives', message: 'Une ou plusieurs offres d’emploi sont publiées.', type: 'success', date: 'Récemment', read: false })
+    }
+
+    if (dashboardData?.documents?.some((document: any) => document.statut === 'En attente')) {
+      items.push({ id: 3, title: 'Documents à traiter', message: 'Des documents sont en attente de validation.', type: 'info', date: 'Récemment', read: true })
+    }
+
+    return items
+  }, [dashboardData])
+
+  const serviceCounts = useMemo(() => {
+    return services.map((service: any) => {
+      const servicePosteIds = postes.filter((poste: any) => poste.id_service === service.id_service).map((poste: any) => poste.id_poste)
+      const count = employes.filter((employe: any) => servicePosteIds.includes(employe.id_poste)).length
+      return { name: service.nom, value: count, color: service.id_service % 2 === 0 ? '#8b5cf6' : '#f59e0b' }
+    })
+  }, [services, postes, employes])
+
+  const chartData = useMemo(() => {
+    return services.map((service: any) => {
+      const servicePosteIds = postes.filter((poste: any) => poste.id_service === service.id_service).map((poste: any) => poste.id_poste)
+      return { mois: service.nom, employes: employes.filter((employe: any) => servicePosteIds.includes(employe.id_poste)).length }
+    })
+  }, [services, postes, employes])
+
+  if (loading) {
+    return <div className="p-6 text-slate-600 dark:text-slate-300">Chargement des donnees reelles...</div>
+  }
+
+  const recrutementMois = employes.filter((employe: any) => {
+    if (!employe.created_at) {
+      return false
+    }
+
+    const createdAt = new Date(employe.created_at)
+    const now = new Date()
+
+    return createdAt.getFullYear() === now.getFullYear() && createdAt.getMonth() === now.getMonth()
+  }).length
+
   const stats = {
-    totalMembres: mockEmployes.length,
-    hommes: mockEmployes.filter(e => e.sexe === 'M').length,
-    femmes: mockEmployes.filter(e => e.sexe === 'F').length,
-    masseSalariale: mockContrats.reduce((sum, c) => sum + c.salaire_base, 0),
-    postesTotal: mockPostes.length,
-    postesOccupes: mockPostes.filter(p => p.statut === 'Occupe').length,
-    postesVacants: mockPostes.filter(p => p.statut === 'Vacant').length,
-    recrutementMois: 12,
+    totalMembres: employes.length,
+    hommes: employes.filter((e: any) => e.sexe === 'M').length,
+    femmes: employes.filter((e: any) => e.sexe === 'F').length,
+    masseSalariale: contrats.reduce((sum: number, c: any) => sum + Number(c.salaire_base || 0), 0),
+    postesTotal: postes.length,
+    postesOccupes: postes.filter((p: any) => ['Occupe', 'Occupé'].includes(p.statut)).length,
+    postesVacants: postes.filter((p: any) => p.statut === 'Vacant').length,
+    recrutementMois,
   }
 
   const kpiCards = [
-    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: '+12', color: 'from-amber-500 to-orange-600' },
-    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-green-500 to-emerald-600' },
+    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: 'Données base', color: 'from-amber-500 to-orange-600' },
+    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: 'Somme contrats', color: 'from-green-500 to-emerald-600' },
     { icon: Briefcase, label: 'Postes Occupes', value: stats.postesOccupes + '/' + stats.postesTotal, change: stats.postesVacants + ' vacants', color: 'from-primary-500 to-purple-600' },
-    { icon: Target, label: 'Recrutements', value: stats.recrutementMois, change: '+3', color: 'from-pink-500 to-rose-600' },
+    { icon: Target, label: 'Recrutements ce mois', value: stats.recrutementMois, change: 'Créés ce mois', color: 'from-pink-500 to-rose-600' },
   ]
 
   const renderContent = () => {
     switch (activeSection) {
       case 'mesentreprises': return <DirecteurMesEntreprisesPage />
       case 'entreprise': return <DirecteurEntreprisePage />
+      case 'services': return <DirecteurServicesPage />
       case 'postes': return <DirecteurPostesPage />
       case 'offres': return <DirecteurOffresPage />
       case 'membres': return <DirecteurMembresPage />
@@ -187,7 +265,7 @@ export const DirecteurDashboard = () => {
           <div className="space-y-6">
             <div className="mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Tableau de bord Direction</h1>
-              <p className="text-slate-600 dark:text-slate-400">Vue strategique de {mockEntreprises[0]?.nom}</p>
+              <p className="text-slate-600 dark:text-slate-400">Vue strategique de {entrepriseName}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -209,7 +287,7 @@ export const DirecteurDashboard = () => {
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Evolution des effectifs</h3>
                 <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={mockStatsEvolution.effectifs}>
+                  <AreaChart data={chartData}>
                     <defs>
                       <linearGradient id="colorDir" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
@@ -229,8 +307,8 @@ export const DirecteurDashboard = () => {
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition par service</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
-                    <Pie data={mockStatsEvolution.repartitionServices} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
-                      {mockStatsEvolution.repartitionServices.map((entry, index) => (
+                    <Pie data={serviceCounts} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
+                      {serviceCounts.map((entry, index) => (
                         <Cell key={'cell-' + index} fill={entry.color} />
                       ))}
                     </Pie>
@@ -298,7 +376,7 @@ export const DirecteurDashboard = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <NotificationBell
-                  notifications={notifications}
+                  notifications={notificationsReelles.length > 0 ? notificationsReelles : notifications}
                   onMarkAsRead={handleMarkAsRead}
                   onMarkAllAsRead={handleMarkAllAsRead}
                   onDelete={handleDelete}
@@ -311,8 +389,8 @@ export const DirecteurDashboard = () => {
                     <span className="text-white font-bold">D</span>
                   </div>
                   <div className="hidden sm:block">
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Moise Vita</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Directeur General</p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm">{currentUser?.prenom ? `${currentUser.prenom} ${currentUser.nom || ''}`.trim() : currentUser?.name || 'Directeur'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{currentUser?.role ? String(currentUser.role).toUpperCase() : 'DIRECTEUR'}</p>
                   </div>
                 </div>
               </div>

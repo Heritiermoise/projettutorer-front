@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Settings, Save, Bell, Shield, Palette, User, Mail, CheckCircle2, Lock } from 'lucide-react'
-import { mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployeParametresPage = () => {
   const [activeTab, setActiveTab] = useState<'profil' | 'notifications' | 'security' | 'appearance'>('profil')
   const [saved, setSaved] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const user = mockEmployes[3] || { prenom: 'Marie', nom: 'Tshimanga', email: 'employe@demo.com', telephone: '+243 944 567 890', adresse: 'Kinshasa' }
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { prenom: 'Utilisateur', nom: 'Employe', email: 'employe@demo.com', telephone: '+243 944 567 890', adresse: 'Kinshasa' }
 
   const handleSave = () => {
     setSaved(true)

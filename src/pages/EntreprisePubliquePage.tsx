@@ -1,28 +1,31 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Building2, MapPin, Mail, Phone, Calendar, Briefcase, DollarSign, Users, ArrowLeft, Eye, Clock, Globe, Award, CheckCircle2 } from 'lucide-react'
-import { mockEntreprises, mockOffresEmploi } from '../data/mockData'
 import { useEffect } from 'react'
 import { entrepriseAPI, offreAPI } from '../services/api'
 
 export const EntreprisePubliquePage = () => {
   const { code } = useParams()
   const [filterOffre, setFilterOffre] = useState('all')
-  const [entreprises, setEntreprises] = useState(mockEntreprises)
-  const [offres, setOffres] = useState(mockOffresEmploi)
+  const [entreprises, setEntreprises] = useState<any[]>([])
+  const [offres, setOffres] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true)
       try {
         const [entreprisesResponse, offresResponse] = await Promise.all([
           entrepriseAPI.getAll(),
           offreAPI.getPubliees(),
         ])
-        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || mockEntreprises)
-        setOffres(offresResponse.offres || offresResponse || mockOffresEmploi)
+        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || [])
+        setOffres(offresResponse.offres || offresResponse || [])
       } catch {
-        setEntreprises(mockEntreprises)
-        setOffres(mockOffresEmploi)
+        setEntreprises([])
+        setOffres([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -32,6 +35,14 @@ export const EntreprisePubliquePage = () => {
   const entreprise = entreprises.find(e => 
     e.code_entreprise === code || e.id_entreprise.toString() === code
   )
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
+        <div className="text-center text-slate-500 dark:text-slate-400">Chargement de l'entreprise...</div>
+      </div>
+    )
+  }
 
   if (!entreprise) {
     return (

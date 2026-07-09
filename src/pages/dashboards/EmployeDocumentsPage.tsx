@@ -1,14 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FileText, Download, Upload, Eye, Search, Filter, CheckCircle2, Clock, X } from 'lucide-react'
-import { mockDocuments, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployeDocumentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const user = mockEmployes[3] || { matricule: 'EMP-J1K2L3' }
-  const userDocuments = mockDocuments.filter(d => d.matricule === user.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
+  const userDocuments = (dashboardData?.documents || []).filter((d: any) => d.matricule === user.matricule)
 
   const filteredDocuments = userDocuments.filter(d => {
     const matchesSearch = d.type_document.toLowerCase().includes(searchTerm.toLowerCase())

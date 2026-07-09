@@ -20,22 +20,15 @@ export const LoginPage = () => {
     
     if (result.success) {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      switch(user.role) {
-        case 'admin':
-          navigate('/admin/dashboard');
-          break;
-        case 'directeur':
-          navigate('/direction/dashboard');
-          break;
-        case 'rh':
-          navigate('/rh/dashboard');
-          break;
-        case 'employe':
-          navigate('/employe/dashboard');
-          break;
-        default:
-          navigate('/dashboard');
-      }
+      navigate(user.role === 'directeur' && !user.id_entreprise
+        ? '/create-entreprise'
+        : user.role === 'admin' || user.role === 'it'
+          ? '/dashboard/admin'
+          : user.role === 'directeur'
+            ? '/dashboard/directeur'
+            : user.role === 'rh'
+              ? '/dashboard/rh'
+              : '/dashboard/employe');
     } else {
       setError(result.message);
     }
@@ -120,14 +113,9 @@ export const LoginPage = () => {
 
         {/* Demo credentials */}
         <div className="mt-6 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
-          <p className="text-white/90 text-sm text-center font-medium mb-2">
-            Comptes de démonstration :
+          <p className="text-white/90 text-sm text-center font-medium">
+            La connexion pointe maintenant vers les vrais comptes en base.
           </p>
-          <div className="text-white/70 text-xs space-y-1">
-            <p>• Admin: admin@demo.com / password</p>
-            <p>• RH: rh@demo.com / password</p>
-            <p>• Employé: employe@demo.com / password</p>
-          </div>
         </div>
       </div>
     </div>

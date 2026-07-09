@@ -9,7 +9,7 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, getDashboardPath } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +20,7 @@ export const LoginPage = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      navigate('/dashboard');
+      navigate(getDashboardPath(result.user?.role || ''), { replace: true });
     } else {
       setError(result.message || 'Erreur de connexion');
     }

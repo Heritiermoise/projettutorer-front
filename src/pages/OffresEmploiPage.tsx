@@ -1,28 +1,31 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Briefcase, Search, MapPin, DollarSign, Calendar, Users, Building2, Clock, Eye } from 'lucide-react'
-import { mockOffresEmploi, mockEntreprises } from '../data/mockData'
 import { offreAPI, entrepriseAPI } from '../services/api'
 import { useEffect } from 'react'
 
 export const OffresEmploiPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
-  const [offres, setOffres] = useState(mockOffresEmploi)
-  const [entreprises, setEntreprises] = useState(mockEntreprises)
+  const [offres, setOffres] = useState<any[]>([])
+  const [entreprises, setEntreprises] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true)
       try {
         const [offresResponse, entreprisesResponse] = await Promise.all([
           offreAPI.getPubliees(),
           entrepriseAPI.getAll(),
         ])
-        setOffres(offresResponse.offres || offresResponse || mockOffresEmploi)
-        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || mockEntreprises)
+        setOffres(offresResponse.offres || offresResponse || [])
+        setEntreprises(entreprisesResponse.entreprises || entreprisesResponse || [])
       } catch {
-        setOffres(mockOffresEmploi)
-        setEntreprises(mockEntreprises)
+        setOffres([])
+        setEntreprises([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -92,7 +95,9 @@ export const OffresEmploiPage = () => {
           </span>
         </div>
 
-        {filteredOffres.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 text-slate-500 dark:text-slate-400">Chargement des offres réelles...</div>
+        ) : filteredOffres.length === 0 ? (
           <div className="text-center py-12">
             <Briefcase className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
             <p className="text-slate-500 dark:text-slate-400">Aucune offre ne correspond a votre recherche</p>

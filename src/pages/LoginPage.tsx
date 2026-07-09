@@ -1,8 +1,9 @@
 import { PublicNavbar } from '../components/PublicNavbar'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Building2, Mail, Lock, Eye, EyeOff, Users, LogIn, Loader2 } from 'lucide-react'
 import { authService } from '../services/authService'
+import { useAuth } from '../hooks/useAuth'
 import { Toast } from '../components/ui/Toast'
 
 export const LoginPage = () => {
@@ -12,13 +13,7 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const navigate = useNavigate()
-
-  const testAccounts = useMemo(() => [
-    { email: 'admin@demo.com', password: 'password', role: 'admin', name: 'Administrateur' },
-    { email: 'directeur@demo.com', password: 'password', role: 'directeur', name: 'Directeur' },
-    { email: 'rh@demo.com', password: 'password', role: 'rh', name: 'RH Manager' },
-    { email: 'employe@demo.com', password: 'password', role: 'employe', name: 'Employé' },
-  ], [])
+  const { login } = useAuth()
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('registered') === '1') {
@@ -31,21 +26,23 @@ export const LoginPage = () => {
     setLoading(true)
     setToast({ type: 'info', message: 'Connexion en cours...' })
 
-    const result = await authService.login(email, password)
+    const result = await login(email, password)
     if (result.success && result.user) {
       setToast({ type: 'success', message: 'Connexion réussie. Redirection en cours...' })
-      const dashboardRole = result.user.role
-      setTimeout(() => navigate(`/dashboard/${dashboardRole}`), 700)
+      const dashboardPath = result.user.role === 'admin' || result.user.role === 'it'
+        ? '/dashboard/admin'
+        : result.user.role === 'directeur'
+          ? '/dashboard/directeur'
+          : result.user.role === 'rh'
+            ? '/dashboard/rh'
+            : '/dashboard/employe'
+
+      setTimeout(() => navigate(dashboardPath), 700)
     } else {
       setToast({ type: 'error', message: result.message || 'Email ou mot de passe incorrect' })
     }
 
     setLoading(false)
-  }
-
-  const fillCredentials = (acc: typeof testAccounts[0]) => {
-    setEmail(acc.email)
-    setPassword(acc.password)
   }
 
   return (
@@ -111,23 +108,8 @@ export const LoginPage = () => {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-slate-200">
-              <p className="text-sm text-slate-600 mb-3 font-semibold">Comptes de test :</p>
-              <div className="space-y-2">
-                {testAccounts.map((acc) => (
-                  <button
-                    key={acc.email}
-                    onClick={() => fillCredentials(acc)}
-                    className="w-full text-left p-3 bg-slate-50 rounded-lg hover:bg-primary-50 transition-colors text-sm border border-slate-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-slate-800">{acc.name}</span>
-                      <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-semibold">{acc.role}</span>
-                    </div>
-                    <div className="text-slate-600 mt-1 text-xs">{acc.email} / {acc.password}</div>
-                  </button>
-                ))}
-              </div>
+            <div className="mt-6 pt-6 border-t border-slate-200 text-sm text-slate-500">
+              La connexion utilise maintenant les vrais comptes enregistrés en base.
             </div>
           </div>
 

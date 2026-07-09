@@ -1,29 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Clock, Search, CheckCircle2, XCircle, AlertCircle, User, Calendar, Filter, Download } from 'lucide-react'
-import { mockPresences, mockEmployes } from '../../data/mockData'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHPresencesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [filterDate, setFilterDate] = useState('all')
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const presences = dashboardData?.presences || []
+  const employes = dashboardData?.employes || []
 
   const getEmployeName = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }
 
   const getEmployeInitial = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? emp.prenom[0] : '?'
   }
 
   const getEmployeSexe = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? emp.sexe : 'M'
   }
 
-  const filteredPresences = mockPresences.filter(p => {
+  const filteredPresences = presences.filter((p: any) => {
     const emp = getEmployeName(p.matricule)
     const matchesSearch = emp.toLowerCase().includes(searchTerm.toLowerCase()) || p.matricule.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatut = filterStatut === 'all' || p.statut === filterStatut
@@ -31,10 +39,10 @@ export const RHPresencesPage = () => {
   })
 
   const stats = {
-    total: mockPresences.length,
-    presents: mockPresences.filter(p => p.statut === 'Present').length,
-    retards: mockPresences.filter(p => p.statut === 'Retard').length,
-    absents: mockPresences.filter(p => p.statut === 'Absent').length,
+    total: presences.length,
+    presents: presences.filter((p: any) => p.statut === 'Present').length,
+    retards: presences.filter((p: any) => p.statut === 'Retard').length,
+    absents: presences.filter((p: any) => p.statut === 'Absent').length,
   }
 
   const presenceData = [

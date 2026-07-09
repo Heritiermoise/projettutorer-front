@@ -1,12 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Award, Search, DollarSign, Calendar, CheckCircle2 } from 'lucide-react'
-import { mockAvantages, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployeAvantagesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const user = mockEmployes[3] || { matricule: 'EMP-J1K2L3' }
-  const userAvantages = mockAvantages.filter(a => a.matricule === user.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
+  const userAvantages = (dashboardData?.avantages || []).filter((a: any) => a.matricule === user.matricule)
 
   const filteredAvantages = userAvantages.filter(a => 
     a.libelle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -15,8 +20,8 @@ export const EmployeAvantagesPage = () => {
 
   const stats = {
     total: userAvantages.length,
-    actifs: userAvantages.filter(a => a.statut === 'Actif').length,
-    valeurTotale: userAvantages.reduce((sum, a) => sum + parseInt(a.valeur), 0),
+    actifs: userAvantages.filter((a: any) => a.statut === 'Actif').length,
+    valeurTotale: userAvantages.reduce((sum: number, a: any) => sum + parseInt(a.valeur || '0', 10), 0),
   }
 
   return (

@@ -1,12 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Building2, Plus, SwitchCamera, CheckCircle2, XCircle, Calendar, Code } from 'lucide-react'
-import { mockEntreprisesMulti } from '../../data/phase5Data'
-import type { EntrepriseMulti } from '../../data/phase5Data'
+import { entrepriseAPI } from '../../services/api'
 
 export const DirecteurMesEntreprisesPage = () => {
-  const [entreprises, setEntreprises] = useState<EntrepriseMulti[]>(mockEntreprisesMulti)
+  const [entreprises, setEntreprises] = useState<any[]>([])
   const [entrepriseActive, setEntrepriseActive] = useState<number>(1)
   const [showCreateModal, setShowCreateModal] = useState(false)
+
+  useEffect(() => {
+    entrepriseAPI.getAll()
+      .then((response) => {
+        const list = Array.isArray(response) ? response : response?.entreprises || []
+        setEntreprises(list.map((entreprise: any) => ({
+          id: entreprise.id_entreprise,
+          nom: entreprise.nom,
+          code: entreprise.code || entreprise.id_entreprise,
+          role: entreprise.role || 'Directeur',
+          statut: entreprise.statut || 'Actif',
+          date_rejoins: entreprise.created_at || 'N/A',
+        })))
+        if (list[0]?.id_entreprise) {
+          setEntrepriseActive(list[0].id_entreprise)
+        }
+      })
+      .catch(() => setEntreprises([]))
+  }, [])
 
   const activeEntreprise = entreprises.find(e => e.id === entrepriseActive)
 

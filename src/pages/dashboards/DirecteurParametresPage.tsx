@@ -1,10 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Settings, Save, Building2, Bell, Shield, Palette, Mail, CheckCircle2, Upload } from 'lucide-react'
-import { mockEntreprises } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const DirecteurParametresPage = () => {
   const [activeTab, setActiveTab] = useState<'entreprise' | 'notifications' | 'security' | 'appearance'>('entreprise')
   const [saved, setSaved] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
+
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const entreprise = dashboardData?.entreprise || {
+    nom: 'Entreprise',
+    nom_commercial: 'Entreprise',
+    email: 'contact@entreprise.com',
+    telephone: '+243 000 000 000',
+    adresse: 'Kinshasa',
+    description: '',
+  }
 
   const handleSave = () => {
     setSaved(true)
@@ -50,27 +64,27 @@ export const DirecteurParametresPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nom de l'entreprise</label>
-                  <input type="text" defaultValue={mockEntreprises[0].nom} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.nom} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nom commercial</label>
-                  <input type="text" defaultValue={mockEntreprises[0].nom_commercial} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.nom_commercial} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                  <input type="email" defaultValue={mockEntreprises[0].email} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="email" defaultValue={entreprise.email} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Telephone</label>
-                  <input type="tel" defaultValue={mockEntreprises[0].telephone} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="tel" defaultValue={entreprise.telephone} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Adresse</label>
-                  <input type="text" defaultValue={mockEntreprises[0].adresse} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.adresse} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description</label>
-                  <textarea rows={4} defaultValue={mockEntreprises[0].description} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm resize-none" />
+                  <textarea rows={4} defaultValue={entreprise.description} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm resize-none" />
                 </div>
               </div>
               <div>

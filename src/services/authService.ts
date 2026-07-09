@@ -1,5 +1,4 @@
 import { authAPI } from './api';
-import { mockUsers } from '../data/mockData';
 
 export interface User {
   id: number;
@@ -71,11 +70,6 @@ export const authService = {
   },
 
   getTestAccounts: () => {
-    return mockUsers.map(u => ({
-      email: u.email,
-      password: u.password || 'password',
-      role: u.role,
-      name: u.name,
-    }));
+    return [];
   },
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { 
   Users, Search, Filter, MoreVertical, Shield, ShieldAlert,
   CheckCircle2, XCircle, Clock, Mail, Phone, MapPin,
@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line
 } from 'recharts'
-import { mockUsers } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const AdminUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -19,20 +19,27 @@ export const AdminUsersPage = () => {
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   const [showUserModal, setShowUserModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const filteredUsers = mockUsers.filter(user => {
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData)
+  }, [])
+
+  const users = dashboardData?.users || []
+
+  const filteredUsers = useMemo(() => users.filter((user: any) => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     const matchesStatut = statutFilter === 'all' || user.statut === statutFilter
     return matchesSearch && matchesRole && matchesStatut
-  })
+  }), [users, searchTerm, roleFilter, statutFilter])
 
   const roleDistribution = [
-    { name: 'Admin', value: mockUsers.filter(u => u.role === 'admin').length, color: '#ef4444' },
-    { name: 'Directeur', value: mockUsers.filter(u => u.role === 'directeur').length, color: '#f59e0b' },
-    { name: 'RH', value: mockUsers.filter(u => u.role === 'rh').length, color: '#8b5cf6' },
-    { name: 'Manager', value: mockUsers.filter(u => u.role === 'manager').length, color: '#10b981' },
-    { name: 'Employe', value: mockUsers.filter(u => u.role === 'employe').length, color: '#3b82f6' },
+    { name: 'Admin', value: users.filter((u: any) => u.role === 'admin').length, color: '#ef4444' },
+    { name: 'Directeur', value: users.filter((u: any) => u.role === 'directeur').length, color: '#f59e0b' },
+    { name: 'RH', value: users.filter((u: any) => u.role === 'rh').length, color: '#8b5cf6' },
+    { name: 'Manager', value: users.filter((u: any) => u.role === 'manager').length, color: '#10b981' },
+    { name: 'Employe', value: users.filter((u: any) => u.role === 'employe').length, color: '#3b82f6' },
   ]
 
   const activityData = [
@@ -91,21 +98,21 @@ export const AdminUsersPage = () => {
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <Users className="w-8 h-8 text-primary-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockUsers.length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{users.length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Total utilisateurs</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockUsers.filter(u => u.statut === 'actif').length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{users.filter((u: any) => u.statut === 'actif').length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Comptes actifs</p>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
             <Shield className="w-8 h-8 text-amber-600" />
-            <span className="text-3xl font-bold text-slate-800 dark:text-white">{mockUsers.filter(u => u.role === 'admin').length}</span>
+            <span className="text-3xl font-bold text-slate-800 dark:text-white">{users.filter((u: any) => u.role === 'admin').length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Administrateurs</p>
         </div>

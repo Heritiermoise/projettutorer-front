@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Calendar, Plus, X, Clock, CheckCircle2, XCircle, FileText } from 'lucide-react'
-import { mockConges, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployeCongesPage = () => {
   const [showDemandeModal, setShowDemandeModal] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
   const [formData, setFormData] = useState({
     type_conge: 'Annuel',
     date_debut: '',
@@ -11,8 +12,12 @@ export const EmployeCongesPage = () => {
     motif: '',
   })
 
-  const user = mockEmployes[3] || { matricule: 'EMP-J1K2L3' }
-  const userConges = mockConges.filter(c => c.matricule === user.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
+  const userConges = (dashboardData?.conges || []).filter((c: any) => c.matricule === user.matricule)
 
   const stats = {
     total: userConges.length,

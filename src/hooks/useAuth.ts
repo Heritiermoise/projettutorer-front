@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI, entrepriseAPI } from '../services/api';
+import { authAPI, entrepriseAPI, testBackendConnection } from '../services/api';
+import { clearDashboardContextCache } from '../services/dashboardData';
 import { API_BASE_URL } from '../config/api';
 
 export interface User {
@@ -39,13 +40,16 @@ export const useAuth = () => {
       }
     }
     setLoading(false);
+
+    testBackendConnection()
+      .then((result) => setBackendOk(Boolean(result?.success)))
+      .catch(() => setBackendOk(false));
   }, []);
 
   const checkBackendStatus = async () => {
     try {
-      const ok = await fetch(`${API_BASE_URL}/user`, {
-        headers: { 'Accept': 'application/json' },
-      }).then(() => true).catch(() => false);
+      const result = await testBackendConnection();
+      const ok = Boolean(result?.success);
       setBackendOk(ok);
       return ok;
     } catch {
@@ -55,11 +59,6 @@ export const useAuth = () => {
   };
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message?: string; user?: User }> => {
-    const backendOk = await checkBackendStatus();
-    if (!backendOk) {
-      return { success: false, message: 'Backend Laravel inaccessible. Lancez "php artisan serve".' };
-    }
-    
     try {
       const data = await authAPI.login(email, password);
       if (data.token && data.user) {
@@ -75,29 +74,20 @@ export const useAuth = () => {
     }
   };
 
-  const register = async (data: any): Promise<{ success: boolean; message?: string; user?: User; redirect?: string }> => {
-    const backendOk = await checkBackendStatus();
-    if (!backendOk) {
-      return { success: false, message: 'Backend Laravel inaccessible. Lancez "php artisan serve".' };
-    }
-    
+  const register = async (data: any): Promise<{ success: boolean; message?: string; user?: User; token?: string; redirect?: string }> => {
     try {
-      // Si le role est "directeur", on inscrit comme utilisateur puis on redirige
-      const registerData = { ...data };
-      let redirectPath: string | undefined;
-      
-      if (data.role === 'directeur') {
-        registerData.role = 'utilisateur';
-        redirectPath = '/create-entreprise';
-      }
-      
-      const result = await authAPI.register(registerData);
+      const result = await authAPI.register({ ...data });
       if (result.token && result.user) {
         localStorage.setItem('token', result.token);
         localStorage.setItem('auth_token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         setUser(result.user);
-        return { success: true, user: result.user, redirect: redirectPath };
+        return {
+          success: true,
+          user: result.user,
+          token: result.token,
+          redirect: result.redirect || getDashboardPath(result.user.role),
+        };
       }
       return { success: false, message: 'Inscription reussie mais reponse incomplete' };
     } catch (err: any) {
@@ -106,11 +96,6 @@ export const useAuth = () => {
   };
 
   const createEntreprise = async (formData: FormData): Promise<{ success: boolean; message?: string; user?: User }> => {
-    const backendOk = await checkBackendStatus();
-    if (!backendOk) {
-      return { success: false, message: 'Backend Laravel inaccessible. Lancez "php artisan serve".' };
-    }
-    
     try {
       const result = await entrepriseAPI.create(formData as any);
       
@@ -152,6 +137,7 @@ export const useAuth = () => {
       localStorage.removeItem('token');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
+      clearDashboardContextCache();
       setUser(null);
       navigate('/login');
     }
@@ -167,11 +153,12 @@ export const useAuth = () => {
       case 'rh':
         return '/dashboard/rh';
       case 'manager':
-        return '/dashboard/manager';
+        return '/dashboard/directeur';
+      case 'utilisateur':
       case 'employe':
         return '/dashboard/employe';
       default:
-        return '/dashboard';
+        return '/dashboard/employe';
     }
   };
 

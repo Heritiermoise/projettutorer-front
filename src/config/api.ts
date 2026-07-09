@@ -1,7 +1,7 @@
 // Configuration API
-const DEFAULT_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api';
+const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const rawApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)?.trim();
 
 export const API_BASE_URL = (() => {
   if (!rawApiBaseUrl) {
@@ -56,7 +56,26 @@ export const apiRequest = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({} as any));
+      const validationErrors = errorData?.errors && typeof errorData.errors === 'object'
+        ? Object.values(errorData.errors).flat().filter(Boolean)
+        : [];
+      const baseMessage = errorData?.message || `HTTP error! status: ${response.status}`;
+      const detailedMessage = validationErrors.length > 0
+        ? `${baseMessage}: ${validationErrors.join(' · ')}`
+        : baseMessage;
+
+      const error = new Error(detailedMessage) as Error & {
+        status?: number;
+        errors?: Record<string, string[]>;
+        payload?: unknown;
+      };
+
+      error.status = response.status;
+      error.errors = errorData?.errors;
+      error.payload = errorData;
+
+      throw error;
     }
 
     return await response.json();

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Users, Search, Filter, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X } from 'lucide-react'
-import { mockEmployes, mockPostes, mockServices, mockContrats } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHEmployesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -9,8 +9,18 @@ export const RHEmployesPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedMember, setSelectedMember] = useState<any>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const filteredMembers = mockEmployes.filter(emp => {
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const employes = dashboardData?.employes || []
+  const postes = dashboardData?.postes || []
+  const services = dashboardData?.services || []
+  const contrats = dashboardData?.contrats || []
+
+  const filteredMembers = employes.filter((emp: any) => {
     const matchesSearch = emp.prenom.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          emp.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -20,19 +30,19 @@ export const RHEmployesPage = () => {
   })
 
   const getPosteTitle = (idPoste: number) => {
-    const poste = mockPostes.find(p => p.id_poste === idPoste)
+    const poste = postes.find((p: any) => p.id_poste === idPoste)
     return poste?.titre_poste || 'N/A'
   }
 
   const getServiceName = (idPoste: number) => {
-    const poste = mockPostes.find(p => p.id_poste === idPoste)
+    const poste = postes.find((p: any) => p.id_poste === idPoste)
     if (!poste) return 'N/A'
-    const service = mockServices.find(s => s.id_service === poste.id_service)
+    const service = services.find((s: any) => s.id_service === poste.id_service)
     return service?.nom || 'N/A'
   }
 
   const getContratInfo = (matricule: string) => {
-    return mockContrats.find(c => c.matricule === matricule)
+    return contrats.find((c: any) => c.matricule === matricule)
   }
 
   return (
@@ -40,7 +50,7 @@ export const RHEmployesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Employes</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">{mockEmployes.length} employes enregistres</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">{employes.length} employes enregistres</p>
         </div>
         <div className="flex items-center space-x-2">
           <button className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 text-sm">
@@ -56,10 +66,10 @@ export const RHEmployesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total', value: mockEmployes.length, color: 'from-primary-500 to-purple-600', icon: Users },
-          { label: 'Hommes', value: mockEmployes.filter(e => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
-          { label: 'Femmes', value: mockEmployes.filter(e => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
-          { label: 'Actifs', value: mockEmployes.filter(e => e.statut === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
+          { label: 'Total', value: employes.length, color: 'from-primary-500 to-purple-600', icon: Users },
+          { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
+          { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
+          { label: 'Actifs', value: employes.filter((e: any) => e.statut === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>

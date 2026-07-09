@@ -1,27 +1,37 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Building2, Mail, Phone, MapPin, Calendar, Users, Briefcase, Edit, Save, Upload, Globe, Award, TrendingUp, Shield, CheckCircle2, FileText } from 'lucide-react'
-import { mockEntreprises, mockEmployes, mockServices, mockPostes, mockContrats } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const DirecteurEntreprisePage = () => {
   const [isEditing, setIsEditing] = useState(false)
-  
-  const entreprise = mockEntreprises[0] || {
-    nom: 'Mon Entreprise',
-    nom_commercial: 'Commercial',
-    email: 'contact@entreprise.com',
-    telephone: '+243 000 000 000',
-    adresse: 'Adresse non definie',
-    description: 'Description non disponible',
-    code_entreprise: 'ENT-001',
-    created_at: '2026-01-01',
-    statut: 'Actif',
+  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    loadDashboardContext()
+      .then(setDashboardData)
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  if (isLoading) {
+    return <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-slate-500 dark:text-slate-400">Chargement de l'entreprise...</div>
   }
 
+  if (!dashboardData?.entreprise) {
+    return (
+      <div className="rounded-2xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/20 p-8 text-center text-amber-900 dark:text-amber-100">
+        Aucune entreprise active n’a été trouvée pour ce compte.
+      </div>
+    )
+  }
+
+  const entreprise = dashboardData.entreprise
+
   const stats = {
-    totalEmployes: mockEmployes.length,
-    totalServices: mockServices.length,
-    totalPostes: mockPostes.length,
-    contratsActifs: mockContrats.filter(c => c.id_entreprise === 1).length,
+    totalEmployes: dashboardData?.employes?.length || 0,
+    totalServices: dashboardData?.services?.length || 0,
+    totalPostes: dashboardData?.postes?.length || 0,
+    contratsActifs: dashboardData?.contrats?.length || 0,
   }
 
   return (

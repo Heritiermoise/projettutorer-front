@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Archive, Search, Download, Eye, Trash2, Lock, Shield, FileText, Folder, Calendar, CheckCircle2, AlertCircle, Clock, Upload, Filter, X } from 'lucide-react'
-import { mockDocuments, mockEmployes } from '../../data/mockData'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const RHArchivagePage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -8,16 +8,23 @@ export const RHArchivagePage = () => {
   const [filterStatut, setFilterStatut] = useState('all')
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const documentsArchives = [
-    ...mockDocuments.map(d => ({ ...d, date_archivage: '2026-06-01', retention: '5 ans' })),
-    { id_document: 3, type_document: 'Contrat signe', fichier: '/docs/contrat_marie.pdf', statut: 'Archive', matricule: 'EMP-J1K2L3', id_entreprise: 1, created_at: '2026-03-01', date_archivage: '2026-06-01', retention: '5 ans' },
-    { id_document: 4, type_document: 'Evaluation annuelle', fichier: '/docs/eval_grace.pdf', statut: 'Archive', matricule: 'EMP-J1K2L3', id_entreprise: 1, created_at: '2026-01-15', date_archivage: '2026-06-01', retention: '3 ans' },
-    { id_document: 5, type_document: 'Attestation de travail', fichier: '/docs/attest_jean.pdf', statut: 'Archive', matricule: 'EMP-M4N5O6', id_entreprise: 1, created_at: '2026-02-20', date_archivage: '2026-05-15', retention: '10 ans' },
-  ]
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const documents = dashboardData?.documents || []
+  const employes = dashboardData?.employes || []
+
+  const documentsArchives = documents.map((document: any) => ({
+    ...document,
+    date_archivage: document.date_archivage || document.updated_at || document.created_at || 'N/A',
+    retention: document.retention || '5 ans',
+  }))
 
   const getEmployeName = (matricule: string) => {
-    const emp = mockEmployes.find(e => e.matricule === matricule)
+    const emp = employes.find((e: any) => e.matricule === matricule)
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }
 

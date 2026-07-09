@@ -1,19 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar } from 'lucide-react'
-import { mockPresences, mockEmployes } from '../../data/mockData'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
+import { loadDashboardContext } from '../../services/dashboardData'
 
 export const EmployePresencesPage = () => {
   const [filterMois, setFilterMois] = useState('all')
+  const [dashboardData, setDashboardData] = useState<any>(null)
 
-  const user = mockEmployes[3] || { matricule: 'EMP-J1K2L3' }
-  const userPresences = mockPresences.filter(p => p.matricule === user.matricule)
+  useEffect(() => {
+    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
+  }, [])
+
+  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
+  const userPresences = (dashboardData?.presences || []).filter((p: any) => p.matricule === user.matricule)
 
   const stats = {
     total: userPresences.length || 22,
-    presents: userPresences.filter(p => p.statut === 'Present').length || 20,
-    retards: userPresences.filter(p => p.statut === 'Retard').length || 2,
-    absents: userPresences.filter(p => p.statut === 'Absent').length || 0,
+    presents: userPresences.filter((p: any) => p.statut === 'Present').length || 20,
+    retards: userPresences.filter((p: any) => p.statut === 'Retard').length || 2,
+    absents: userPresences.filter((p: any) => p.statut === 'Absent').length || 0,
   }
 
   const presenceData = [

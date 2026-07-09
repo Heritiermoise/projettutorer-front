@@ -27,8 +27,26 @@ export default api;
 const buildUrl = (path: string) => `${API_BASE_URL}${path}`;
 
 const normalizeResponseError = async (response: Response) => {
-  const errorData = await response.json().catch(() => ({}));
-  return new Error(errorData.message || `HTTP ${response.status}`);
+  const errorData = await response.json().catch(() => ({} as any));
+  const validationErrors = errorData?.errors && typeof errorData.errors === 'object'
+    ? Object.values(errorData.errors).flat().filter(Boolean)
+    : [];
+  const baseMessage = errorData?.message || `HTTP ${response.status}`;
+  const detailedMessage = validationErrors.length > 0
+    ? `${baseMessage}: ${validationErrors.join(' · ')}`
+    : baseMessage;
+
+  const error = new Error(detailedMessage) as Error & {
+    status?: number;
+    errors?: Record<string, string[]>;
+    payload?: unknown;
+  };
+
+  error.status = response.status;
+  error.errors = errorData?.errors;
+  error.payload = errorData;
+
+  return error;
 };
 
 const requestJson = async (
@@ -393,6 +411,117 @@ export const employeAPI = {
   delete: async (id: number) => {
     return await apiRequest(`/employes/${id}`, {
       method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICES
+// ═══════════════════════════════════════════════════════════════
+export const serviceAPI = {
+  getAll: async (entrepriseId?: number) => {
+    const url = entrepriseId ? `/services?id_entreprise=${entrepriseId}` : '/services';
+    return await apiRequest(url);
+  },
+
+  create: async (data: Record<string, any>) => {
+    return await apiRequest('/services', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Record<string, any>) => {
+    return await apiRequest(`/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/services/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ROLES
+// ═══════════════════════════════════════════════════════════════
+export const roleAPI = {
+  getAll: async () => {
+    return await apiRequest('/roles');
+  },
+
+  create: async (data: Record<string, any>) => {
+    return await apiRequest('/roles', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Record<string, any>) => {
+    return await apiRequest(`/roles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/roles/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// POSTES
+// ═══════════════════════════════════════════════════════════════
+export const posteAPI = {
+  getAll: async () => {
+    return await apiRequest('/postes');
+  },
+
+  create: async (data: Record<string, any>) => {
+    return await apiRequest('/postes', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Record<string, any>) => {
+    return await apiRequest(`/postes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/postes/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INVITATIONS RH
+// ═══════════════════════════════════════════════════════════════
+export const invitationAPI = {
+  send: async (data: Record<string, any>) => {
+    return await apiRequest('/invitations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getByToken: async (token: string) => {
+    return await apiRequest(`/invitations/${token}`);
+  },
+
+  accept: async (token: string, data: Record<string, any>) => {
+    return await apiRequest(`/invitations/${token}/accept`, {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 };
