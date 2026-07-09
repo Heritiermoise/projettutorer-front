@@ -311,7 +311,7 @@ export const apiRequest = async (
 // ═══════════════════════════════════════════════════════════════
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await requestWithFallback(['/auth/login', '/login'], {
+    const response = await requestWithFallback(['/login', '/login'], {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -323,20 +323,20 @@ export const authAPI = {
   },
 
   register: async (userData: any) => {
-    return await requestWithFallback(['/auth/register', '/register'], {
+    return await requestWithFallback(['/register', '/register'], {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   },
 
   logout: async () => {
-    await requestWithFallback(['/auth/logout', '/logout'], { method: 'POST' });
+    await requestWithFallback(['/logout', '/logout'], { method: 'POST' });
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
   },
 
   getUser: async () => {
-    return await requestWithFallback(['/auth/user', '/user']);
+    return await requestWithFallback(['/user', '/user']);
   },
 };
 
