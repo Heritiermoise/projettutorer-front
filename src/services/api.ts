@@ -13,18 +13,16 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
-
   if (token) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
 export default api;
 
-const buildUrl = (path: string) => `${API_BASE_URL}${path}`;
+const buildUrl = (path: string) => `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
 const normalizeResponseError = async (response: Response) => {
   const errorData = await response.json().catch(() => ({} as any));
@@ -49,10 +47,7 @@ const normalizeResponseError = async (response: Response) => {
   return error;
 };
 
-const requestJson = async (
-  path: string,
-  options: RequestInit = {}
-): Promise<any> => {
+const requestJson = async (path: string, options: RequestInit = {}): Promise<any> => {
   const token = localStorage.getItem('auth_token');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -81,12 +76,8 @@ const requestJson = async (
   return await response.json();
 };
 
-const requestWithFallback = async (
-  paths: string[],
-  options: RequestInit = {}
-): Promise<any> => {
+const requestWithFallback = async (paths: string[], options: RequestInit = {}): Promise<any> => {
   let lastError: unknown;
-
   for (const path of paths) {
     try {
       return await requestJson(path, options);
@@ -98,206 +89,11 @@ const requestWithFallback = async (
       }
     }
   }
-
   throw lastError instanceof Error ? lastError : new Error('Route introuvable');
 };
 
-
-// Types
-export interface User {
-  id: number;
-  nom: string;
-  post_nom?: string;
-  prenom: string;
-  email: string;
-  telephone?: string;
-  adresse?: string;
-  role: string;
-  statut: string;
-  id_entreprise?: number;
-}
-
-export interface Entreprise {
-  id_entreprise: number;
-  code_entreprise: string;
-  nom: string;
-  nom_commercial?: string;
-  email: string;
-  telephone?: string;
-  adresse?: string;
-  description?: string;
-  statut: string;
-}
-
-export interface Employe {
-  id: number;
-  matricule: string;
-  nom: string;
-  post_nom?: string;
-  prenom: string;
-  sexe: string;
-  date_naissance?: string;
-  lieu_naissance?: string;
-  adresse?: string;
-  telephone?: string;
-  email: string;
-  date_embauche: string;
-  statut: string;
-  id_poste: number;
-  id_entreprise: number;
-}
-
-export interface Candidat {
-  id: number;
-  nom: string;
-  prenom: string;
-  email: string;
-  telephone?: string;
-  adresse?: string;
-  statut: string;
-  id_entreprise?: number;
-}
-
-export interface FichePaie {
-  id: number;
-  matricule: string;
-  mois_paiement: string;
-  annee_paiement: string;
-  montant: number;
-  statut: string;
-  id_entreprise?: number;
-}
-
-export interface Avantage {
-  id: number;
-  matricule: string;
-  libelle: string;
-  description?: string;
-  type_avantage: string;
-  valeur?: string;
-  date_expiration?: string;
-  statut: string;
-  id_entreprise?: number;
-}
-
-export interface Document {
-  id: number;
-  matricule: string;
-  type_document: string;
-  fichier: string;
-  statut: string;
-  id_entreprise?: number;
-}
-
-export interface Presence {
-  id: number;
-  matricule: string;
-  date_presence: string;
-  heure_arrivee?: string;
-  heure_depart?: string;
-  statut: string;
-  justification?: string | null;
-  id_entreprise?: number;
-}
-
-export interface Postulation {
-  id: number;
-  cv?: string;
-  lettre?: string;
-  statut: string;
-  id_candidat?: number;
-  id_offre?: number;
-  id_entreprise?: number;
-}
-
-export interface Entretien {
-  id: number;
-  date: string;
-  heure: string;
-  type: string;
-  resultat?: string;
-  id_candidat?: number;
-  id_offre?: number;
-  id_entreprise?: number;
-}
-
-export interface Participant {
-  matricule: string;
-  id_entretien: number;
-  statut?: string;
-}
-
-export interface OffreEmploi {
-  id: number;
-  titre: string;
-  description: string;
-  exigences?: string[];
-  avantages?: string[];
-  type_contrat: string;
-  niveau: string;
-  departement: string;
-  salaire_min?: number;
-  salaire_max?: number;
-  localisation: string;
-  remote: string;
-  date_publication: string;
-  date_expiration: string;
-  statut: string;
-  id_entreprise: number;
-}
-
-export interface Conge {
-  id: number;
-  type_conge: string;
-  date_debut: string;
-  date_fin: string;
-  nombre_jours: number;
-  motif?: string;
-  statut: string;
-  matricule: string;
-  id_entreprise: number;
-}
-
-export interface Contrat {
-  id: number;
-  contrat: string;
-  type: string;
-  date_debut: string;
-  date_fin?: string;
-  salaire_base: number;
-  details?: string;
-  statut: string;
-  matricule: string;
-  id_entreprise: number;
-}
-
-export const testBackendConnection = async () => {
-  try {
-    const response = await fetch(buildUrl('/user'), {
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    return {
-      success: true,
-      message: response.ok
-        ? 'Connexion backend etablie avec succes'
-        : `Backend accessible (HTTP ${response.status})`,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Impossible de joindre le backend',
-    };
-  }
-};
-
 // Fonction de requête API générique
-export const apiRequest = async (
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<any> => {
+export const apiRequest = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
   try {
     return await requestJson(endpoint, options);
   } catch (error) {
@@ -307,11 +103,11 @@ export const apiRequest = async (
 };
 
 // ═══════════════════════════════════════════════════════════════
-// AUTHENTIFICATION
+// AUTHENTIFICATION (Préfixe /auth)
 // ═══════════════════════════════════════════════════════════════
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await requestWithFallback(['/login', '/login'], {
+    const response = await requestJson('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -323,631 +119,251 @@ export const authAPI = {
   },
 
   register: async (userData: any) => {
-    return await requestWithFallback(['/register', '/register'], {
+    return await requestJson('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   },
 
   logout: async () => {
-    await requestWithFallback(['/logout', '/logout'], { method: 'POST' });
+    await requestJson('/auth/logout', { method: 'POST' });
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
   },
 
   getUser: async () => {
-    return await requestWithFallback(['/user', '/user']);
+    return await requestJson('/user'); // Route d'état sous Sanctum
   },
 };
 
 // ═══════════════════════════════════════════════════════════════
-// ENTREPRISES
+// ENTREPRISES (Racines Globales & Inscription Publique)
 // ═══════════════════════════════════════════════════════════════
 export const entrepriseAPI = {
+  inscriptionPublique: async (data: any) => {
+    return await apiRequest('/entreprise/inscription', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   getAll: async () => {
     return await apiRequest('/entreprises');
   },
 
-  getById: async (id: number) => {
-    return await apiRequest(`/entreprises/${id}`);
-  },
-
-  getByCode: async (code: string) => {
-    return await apiRequest(`/entreprises/code/${code}`);
-  },
-
-  create: async (data: Partial<Entreprise>) => {
-    return await apiRequest('/entreprises', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Entreprise>) => {
-    return await apiRequest(`/entreprises/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/entreprises/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// EMPLOYES
-// ═══════════════════════════════════════════════════════════════
-export const employeAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/employes?entreprise_id=${entrepriseId}` : '/employes';
-    return await apiRequest(url);
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/employes/${id}`);
-  },
-
-  getByMatricule: async (matricule: string) => {
-    return await apiRequest(`/employes/${matricule}`);
-  },
-
-  create: async (data: Partial<Employe>) => {
-    return await apiRequest('/employes', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Employe>) => {
-    return await apiRequest(`/employes/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/employes/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// SERVICES
-// ═══════════════════════════════════════════════════════════════
-export const serviceAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/services?id_entreprise=${entrepriseId}` : '/services';
-    return await apiRequest(url);
-  },
-
-  create: async (data: Record<string, any>) => {
-    return await apiRequest('/services', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Record<string, any>) => {
-    return await apiRequest(`/services/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/services/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// ROLES
-// ═══════════════════════════════════════════════════════════════
-export const roleAPI = {
-  getAll: async () => {
-    return await apiRequest('/roles');
-  },
-
-  create: async (data: Record<string, any>) => {
-    return await apiRequest('/roles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Record<string, any>) => {
-    return await apiRequest(`/roles/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/roles/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// POSTES
-// ═══════════════════════════════════════════════════════════════
-export const posteAPI = {
-  getAll: async () => {
-    return await apiRequest('/postes');
-  },
-
-  create: async (data: Record<string, any>) => {
-    return await apiRequest('/postes', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Record<string, any>) => {
-    return await apiRequest(`/postes/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/postes/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// INVITATIONS RH
-// ═══════════════════════════════════════════════════════════════
-export const invitationAPI = {
-  send: async (data: Record<string, any>) => {
-    return await apiRequest('/invitations', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  getByToken: async (token: string) => {
-    return await apiRequest(`/invitations/${token}`);
-  },
-
-  accept: async (token: string, data: Record<string, any>) => {
-    return await apiRequest(`/invitations/${token}/accept`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// OFFRES D'EMPLOI
-// ═══════════════════════════════════════════════════════════════
-export const offreAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/offres?entreprise_id=${entrepriseId}` : '/offres';
-    return await apiRequest(url);
-  },
-
-  getPubliees: async () => {
-    return await apiRequest('/offres/publiees');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/offres/${id}`);
-  },
-
-  getByOffreId: async (id: string | number) => {
-    return await apiRequest(`/offres/${id}`);
-  },
-
-  create: async (data: Partial<OffreEmploi>) => {
-    return await apiRequest('/offres', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<OffreEmploi>) => {
-    return await apiRequest(`/offres/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/offres/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  postuler: async (offreId: number, candidatureData: FormData | Record<string, any>) => {
-    if (candidatureData instanceof FormData) {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildUrl(`/offres/${offreId}/postuler`), {
-        method: 'POST',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          Accept: 'application/json',
-        },
-        body: candidatureData,
-      });
-
-      if (!response.ok) {
-        throw await normalizeResponseError(response);
-      }
-
-      return await response.json();
-    }
-
-    return await apiRequest(`/offres/${offreId}/postuler`, {
-      method: 'POST',
-      body: JSON.stringify(candidatureData),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// CANDIDATS
-// ═══════════════════════════════════════════════════════════════
-export const candidatAPI = {
-  getAll: async () => {
-    return await apiRequest('/candidats');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/candidats/${id}`);
-  },
-
-  create: async (data: Partial<Candidat>) => {
-    return await apiRequest('/candidats', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Candidat>) => {
-    return await apiRequest(`/candidats/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/candidats/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// FICHES DE PAIE
-// ═══════════════════════════════════════════════════════════════
-export const fichesPaieAPI = {
-  getAll: async () => {
-    return await apiRequest('/fiches_paies');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/fiches_paies/${id}`);
-  },
-
-  create: async (data: Partial<FichePaie>) => {
-    return await apiRequest('/fiches_paies', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<FichePaie>) => {
-    return await apiRequest(`/fiches_paies/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/fiches_paies/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// AVANTAGES
-// ═══════════════════════════════════════════════════════════════
-export const avantageAPI = {
-  getAll: async () => {
-    return await apiRequest('/avantages');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/avantages/${id}`);
-  },
-
-  create: async (data: Partial<Avantage>) => {
-    return await apiRequest('/avantages', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Avantage>) => {
-    return await apiRequest(`/avantages/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/avantages/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// DOCUMENTS
-// ═══════════════════════════════════════════════════════════════
-export const documentAPI = {
-  getAll: async () => {
-    return await apiRequest('/documents');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/documents/${id}`);
-  },
-
-  create: async (data: Partial<Document> | FormData) => {
-    if (data instanceof FormData) {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildUrl('/documents'), {
-        method: 'POST',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          Accept: 'application/json',
-        },
-        body: data,
-      });
-
-      if (!response.ok) {
-        throw await normalizeResponseError(response);
-      }
-
-      return await response.json();
-    }
-
-    return await apiRequest('/documents', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Document>) => {
-    return await apiRequest(`/documents/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/documents/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  upload: async (formData: FormData) => {
-    return await documentAPI.create(formData);
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// PRESENCES
-// ═══════════════════════════════════════════════════════════════
-export const presenceAPI = {
-  getAll: async () => {
-    return await apiRequest('/presences');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/presences/${id}`);
-  },
-
-  create: async (data: Partial<Presence>) => {
-    return await apiRequest('/presences', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Presence>) => {
-    return await apiRequest(`/presences/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/presences/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  pointer: async (data: any) => {
-    return await apiRequest('/presences/pointer', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// POSTULATIONS
-// ═══════════════════════════════════════════════════════════════
-export const postulationAPI = {
-  getAll: async () => {
-    return await apiRequest('/postulations');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/postulations/${id}`);
-  },
-
-  create: async (data: Partial<Postulation>) => {
-    return await apiRequest('/postulations', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Postulation>) => {
-    return await apiRequest(`/postulations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/postulations/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// ENTRETIENS
-// ═══════════════════════════════════════════════════════════════
-export const entretienAPI = {
-  getAll: async () => {
-    return await apiRequest('/entretiens');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/entretiens/${id}`);
-  },
-
-  create: async (data: Partial<Entretien>) => {
-    return await apiRequest('/entretiens', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (id: number, data: Partial<Entretien>) => {
-    return await apiRequest(`/entretiens/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (id: number) => {
-    return await apiRequest(`/entretiens/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// PARTICIPANTS
-// ═══════════════════════════════════════════════════════════════
-export const participantAPI = {
-  getAll: async () => {
-    return await apiRequest('/participants');
-  },
-
-  getById: async (matricule: string, idEntretien: number) => {
-    return await apiRequest(`/participants/${matricule}/${idEntretien}`);
-  },
-
-  create: async (data: Participant) => {
-    return await apiRequest('/participants', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  update: async (matricule: string, idEntretien: number, data: Partial<Participant>) => {
-    return await apiRequest(`/participants/${matricule}/${idEntretien}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  delete: async (matricule: string, idEntretien: number) => {
-    return await apiRequest(`/participants/${matricule}/${idEntretien}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// ═══════════════════════════════════════════════════════════════
-// USERS
-// ═══════════════════════════════════════════════════════════════
-export const userAPI = {
-  getAll: async () => {
-    return await apiRequest('/users');
-  },
-
-  getById: async (id: number) => {
-    return await apiRequest(`/users/${id}`);
-  },
-
-  create: async (data: any) => {
-    return await apiRequest('/users', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
   update: async (id: number, data: any) => {
-    return await apiRequest(`/users/${id}`, {
+    return await apiRequest(`/entreprises/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
+};
 
-  delete: async (id: number) => {
-    return await apiRequest(`/users/${id}`, {
+// ═══════════════════════════════════════════════════════════════
+// ESPACE DIRECTION (Directeur / Admin)
+// ═══════════════════════════════════════════════════════════════
+export const directionAPI = {
+  getDashboard: async () => {
+    return await apiRequest('/direction/dashboard');
+  },
+  
+  // Membres (Gestion des utilisateurs de l'entreprise)
+  getMembres: async () => {
+    return await apiRequest('/direction/membres');
+  },
+  createMembre: async (data: any) => {
+    return await apiRequest('/direction/membres', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  updateMembre: async (id: number, data: any) => {
+    return await apiRequest(`/direction/membres/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  deleteMembre: async (id: number) => {
+    return await apiRequest(`/direction/membres/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Services
+  getServices: async () => {
+    return await apiRequest('/direction/services');
+  },
+  createService: async (data: any) => {
+    return await apiRequest('/direction/services/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  updateService: async (id: number, data: any) => {
+    return await apiRequest(`/direction/services/update/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  deleteService: async (id: number) => {
+    return await apiRequest(`/direction/services/delete/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Postes
+  getPostes: async () => {
+    return await apiRequest('/direction/postes');
+  },
+  createPoste: async (data: any) => {
+    return await apiRequest('/direction/postes/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  updatePoste: async (id: number, data: any) => {
+    return await apiRequest(`/direction/postes/update/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+  deletePoste: async (id: number) => {
+    return await apiRequest(`/direction/postes/delete/${id}`, {
       method: 'DELETE',
     });
   },
 };
 
 // ═══════════════════════════════════════════════════════════════
-// CONGES
+// ESPACE RH (RH / Admin)
 // ═══════════════════════════════════════════════════════════════
-export const congeAPI = {
-  getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/conges?entreprise_id=${entrepriseId}` : '/conges';
-    return await apiRequest(url);
+export const rhAPI = {
+  // Employés (Espace RH)
+  getEmployes: async () => {
+    return await apiRequest('/rh/employes');
+  },
+  createEmploye: async (data: any) => {
+    return await apiRequest('/rh/employes/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  updateEmploye: async (id: number, data: any) => {
+    return await apiRequest(`/rh/employes/update/${id}`, {
+      method: 'POST', // Ton back attend un POST sur update
+      body: JSON.stringify(data),
+    });
+  },
+  deleteEmploye: async (id: number) => {
+    return await apiRequest(`/rh/employes/delete/${id}`, {
+      method: 'DELETE',
+    });
   },
 
-  getMesConges: async () => {
-    return await apiRequest('/conges/mes-conges');
+  // Contrats
+  getContrats: async () => {
+    return await apiRequest('/rh/contrats');
   },
-
-  create: async (data: Partial<Conge>) => {
-    return await apiRequest('/conges', {
+  createContrat: async (data: any) => {
+    return await apiRequest('/rh/contrats/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  terminerContrat: async (id: number) => {
+    return await apiRequest(`/rh/contrats/terminer/${id}`, {
+      method: 'PUT',
+    });
+  },
+  renouvelerContrat: async (id: number, data: any) => {
+    return await apiRequest(`/rh/contrats/renouveler/${id}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  approuver: async (id: number) => {
-    return await apiRequest(`/conges/${id}/approuver`, {
-      method: 'PUT',
+  // Congés (Supporte le format Web ou Patch)
+  getConges: async () => {
+    return await apiRequest('/rh/conges');
+  },
+  changeStatutCongeUrl: async (id: number, statut: string) => {
+    return await apiRequest(`/rh/conges/update/${id}/${statut}`);
+  },
+
+  // Fiches de paie
+  getPaies: async () => {
+    return await apiRequest('/rh/paies');
+  },
+  createPaie: async (data: any) => {
+    return await apiRequest('/rh/paie/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+  validerPaie: async (id: number) => {
+    return await apiRequest(`/rh/paie/valider/${id}`, {
+      method: 'POST',
     });
   },
 
-  refuser: async (id: number) => {
-    return await apiRequest(`/conges/${id}/refuser`, {
-      method: 'PUT',
+  // Recrutement & Offres
+  getOffres: async () => {
+    return await apiRequest('/rh/recrutement/offres');
+  },
+  createOffre: async (data: any) => {
+    return await apiRequest('/rh/recrutement/offres/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
+  updateStatutOffre: async (id: number, statut: string) => {
+    return await apiRequest(`/rh/recrutement/offres/update-statut/${id}/${statut}`, {
+      method: 'POST',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// COMPATIBILITÉ COMPOSANTS COMPLETS (Racines Globales API)
+// ═══════════════════════════════════════════════════════════════
+export const globalAPI = {
+  // Congés Généraux
+  getConges: async () => await apiRequest('/conges'),
+  createConge: async (data: any) => await apiRequest('/conges', { method: 'POST', body: JSON.stringify(data) }),
+  updateStatutConge: async (id: number, statut: string) => await apiRequest(`/conges/${id}/${statut}`),
+
+  // Fiches Paie Générales
+  getFichesPaies: async () => await apiRequest('/fiches_paies'),
+  createFichePaie: async (data: any) => await apiRequest('/fiches_paies', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Présences (Pointages)
+  getPresences: async () => await apiRequest('/presences'),
+  pointer: async (data: any) => await apiRequest('/presences/pointer', { method: 'POST', body: JSON.stringify(data) }),
+  sortir: async (id: number) => await apiRequest(`/presences/update-sortie/${id}`, { method: 'POST' }),
+
+  // Décisions Candidats
+  validerCandidat: async (idPostulation: number) => await apiRequest(`/candidat/${idPostulation}/valider`, { method: 'POST' }),
+  refuserCandidat: async (idPostulation: number) => await apiRequest(`/candidat/${idPostulation}/refuser`, { method: 'POST' }),
+};
+
+// ═══════════════════════════════════════════════════════════════
+// MON ESPACE PERSONNEL (Employé connecté)
+// ═══════════════════════════════════════════════════════════════
+export const monEspaceAPI = {
+  getDashboard: async () => await apiRequest('/mon-espace/dashboard'),
+  getMesDocuments: async () => await apiRequest('/mon-espace/mes-documents'),
+  getMesAvantages: async () => await apiRequest('/mon-espace/mes-avantages'),
+  getMesPresences: async () => await apiRequest('/mon-espace/mes-presences'),
+  getMesPaies: async () => await apiRequest('/mon-espace/mes-paies'),
+  envoyerTicket: async (data: any) => await apiRequest('/mon-espace/ticket-rh', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+// ═══════════════════════════════════════════════════════════════
+// OFFRES PUBLIQUES (Sans Token)
+// ═══════════════════════════════════════════════════════════════
+export const publicAPI = {
+  getOffresAccueil: async () => await apiRequest('/offres-accueil'),
+  getOffres: async () => await apiRequest('/offres'),
+  getOffreDetails: async (id: number) => await apiRequest(`/offres/${id}`),
+  postulerExterne: async (data: any) => await apiRequest('/postuler/store', { method: 'POST', body: JSON.stringify(data) }),
 };
