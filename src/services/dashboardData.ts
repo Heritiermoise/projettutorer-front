@@ -62,7 +62,7 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
     userAPI.getAll().catch(() => ({})),
     entrepriseAPI.getAll().catch(() => ({})),
     employeAPI.getAll().catch(() => ({})),
-    apiRequest('directeur/service').catch(() => ({})),
+    apiRequest('directeur/services').catch(() => ({})),
     apiRequest('rh/contrats').catch(() => ({})),
     apiRequest('directeur/postes').catch(() => ({})),
     congeAPI.getAll().catch(() => ({})),
