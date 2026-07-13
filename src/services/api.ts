@@ -624,6 +624,7 @@ export const offreAPI = {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
           Accept: 'application/json',
+          'Content-Type': 'multipart/form-data', // Indique que c'est un FormData
         },
         body: candidatureData,
       });
