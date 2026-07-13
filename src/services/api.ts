@@ -24,7 +24,12 @@ api.interceptors.request.use((config) => {
 
 export default api;
 
-const buildUrl = (path: string) => `${API_BASE_URL}${path}`;
+const buildUrl = (path: string) => {
+  // On s'assure que BASE se termine proprement et que path commence sans doublon de slash
+  const base = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}${cleanPath}`;
+};
 
 const normalizeResponseError = async (response: Response) => {
   const errorData = await response.json().catch(() => ({} as any));
@@ -317,7 +322,9 @@ export const apiRequest = async (
   options: RequestInit = {}
 ): Promise<any> => {
   try {
-    return await requestJson(endpoint, options);
+    // Force la présence d'un slash au début du chemin s'il n'existe pas
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return await requestJson(cleanEndpoint, options);
   } catch (error) {
     console.error('API Error:', error);
     throw error;
@@ -354,7 +361,7 @@ export const authAPI = {
   },
 
   getUser: async () => {
-    return await requestWithFallback(['/auth/user', '/user']);
+    return await apiRequest('/user');
   },
 };
 
@@ -738,18 +745,30 @@ export const avantageAPI = {
 // DOCUMENTS
 // ═══════════════════════════════════════════════════════════════
 export const documentAPI = {
-  getAll: async () => {
-    return await apiRequest('/documents');
+  /**
+   * Récupère les documents.
+   * @param context 'rh' pour la liste globale (RH) ou 'personnel' pour ses propres documents
+   */
+  getAll: async (context: 'rh' | 'personnel' = 'rh') => {
+    const endpoint = context === 'personnel' ? '/mon-espace/mes-documents' : '/rh/documents';
+    return await apiRequest(endpoint);
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/documents/${id}`);
+    return await apiRequest(`/rh/documents/${id}`);
   },
 
-  create: async (data: Partial<Document> | FormData) => {
-    if (data instanceof FormData) {
+  /**
+   * Crée/Téléverse un document. Supports JSON et FormData (fichiers).
+   */
+  create: async (data: Partial<Document> | FormData, context: 'rh' | 'personnel' = 'rh') => {
+    // Sélection de la route selon qui envoie le document
+    const endpoint = context === 'personnel' ? '/mon-espace/mes-documents/store' : '/rh/documents/store';
+    const isFormData = data instanceof FormData;
+
+    if (isFormData) {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildUrl('/documents'), {
+      const response = await fetch(buildUrl(endpoint), {
         method: 'POST',
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -765,27 +784,27 @@ export const documentAPI = {
       return await response.json();
     }
 
-    return await apiRequest('/documents', {
+    return await apiRequest(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<Document>) => {
-    return await apiRequest(`/documents/${id}`, {
+    return await apiRequest(`/rh/documents/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/documents/${id}`, {
+    return await apiRequest(`/rh/documents/${id}`, {
       method: 'DELETE',
     });
   },
 
-  upload: async (formData: FormData) => {
-    return await documentAPI.create(formData);
+  upload: async (formData: FormData, context: 'rh' | 'personnel' = 'rh') => {
+    return await documentAPI.create(formData, context);
   },
 };
 
@@ -932,30 +951,36 @@ export const participantAPI = {
 // USERS
 // ═══════════════════════════════════════════════════════════════
 export const userAPI = {
-  getAll: async () => {
-    return await apiRequest('/users');
+  /**
+   * Récupère la liste des membres. 
+   * Par défaut, cible l'espace direction, ou l'espace système IT.
+   */
+  getAll: async (context: 'direction' | 'it' = 'direction') => {
+    const endpoint = context === 'it' ? '/it/utilisateurs' : '/direction/membres';
+    return await apiRequest(endpoint);
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/users/${id}`);
+    // Les détails d'un membre s'exécutent généralement dans l'espace direction
+    return await apiRequest(`/direction/membres/${id}`);
   },
 
   create: async (data: any) => {
-    return await apiRequest('/users', {
+    return await apiRequest('/direction/membres', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: any) => {
-    return await apiRequest(`/users/${id}`, {
+    return await apiRequest(`/direction/membres/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/users/${id}`, {
+    return await apiRequest(`/direction/membres/${id}`, {
       method: 'DELETE',
     });
   },
