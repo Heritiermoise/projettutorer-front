@@ -469,26 +469,30 @@ export const employeAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const serviceAPI = {
   getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/services?id_entreprise=${entrepriseId}` : '/services';
+    // Added /direction prefix
+    const url = entrepriseId ? `/direction/services?id_entreprise=${entrepriseId}` : '/direction/services';
     return await apiRequest(url);
   },
 
   create: async (data: Record<string, any>) => {
-    return await apiRequest('/services', {
+    // Added /direction prefix
+    return await apiRequest('/direction/services', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Record<string, any>) => {
-    return await apiRequest(`/services/${id}`, {
+    // Modified path to match Laravel's: /services/update/{id}
+    return await apiRequest(`/direction/services/update/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/services/${id}`, {
+    // Modified path to match Laravel's: /services/delete/{id}
+    return await apiRequest(`/direction/services/delete/${id}`, {
       method: 'DELETE',
     });
   },
