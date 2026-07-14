@@ -427,6 +427,44 @@ export const entrepriseAPI = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// MEMBRES
+// ═══════════════════════════════════════════════════════════════
+export const membreAPI = {
+  getAll: async (entrepriseId?: number) => {
+    const url = entrepriseId ? `/direction/membres?entreprise_id=${entrepriseId}` : '/employes';
+    return await apiRequest(url);
+  },
+
+  getById: async (id: number) => {
+    return await apiRequest(`/direction/membres/${id}`);
+  },
+
+  getByMatricule: async (matricule: string) => {
+    return await apiRequest(`/direction/membres/${matricule}`);
+  },
+
+  create: async (data: Partial<Employe>) => {
+    return await apiRequest('direction/membres', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  update: async (id: number, data: Partial<Employe>) => {
+    return await apiRequest(`direction/membres${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/direction/membres/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
 // EMPLOYES
 // ═══════════════════════════════════════════════════════════════
 export const employeAPI = {
