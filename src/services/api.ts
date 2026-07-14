@@ -532,25 +532,25 @@ export const roleAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const posteAPI = {
   getAll: async () => {
-    return await apiRequest('/postes');
+    return await apiRequest('/direction/postes');
   },
 
   create: async (data: Record<string, any>) => {
-    return await apiRequest('/postes', {
+    return await apiRequest('/direction/postes', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Record<string, any>) => {
-    return await apiRequest(`/postes/${id}`, {
+    return await apiRequest(`/direction/postes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/postes/${id}`, {
+    return await apiRequest(`/direction/postes/${id}`, {
       method: 'DELETE',
     });
   },
