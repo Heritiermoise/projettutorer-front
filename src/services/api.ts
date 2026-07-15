@@ -431,7 +431,7 @@ export const entrepriseAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const membreAPI = {
   getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/direction/membres?entreprise_id=${entrepriseId}` : '/employes';
+    const url = entrepriseId ? `/direction/membres?entreprise_id=${entrepriseId}` : '/mebres';
     return await apiRequest(url);
   },
 
