@@ -463,7 +463,7 @@ export const DirecteurPostesPage = () => {
                             disabled={archivingPosteId === poste.id}
                             className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
                           >
-                            {archivingPosteId === id ? <Loader2 className="w-4 h-4 animate-spin" /> : (poste.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
+                            {archivingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (poste.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
                           </button>
                           <button 
                             type="button" 
