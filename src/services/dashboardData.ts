@@ -125,17 +125,17 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
       return items.filter((item: any) => item[key] === entrepriseId)
     }
 
-    const usersFiltrees = filterByEntreprise(users)
-    const employes = filterByEntreprise(extractArray(employesResponse, 'rh/employes'))
-    const services = filterByEntreprise(extractArray(servicesResponse, 'direction/services'))
-    const postes = filterByEntreprise(extractArray(postesResponse, 'direction/postes'))
-    const contrats = filterByEntreprise(extractArray(contratsResponse, 'rh/contrats'))
-    const conges = filterByEntreprise(extractArray(congesResponse, 'rh/conges'))
-    const presences = filterByEntreprise(extractArray(presencesResponse, 'rh/presences'))
-    const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'rh/fichesPaies'))
-    const avantages = filterByEntreprise(extractArray(avantagesResponse, 'rh/avantages'))
-    const documents = filterByEntreprise(extractArray(documentsResponse, 'rh/documents'))
-    const offres = filterByEntreprise(extractArray(offresResponse, 'rh/offres'))
+const usersFiltrees = filterByEntreprise(users)
+const employes = filterByEntreprise(extractArray(employesResponse, 'employes'))
+const services = filterByEntreprise(extractArray(servicesResponse, 'services'))
+const postes = filterByEntreprise(extractArray(postesResponse, 'postes'))
+const contrats = filterByEntreprise(extractArray(contratsResponse, 'contrats'))
+const conges = filterByEntreprise(extractArray(congesResponse, 'conges'))
+const presences = filterByEntreprise(extractArray(presencesResponse, 'presences'))
+const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'fichesPaies'))
+const avantages = filterByEntreprise(extractArray(avantagesResponse, 'avantages'))
+const documents = filterByEntreprise(extractArray(documentsResponse, 'documents'))
+const offres = filterByEntreprise(extractArray(offresResponse, 'offres'))
 
     const context = {
       user: currentUser,
