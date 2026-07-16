@@ -7,28 +7,34 @@ export const HomePage = () => {
   const [offres, setOffres] = useState([])
   const [loading, setLoading] = useState(true)
   
-  // Nouvel état pour stocker vos vraies statistiques de la BDD
+  // État étendu connecté aux valeurs réelles renvoyées par l'API Laravel
   const [stats, setStats] = useState({
     utilisateurs: 0,
     entreprises: 0,
-    offres_actives: 0
+    offres_actives: 0,
+    contrats_actifs: 0,
+    nouveaux_contrats: 0,
+    graphique: {
+      labels: Array(12).fill(''),
+      hauteurs: Array(12).fill(0),
+      valeurs: Array(12).fill(0)
+    }
   })
 
-  // Récupération de toutes les données au chargement du composant
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
 
-        // 1. Récupération des offres d'emploi
-        const responseOffres = await fetch('http://localhost:8000/api/offres-accueil')
+        // 1. Récupération des dernières offres d'emploi
+        const responseOffres = await fetch('https://rhmanager-877l.onrender.com/api/offres-accueil')
         const resultOffres = await responseOffres.json()
         if (resultOffres.success) {
           setOffres(resultOffres.data)
         }
 
-        // 2. Récupération des statistiques réelles (Route : /stats-accueil)
-        const responseStats = await fetch('http://localhost:8000/api/stats-accueil')
+        // 2. Récupération des statistiques réelles du dashboard
+        const responseStats = await fetch('https://rhmanager-877l.onrender.com/api/stats-accueil')
         const resultStats = await responseStats.json()
         if (resultStats.success) {
           setStats(resultStats.data)
@@ -64,7 +70,7 @@ export const HomePage = () => {
               </div>
 
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
-                <span className="text-slate-800 dark:text-white">Gerez votre</span>
+                <span className="text-slate-800 dark:text-white">Gérez votre</span>
                 <br />
                 <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 bg-clip-text text-transparent">entreprise</span>
                 <br />
@@ -86,7 +92,7 @@ export const HomePage = () => {
                 </Link>
               </div>
 
-              {/* --- STATISTIQUES CONNECTÉES À LA BDD --- */}
+              {/* --- STATISTIQUES HERO --- */}
               <div className="mt-12 grid grid-cols-3 gap-6 max-w-md mx-auto lg:mx-0">
                 <div className="text-center lg:text-left">
                   <Users className="w-6 h-6 text-primary-500 mx-auto lg:mx-0 mb-2" />
@@ -112,7 +118,7 @@ export const HomePage = () => {
               </div>
             </div>
 
-            {/* --- DASHBOARD PREVIEW --- */}
+            {/* --- DASHBOARD PREVIEW DYNAMIQUE --- */}
             <div className="relative hidden lg:block">
               <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center space-x-2 mb-6">
@@ -123,22 +129,49 @@ export const HomePage = () => {
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Effectifs ce mois</div>
-                    <div className="text-2xl font-bold text-primary-600">+24</div>
+                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Volume de recrutements (12 mois glissants)</div>
+                    <div className="text-2xl font-bold text-primary-600">
+                      {loading ? "..." : `+${stats.nouveaux_contrats}`} ce mois
+                    </div>
                   </div>
-                  <div className="flex items-end space-x-2 h-32">
-                    {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map((height, i) => (
-                      <div key={i} style={{ height: height + '%' }} className="flex-1 bg-gradient-to-t from-primary-500 to-accent-400 rounded-t-lg opacity-80"></div>
+                  
+                  {/* Graphique dynamique avec hauteurs et valeurs en base de données */}
+                  <div className="flex items-end space-x-2 h-32 pt-4">
+                    {stats.graphique.hauteurs.map((height, i) => (
+                      <div 
+                        key={i} 
+                        style={{ height: `${Math.max(height, 5)}%` }} // Garde une petite présence visuelle même si égal à 0
+                        className="group relative flex-1 bg-gradient-to-t from-primary-500 to-accent-400 rounded-t-lg opacity-80 hover:opacity-100 transition-all cursor-pointer"
+                      >
+                        {/* Tooltip interactif contenant le nom du mois et les contrats */}
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-[10px] py-1.5 px-2.5 rounded-lg shadow-xl whitespace-nowrap z-10 border border-slate-700">
+                          {stats.graphique.labels[i]} : {stats.graphique.valeurs[i]} recrutement(s)
+                        </div>
+                      </div>
                     ))}
                   </div>
+
+                  {/* Légende du graphique (Noms des mois abrégés) */}
+                  <div className="flex justify-between text-[9px] font-semibold text-slate-400 dark:text-slate-500 px-1">
+                    {stats.graphique.labels.map((label, idx) => (
+                      <span key={idx} className="w-full text-center truncate">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-gradient-to-br from-primary-50 to-purple-100/50 dark:from-primary-900/30 dark:to-purple-900/30 p-4 rounded-2xl border border-primary-200 dark:border-primary-800">
                       <div className="text-xs font-semibold text-primary-600 dark:text-primary-300">Contrats actifs</div>
-                      <div className="text-2xl font-bold text-primary-700 dark:text-primary-200">142</div>
+                      <div className="text-2xl font-bold text-primary-700 dark:text-primary-200">
+                        {loading ? "..." : stats.contrats_actifs}
+                      </div>
                     </div>
                     <div className="bg-gradient-to-br from-accent-50 to-emerald-100/50 dark:from-accent-900/30 dark:to-emerald-900/30 p-4 rounded-2xl border border-accent-200 dark:border-accent-800">
-                      <div className="text-xs font-semibold text-accent-600 dark:text-accent-300">Nouveaux</div>
-                      <div className="text-2xl font-bold text-accent-700 dark:text-accent-200">12</div>
+                      <div className="text-xs font-semibold text-accent-600 dark:text-accent-300">Nouveaux ce mois</div>
+                      <div className="text-2xl font-bold text-accent-700 dark:text-accent-200">
+                        {loading ? "..." : stats.nouveaux_contrats}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -149,73 +182,98 @@ export const HomePage = () => {
       </section>
 
       {/* --- SECTION DES DERNIÈRES OFFRES D'EMPLOI --- */}
-      <section className="py-20 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white mb-4">
+      <section className="py-24 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 relative overflow-hidden">
+        {/* Cercles décoratifs subtils en arrière-plan pour la cohérence visuelle */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-primary-100/20 dark:bg-primary-950/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-800 dark:text-white mb-4">
               Dernières opportunités publiées
             </h2>
+            <div className="w-24 h-1.5 bg-gradient-to-r from-primary-600 to-accent-500 mx-auto rounded-full mb-6"></div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Rejoignez l'une des entreprises partenaires de la plateforme RH Pro. Vos compétences méritent le meilleur cadre.
             </p>
           </div>
 
           {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="flex flex-col justify-center items-center py-20 space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Chargement des opportunités...</span>
             </div>
-          ) : offres.length === 0 ? (
-            <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-              <p className="text-slate-500 dark:text-slate-400">Aucune offre d'emploi n'est disponible pour le moment.</p>
+          ) : !offres || offres.length === 0 ? (
+            <div className="text-center py-16 bg-slate-50/50 dark:bg-slate-800/30 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 max-w-3xl mx-auto px-6">
+              <Briefcase className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-1">Aucune offre d'emploi</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Aucune offre n'est disponible pour le moment. Revenez un peu plus tard !
+              </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {offres.map((offre) => (
-                <div 
-                  key={offre.id || offre.id_offre} 
-                  className="bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all transform hover:-translate-y-1 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-semibold rounded-full">
-                        {offre.type_contrat || "CDI / CDD"}
-                      </span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center">
-                        <Calendar className="w-3.5 h-3.5 mr-1" />
-                        {new Date(offre.created_at).toLocaleDateString('fr-FR')}
-                      </span>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {offres.map((offre: any) => {
+                // Gestion sécurisée des dates pour éviter que le composant ne plante (bloque)
+                const dateCreation = offre.created_at ? new Date(offre.created_at).toLocaleDateString('fr-FR') : "Récemment";
+                const dateLimite = offre.date_limite ? new Date(offre.date_limite).toLocaleDateString('fr-FR') : "Non spécifiée";
+                const salaireFormate = offre.salaire_base ? Number(offre.salaire_base).toLocaleString('fr-FR') : "À négocier";
+
+                return (
+                  <div 
+                    key={offre.id_offre} 
+                    className="group bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-3xl p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* En-tête de la carte */}
+                      <div className="flex justify-between items-start gap-4 mb-6">
+                        <span className="inline-flex px-4 py-1.5 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-950/40 dark:to-primary-900/40 text-primary-700 dark:text-primary-300 text-xs font-bold rounded-full border border-primary-200/50 dark:border-primary-800/30">
+                          {salaireFormate !== "À négocier" ? `${salaireFormate} €` : salaireFormate}
+                        </span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center shrink-0">
+                          <Calendar className="w-3.5 h-3.5 mr-1" />
+                          {dateCreation}
+                        </span>
+                      </div>
+
+                      {/* Titre & Description */}
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1 mb-3">
+                        {offre.titre || "Titre non spécifié"}
+                      </h3>
+                      
+                      <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3 mb-6">
+                        {offre.description || "Aucune description fournie pour cette offre d'emploi."}
+                      </p>
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-800 dark:text-white line-clamp-1 mb-2">
-                      {offre.titre || offre.poste}
-                    </h3>
-                    
-                    <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-3 mb-4">
-                      {offre.description}
-                    </p>
-                  </div>
-
-                  <div className="border-t border-slate-100 dark:border-slate-700 pt-4 mt-4 flex items-center justify-between">
-                    <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
-                      <MapPin className="w-4 h-4 mr-1 text-slate-400" />
-                      <span>{offre.lieu || "France / Télétravail"}</span>
+                    {/* Pied de la carte */}
+                    <div className="border-t border-slate-100 dark:border-slate-700/80 pt-5 mt-auto flex items-center justify-between">
+                      <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                        <MapPin className="w-4 h-4 mr-1 text-slate-400 shrink-0" />
+                        <span className="truncate max-w-[150px]">Limite : {dateLimite}</span>
+                      </div>
+                      
+                      <Link 
+                        to={`/offres/${offre.id_offre}`} 
+                        className="inline-flex items-center text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors group/btn"
+                      >
+                        <span>Voir l'offre</span>
+                        <ArrowRight className="ml-1 w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
+                      </Link>
                     </div>
-                    
-                    <Link 
-                      to={`/offres/${offre.id || offre.id_offre}`} 
-                      className="inline-flex items-center text-sm font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                    >
-                      <span>Voir l'offre</span>
-                      <ArrowRight className="ml-1 w-4 h-4" />
-                    </Link>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          <div className="text-center mt-12">
-            <Link to="/offres" className="inline-flex items-center justify-center px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-full transition-all">
+          {/* Bouton Voir toutes les offres */}
+          <div className="text-center mt-16">
+            <Link 
+              to="/offres" 
+              className="inline-flex items-center justify-center px-8 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-full shadow-lg hover:shadow-xl border-2 border-slate-200/80 dark:border-slate-700 transition-all duration-300 transform hover:-translate-y-0.5"
+            >
               <span>Parcourir toutes les offres</span>
               <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
