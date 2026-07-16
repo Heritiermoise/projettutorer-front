@@ -451,7 +451,7 @@ export const membreAPI = {
   },
 
   update: async (id: number, data: Partial<Employe>) => {
-    return await apiRequest(`direction/membres${id}`, {
+    return await apiRequest(`/direction/membres/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
