@@ -26,15 +26,19 @@ export const HomePage = () => {
       try {
         setLoading(true)
 
+        const rawBase = import.meta.env.VITE_API_BASE_URL || 'https://rhmanager-877l.onrender.com'
+        const cleanBase = rawBase.replace(/\/+$/, '')
+        const apiBase = cleanBase.toLowerCase().endsWith('/api') ? cleanBase : `${cleanBase}/api`
+
         // 1. Récupération des dernières offres d'emploi
-        const responseOffres = await fetch('https://rhmanager-877l.onrender.com/api/offres-accueil')
+        const responseOffres = await fetch(`${apiBase}/offres-accueil`)
         const resultOffres = await responseOffres.json()
         if (resultOffres.success) {
           setOffres(resultOffres.data)
         }
 
         // 2. Récupération des statistiques réelles du dashboard
-        const responseStats = await fetch('https://rhmanager-877l.onrender.com/api/stats-accueil')
+        const responseStats = await fetch(`${apiBase}/stats-accueil`)
         const resultStats = await responseStats.json()
         if (resultStats.success) {
           setStats(resultStats.data)
