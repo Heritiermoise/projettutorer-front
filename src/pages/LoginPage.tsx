@@ -274,7 +274,7 @@ export const LoginPage = () => {
             <div className="relative z-10 mt-8 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 dark:text-slate-400 gap-3">
               <span>Besoin de créer un nouvel espace entreprise ?</span>
               <Link 
-                to="/entreprise/inscription" 
+                to="/create-entreprise" 
                 className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 font-bold transition-all group"
               >
                 Inscrire mon entreprise 
