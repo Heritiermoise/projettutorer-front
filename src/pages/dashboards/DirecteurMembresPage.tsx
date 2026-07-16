@@ -68,29 +68,6 @@ export const DirecteurMembresPage = () => {
     return poste?.titre_poste || 'N/A'
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Nettoyage : On ne garde que les champs attendus par le contrôleur
-    const payload = {
-        prenom: createForm.prenom,
-        nom: createForm.nom,
-        email: createForm.email,
-        telephone: createForm.telephone,
-        sexe: createForm.sexe,
-        poste_id: createForm.poste_id,
-    };
-
-    setIsSubmitting(true);
-    try {
-        await membreAPI.create(payload); // Utilisation du payload nettoyé
-        // ... suite de la logique
-    } catch (err) {
-        console.error(err);
-    } finally {
-        setIsSubmitting(false);
-    }
-};
 
   return (
     <div className="space-y-6">
