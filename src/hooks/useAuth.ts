@@ -99,27 +99,26 @@ export const useAuth = () => {
     try {
       const result = await entrepriseAPI.create(formData as any);
       
+      // Si l'API renvoie directement l'utilisateur unifié et son token
       if (result.user) {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        setUser(result.user);
         if (result.token) {
           localStorage.setItem('token', result.token);
+          localStorage.setItem('auth_token', result.token);
         }
-        return { success: true, user: result.user, message: result.message || 'Entreprise creee' };
+        localStorage.setItem('user', JSON.stringify(result.user));
+        setUser(result.user);
+        return { success: true, user: result.user, message: result.message || 'Entreprise creee avec succes' };
       }
       
-      if (result.status === 'success') {
-        try {
-          const userData: any = await authAPI.getUser();
-          if (userData && userData.user) {
-            localStorage.setItem('user', JSON.stringify(userData.user));
-            setUser(userData.user);
-            return { success: true, user: userData.user, message: result.message || 'Entreprise creee' };
-          }
-          return { success: true, message: result.message || 'Entreprise creee. Reconnectez-vous.' };
-        } catch (e) {
-          return { success: true, message: result.message || 'Entreprise creee. Reconnectez-vous.' };
+      // Fallback si la réponse contient entreprise ou structure imbriquée sans exécuter getUser() à blanc
+      if (result.status === 'success' || result.entreprise) {
+        const potentialUser = result.data?.user || result.entreprise?.user || result.user;
+        if (potentialUser) {
+          localStorage.setItem('user', JSON.stringify(potentialUser));
+          setUser(potentialUser);
+          return { success: true, user: potentialUser, message: result.message || 'Entreprise creee' };
         }
+        return { success: true, message: result.message || 'Entreprise creee avec succes.' };
       }
       
       return { success: false, message: result.message || 'Reponse serveur inattendue' };
