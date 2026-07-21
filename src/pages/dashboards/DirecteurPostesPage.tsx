@@ -473,11 +473,7 @@ export const DirecteurPostesPage = () => {
                             disabled={archivingPosteId === pItem.id}
                             className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
                           >
-<<<<<<< HEAD
-                            {archivingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (poste.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
-=======
                             {archivingPosteId === pItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (pItem.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
->>>>>>> c3b8fb5 (poste OK)
                           </button>
                           <button 
                             type="button" 
