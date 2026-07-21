@@ -20,6 +20,9 @@ export const DirecteurMembresPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   
+  // État pour stocker temporairement les identifiants et le mot de passe renvoyé par l'API
+  const [createdCredentials, setCreatedCredentials] = useState<any>(null)
+  
   // Formulaire d'ajout direct de l'employé
   const [createForm, setCreateForm] = useState({
     prenom: '',
@@ -135,8 +138,23 @@ export const DirecteurMembresPage = () => {
 
     setIsSubmitting(true)
     try {
-      await membreAPI.create(payload)
+      const response = await membreAPI.create(payload)
+      
       setShowCreateModal(false)
+      
+      // Récupération directe du mot de passe et du matricule renvoyés par Laravel
+      const generatedPassword = response?.password || response?.temp_password || 'Non fourni'
+      const matricule = response?.matricule || response?.employe?.matricule || 'N/A'
+
+      // Stocke les identifiants pour affichage bloquant dans la modale
+      setCreatedCredentials({
+        prenom: createForm.prenom,
+        nom: createForm.nom,
+        email: createForm.email,
+        password: generatedPassword,
+        matricule: matricule,
+      })
+
       setCreateForm({
         prenom: '',
         nom: '',
@@ -146,7 +164,7 @@ export const DirecteurMembresPage = () => {
         poste_id: '',
         role_name: 'employe',
       })
-      setToast({ type: 'success', message: 'Employé ajouté avec succès !' })
+      
       loadData() // Recharger les données pour mettre à jour la liste
     } catch (err: any) {
       console.error(err)
@@ -309,6 +327,60 @@ export const DirecteurMembresPage = () => {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal d'alerte des identifiants (Bloquant : affiche le mot de passe réel renvoyé par l'API) */}
+      {createdCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 border-2 border-amber-500">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 font-bold text-2xl">
+                🔑
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white">Identifiants de connexion</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Compte créé avec succès</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl space-y-3 text-sm border border-slate-200 dark:border-slate-600">
+              <div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block">Nom complet :</span>
+                <span className="font-bold text-slate-800 dark:text-white">{createdCredentials.prenom} {createdCredentials.nom}</span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block">Matricule :</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">{createdCredentials.matricule}</span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block">Email (Identifiant) :</span>
+                <span className="font-semibold text-slate-800 dark:text-white select-all">{createdCredentials.email}</span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Mot de passe temporaire :</span>
+                <div className="bg-amber-50 dark:bg-slate-900 p-3 rounded-xl border border-amber-300 dark:border-amber-900/50 text-center">
+                  <span className="font-mono text-lg font-bold text-amber-700 dark:text-amber-300 tracking-wider select-all">
+                    {createdCredentials.password}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/30 rounded-xl">
+              <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+                ⚠️ Veuillez copier et transmettre ce mot de passe à l'employé. Cette fenêtre restera ouverte jusqu'à ce que vous confirmiez avoir pris note.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCreatedCredentials(null)}
+              className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-lg shadow-amber-600/30 transition-all text-sm"
+            >
+              J'ai bien noté le mot de passe (Fermer)
+            </button>
           </div>
         </div>
       )}
