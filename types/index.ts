@@ -41,6 +41,9 @@ export interface Employe {
   statut: string;
   id_poste: number;
   id: number;
+  // Accept both french `id_entreprise` and english `company_id` used across branches
+  id_entreprise?: number;
+  company_id?: number;
 }
 
 export interface Service {

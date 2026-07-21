@@ -168,6 +168,8 @@ export interface Employe {
   statut: string;
   id_poste: number;
   id_entreprise: number;
+  // Some backend endpoints use `company_id` (english), accept both keys
+  company_id?: number;
 }
 
 export interface Candidat {
