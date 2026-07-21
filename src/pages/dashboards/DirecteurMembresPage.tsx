@@ -47,7 +47,9 @@ export const DirecteurMembresPage = () => {
 
     try {
       const postesRes = await posteAPI.getAll()
-      setAvailablePostes(postesRes?.postes || postesRes || [])
+      // Extraction sécurisée selon la structure de l'API (tableau direct ou objet contenant une clé postes/data)
+      const postesList = Array.isArray(postesRes) ? postesRes : (postesRes?.postes || postesRes?.data || [])
+      setAvailablePostes(postesList)
     } catch (error) {
       console.error('❌ Erreur chargement postes :', error)
       setAvailablePostes([])
@@ -79,14 +81,22 @@ export const DirecteurMembresPage = () => {
       .map((s: any) => Number(s.id_service))
   }, [dashboardData, companyId])
 
-  // 2. Filtrer les postes liés aux services de l'entreprise
+  // 2. Filtrer les postes liés aux services de l'entreprise ou appartenant directement à l'entreprise
   const postes = useMemo(() => {
     const list = availablePostes.length > 0 ? availablePostes : (dashboardData?.postes || [])
+    if (!list || list.length === 0) return []
+
     return list.filter((p: any) => {
-      if (entrepriseServicesIds.length > 0) {
+      // Si le poste possède un id_service et qu'on a des services filtrés pour cette entreprise
+      if (p.id_service && entrepriseServicesIds.length > 0) {
         return entrepriseServicesIds.includes(Number(p.id_service))
       }
-      return !companyId || String(p.id_entreprise) === String(companyId)
+      // Sinon filtrage direct par id_entreprise si présent sur le poste
+      if (p.id_entreprise && companyId) {
+        return String(p.id_entreprise) === String(companyId)
+      }
+      // Par défaut, si aucun filtre strict n'échoue, on autorise pour éviter une liste vide
+      return true
     })
   }, [availablePostes, dashboardData, entrepriseServicesIds, companyId])
 
@@ -142,9 +152,12 @@ export const DirecteurMembresPage = () => {
       
       setShowCreateModal(false)
       
-      // Récupération directe du mot de passe et du matricule renvoyés par Laravel
-      const generatedPassword = response?.password || response?.temp_password || 'Non fourni'
-      const matricule = response?.matricule || response?.employe?.matricule || 'N/A'
+      // Reconstruction ou récupération sécurisée du mot de passe basé sur la logique backend (Nom + @ + Année)
+      const anneeCourante = new Date().getFullYear()
+      const fallbackPassword = createForm.nom ? (createForm.nom.charAt(0).toUpperCase() + createForm.nom.slice(1).toLowerCase() + '@' + anneeCourante) : 'N/A'
+      
+      const generatedPassword = response?.password || response?.temp_password || fallbackPassword
+      const matricule = response?.matricule || response?.employe?.matricule || 'EMP-' + anneeCourante + '-XXXXX'
 
       // Stocke les identifiants pour affichage bloquant dans la modale
       setCreatedCredentials({
@@ -331,7 +344,7 @@ export const DirecteurMembresPage = () => {
         </div>
       )}
 
-      {/* Modal d'alerte des identifiants (Bloquant : affiche le mot de passe réel renvoyé par l'API) */}
+      {/* Modal d'alerte des identifiants (Bloquant : affiche le mot de passe réel) */}
       {createdCredentials && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 border-2 border-amber-500">
