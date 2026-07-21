@@ -1,3 +1,56 @@
+// import { apiRequest, authAPI, entrepriseAPI, employeAPI, congeAPI, presenceAPI, fichesPaieAPI, avantageAPI, documentAPI, offreAPI, userAPI } from './api'
+
+// export interface DashboardContext {
+//   user: any
+//   entreprise: any
+//   entreprises: any[]
+//   users: any[]
+//   employes: any[]
+//   postes: any[]
+//   services: any[]
+//   contrats: any[]
+//   conges: any[]
+//   presences: any[]
+//   fichesPaie: any[]
+//   avantages: any[]
+//   documents: any[]
+//   offres: any[]
+// }
+
+// const extractArray = (response: any, key: string) => {
+//   if (Array.isArray(response)) {
+//     return response
+//   }
+
+//   if (Array.isArray(response?.[key])) {
+//     return response[key]
+//   }
+
+//   return []
+// }
+
+// let dashboardContextCache: DashboardContext | null = null
+// let dashboardContextPromise: Promise<DashboardContext> | null = null
+
+// export const clearDashboardContextCache = () => {
+//   dashboardContextCache = null
+//   dashboardContextPromise = null
+// }
+
+// export const loadDashboardContext = async () => {
+//   try {
+//     const response = await apiRequest('direction/dashboard'); // ou l'endpoint correspondant
+    
+//     // 🔍 AJOUTEZ CE CONSOLE.LOG POUR VOIR LA RÉPONSE BRUTE
+//     console.log("DONNÉES BRUTES DE L'API DIRECTION :", response);
+
+//     return response;
+//   } catch (error) {
+//     console.error("Erreur lors du chargement du dashboard :", error);
+//     return null;
+//   }
+// };
+
 import { apiRequest, authAPI, entrepriseAPI, employeAPI, congeAPI, presenceAPI, fichesPaieAPI, avantageAPI, documentAPI, offreAPI, userAPI } from './api'
 
 export interface DashboardContext {

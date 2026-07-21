@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { 
   Briefcase, Plus, Search, Edit, Trash2, Users, 
-  CheckCircle2, XCircle, X, Loader2, Eye, EyeOff, LayoutGrid, List 
+  CheckCircle2, EyeOff, LayoutGrid, List, Eye, Loader2 
 } from 'lucide-react'
 import { posteAPI, serviceAPI } from '../../services/api'
 import { loadDashboardContext } from '../../services/dashboardData'
@@ -81,20 +81,20 @@ export const DirecteurPostesPage = () => {
         setDashboardData(context)
         setServices(servicesRes.services || servicesRes || [])
         
-        setPostes((postesRes.postes || []).map((poste: any) => ({
-          id: poste.id_poste,
-          titre: poste.titre_poste,
+        setPostes((postesRes.postes || []).map((p: any) => ({
+          id: p.id_poste,
+          titre: p.titre_poste || '',
           type: 'CDI',
           niveau: 'Junior',
-          departement: poste.service_nom || 'N/A',
+          departement: p.service_nom || 'N/A',
           nombre_postes: 1,
-          postes_occupes: poste.total_employes || 0,
+          postes_occupes: p.total_employes || 0,
           salaire_min: 0,
           salaire_max: 0,
-          description: poste.detail || '',
+          description: p.detail || '',
           competences: '',
-          statut: poste.statut === 'Archivé' ? 'Archivé' : 'Actif',
-          date_creation: poste.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+          statut: p.statut === 'Archivé' ? 'Archivé' : 'Actif',
+          date_creation: p.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
         })))
       } catch (error) {
         console.error('Erreur chargement données:', error)
@@ -110,24 +110,30 @@ export const DirecteurPostesPage = () => {
     loadInitialData()
   }, [])
 
-  // Filtrer les services : uniquement ceux de l'entreprise connectée ET actifs
+  // Filtrer les services : uniquement ceux de l'entreprise connectée ET actifs (Sécurisé contre les valeurs undefined)
   const servicesDeLentrepriseActifs = useMemo(() => {
-    if (services.length === 0) return []
+    if (!services || services.length === 0) return []
     const entrepriseId = dashboardData?.id_entreprise || dashboardData?.entreprise?.id_entreprise
 
     return services.filter((service: any) => {
+      if (!service) return false
       const sEntrepriseId = service.id_entreprise ?? service.entreprise_id;
       const isCorrectEntreprise = entrepriseId ? String(sEntrepriseId) === String(entrepriseId) : true;
-      const isActif = service.statut?.toLowerCase() !== 'archivé' && service.statut?.toLowerCase() !== 'inactif';
+      const statutService = (service.statut || '').toLowerCase();
+      const isActif = statutService !== 'archivé' && statutService !== 'inactif';
       return isCorrectEntreprise && isActif;
     })
   }, [services, dashboardData])
 
-  // Filtrer et trier les postes selon la recherche et l'état d'archivage
+  // Filtrer et trier les postes selon la recherche et l'état d'archivage (Sécurisé)
   const filteredPostes = useMemo(() => {
+    if (!postes) return []
     return postes.filter(p => {
-      const matchesSearch = p.titre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            p.departement.toLowerCase().includes(searchTerm.toLowerCase())
+      const titre = (p.titre || '').toLowerCase()
+      const departement = (p.departement || '').toLowerCase()
+      const search = (searchTerm || '').toLowerCase()
+
+      const matchesSearch = titre.includes(search) || departement.includes(search)
       const matchesArchiveStatus = showArchived ? p.statut === 'Archivé' : p.statut === 'Actif'
       return matchesSearch && matchesArchiveStatus
     })
@@ -135,14 +141,16 @@ export const DirecteurPostesPage = () => {
 
   // Statistiques dynamiques
   const stats = useMemo(() => {
+    const list = postes || []
     return {
-      total: postes.length,
-      actifs: postes.filter(p => p.statut === 'Actif').length,
-      archives: postes.filter(p => p.statut === 'Archivé').length,
-      disponibles: postes.reduce((sum, p) => sum + (p.nombre_postes - p.postes_occupes), 0),
+      total: list.length,
+      actifs: list.filter(p => p.statut === 'Actif').length,
+      archives: list.filter(p => p.statut === 'Archivé').length,
+      disponibles: list.reduce((sum, p) => sum + (p.nombre_postes - p.postes_occupes), 0),
     }
   }, [postes])
 
+  // Soumission Création Poste
   // Soumission Création Poste
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -159,16 +167,20 @@ export const DirecteurPostesPage = () => {
     try {
       const response = await posteAPI.create({
         titre_poste: formData.titre,
-        detail: formData.detail,
+        detail: formData.detail || 'Aucun détail fourni', // <--- Solution : Fournir une valeur par défaut si vide
         statut: formData.statut,
         id_service: Number(formData.id_service),
       })
       
-      const created = response.poste
+      const created = response?.poste || response
+      if (!created || !created.id_poste) {
+        throw new Error("Format de réponse invalide lors de la création du poste.")
+      }
+
       setPostes((current) => [
         {
           id: created.id_poste,
-          titre: created.titre_poste,
+          titre: created.titre_poste || '',
           type: 'CDI',
           niveau: 'Junior',
           departement: selectedService ? selectedService.nom : 'N/A',
@@ -323,7 +335,6 @@ export const DirecteurPostesPage = () => {
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          {/* Bouton d'archivage */}
           <button
             type="button"
             onClick={() => setShowArchived(!showArchived)}
@@ -337,7 +348,6 @@ export const DirecteurPostesPage = () => {
             <span>{showArchived ? 'Afficher les actifs' : 'Afficher archivés'}</span>
           </button>
 
-          {/* Sélecteurs de vue */}
           <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
             <button 
               onClick={() => setViewMode('grid')} 
@@ -370,28 +380,28 @@ export const DirecteurPostesPage = () => {
             viewMode === 'grid' ? (
               /* --- MODE GRILLE --- */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPostes.map(poste => (
-                  <div key={poste.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all flex flex-col justify-between">
+                {filteredPostes.map(pItem => (
+                  <div key={pItem.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
                           <Briefcase className="w-6 h-6 text-white" />
                         </div>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          poste.statut === 'Actif' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                        }`}>{poste.statut}</span>
+                          pItem.statut === 'Actif' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}>{pItem.statut}</span>
                       </div>
-                      <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1 line-clamp-1">{poste.titre}</h3>
-                      <p className="text-sm text-amber-600 dark:text-amber-500 font-medium mb-3">{poste.departement}</p>
+                      <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1 line-clamp-1">{pItem.titre}</h3>
+                      <p className="text-sm text-amber-600 dark:text-amber-500 font-medium mb-3">{pItem.departement}</p>
                       
                       <div className="space-y-2 mb-6 text-sm">
                         <div className="flex items-center justify-between">
                           <span className="text-slate-500 dark:text-slate-400">Type:</span>
-                          <span className="font-semibold text-slate-800 dark:text-white">{poste.type}</span>
+                          <span className="font-semibold text-slate-800 dark:text-white">{pItem.type}</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-slate-500 dark:text-slate-400">Niveau:</span>
-                          <span className="font-semibold text-slate-800 dark:text-white">{poste.niveau}</span>
+                          <span className="font-semibold text-slate-800 dark:text-white">{pItem.niveau}</span>
                         </div>
                       </div>
                     </div>
@@ -399,27 +409,27 @@ export const DirecteurPostesPage = () => {
                     <div className="flex space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700/60">
                       <button 
                         type="button" 
-                        onClick={() => { setSelectedPoste(poste); setShowEditModal(true) }} 
+                        onClick={() => { setSelectedPoste(pItem); setShowEditModal(true) }} 
                         className="flex-1 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg text-sm hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center justify-center space-x-1 transition-all"
                       >
                         <Edit className="w-4 h-4" /><span>Modifier</span>
                       </button>
                       <button 
                         type="button" 
-                        onClick={() => handleToggleArchive(poste.id, poste.statut)} 
-                        disabled={archivingPosteId === poste.id}
+                        onClick={() => handleToggleArchive(pItem.id, pItem.statut)} 
+                        disabled={archivingPosteId === pItem.id}
                         className="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 text-sm transition-all flex items-center justify-center"
-                        title={poste.statut === 'Actif' ? 'Archiver' : 'Désarchiver'}
+                        title={pItem.statut === 'Actif' ? 'Archiver' : 'Désarchiver'}
                       >
-                        {archivingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (poste.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
+                        {archivingPosteId === pItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (pItem.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
                       </button>
                       <button 
                         type="button" 
-                        onClick={() => handleDelete(poste.id)} 
-                        disabled={deletingPosteId === poste.id} 
+                        onClick={() => handleDelete(pItem.id)} 
+                        disabled={deletingPosteId === pItem.id} 
                         className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-all flex items-center justify-center"
                       >
-                        {deletingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                        {deletingPosteId === pItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
@@ -439,39 +449,43 @@ export const DirecteurPostesPage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-sm text-slate-800 dark:text-white">
-                    {filteredPostes.map(poste => (
-                      <tr key={poste.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-all">
-                        <td className="p-4 font-semibold">{poste.titre}</td>
-                        <td className="p-4 text-slate-600 dark:text-slate-400">{poste.departement}</td>
-                        <td className="p-4">{poste.type} / {poste.niveau}</td>
+                    {filteredPostes.map(pItem => (
+                      <tr key={pItem.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-all">
+                        <td className="p-4 font-semibold">{pItem.titre}</td>
+                        <td className="p-4 text-slate-600 dark:text-slate-400">{pItem.departement}</td>
+                        <td className="p-4">{pItem.type} / {pItem.niveau}</td>
                         <td className="p-4">
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                            poste.statut === 'Actif' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
-                          }`}>{poste.statut}</span>
+                            pItem.statut === 'Actif' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
+                          }`}>{pItem.statut}</span>
                         </td>
                         <td className="p-4 text-right flex items-center justify-end space-x-2">
                           <button 
                             type="button" 
-                            onClick={() => { setSelectedPoste(poste); setShowEditModal(true) }} 
+                            onClick={() => { setSelectedPoste(pItem); setShowEditModal(true) }} 
                             className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-all"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button 
                             type="button" 
-                            onClick={() => handleToggleArchive(poste.id, poste.statut)} 
-                            disabled={archivingPosteId === poste.id}
+                            onClick={() => handleToggleArchive(pItem.id, pItem.statut)} 
+                            disabled={archivingPosteId === pItem.id}
                             className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
                           >
+<<<<<<< HEAD
                             {archivingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (poste.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
+=======
+                            {archivingPosteId === pItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (pItem.statut === 'Actif' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />)}
+>>>>>>> c3b8fb5 (poste OK)
                           </button>
                           <button 
                             type="button" 
-                            onClick={() => handleDelete(poste.id)} 
-                            disabled={deletingPosteId === poste.id}
+                            onClick={() => handleDelete(pItem.id)} 
+                            disabled={deletingPosteId === pItem.id} 
                             className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                           >
-                            {deletingPosteId === poste.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            {deletingPosteId === pItem.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                           </button>
                         </td>
                       </tr>
@@ -481,145 +495,154 @@ export const DirecteurPostesPage = () => {
               </div>
             )
           )}
-
-          {/* Modal de Création */}
-          {showCreateModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Créer un nouveau poste</h3>
-                  <button type="button" onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg dark:text-white"><X className="w-6 h-6" /></button>
-                </div>
-                <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Titre du poste *</label>
-                    <input 
-                      type="text" 
-                      value={formData.titre} 
-                      onChange={(e) => setFormData({...formData, titre: e.target.value})} 
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
-                      required 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Service (Actifs uniquement) *</label>
-                    {servicesDeLentrepriseActifs.length === 0 ? (
-                      <div className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 p-3 rounded-xl border border-red-200 dark:border-red-900/50">
-                        ⚠️ Aucun service actif trouvé. Allez sur l'onglet "Services" pour en créer un avant de rajouter un poste.
-                      </div>
-                    ) : (
-                      <select 
-                        value={formData.id_service} 
-                        onChange={(e) => setFormData({ ...formData, id_service: e.target.value })} 
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
-                        required
-                      >
-                        <option value="">Sélectionner un service</option>
-                        {servicesDeLentrepriseActifs.map((service) => (
-                          <option key={service.id_service} value={service.id_service}>
-                            {service.nom}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description / Détails</label>
-                    <textarea 
-                      value={formData.detail} 
-                      onChange={(e) => setFormData({...formData, detail: e.target.value})} 
-                      rows={3} 
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl resize-none dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
-                    />
-                  </div>
-                  <div className="flex space-x-3 pt-4">
-                    <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-medium">Annuler</button>
-                    <button 
-                      type="submit" 
-                      disabled={isSubmittingCreate || servicesDeLentrepriseActifs.length === 0} 
-                      className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
-                    >
-                      {isSubmittingCreate && <Loader2 className="w-4 h-4 animate-spin" />}
-                      <span>{isSubmittingCreate ? 'Création...' : 'Créer le poste'}</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Modal de Modification */}
-          {showEditModal && selectedPoste && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Modifier le poste</h3>
-                  <button type="button" onClick={() => setShowEditModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg dark:text-white"><X className="w-6 h-6" /></button>
-                </div>
-                <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Titre du poste</label>
-                    <input 
-                      type="text" 
-                      value={selectedPoste.titre} 
-                      onChange={(e) => setSelectedPoste({...selectedPoste, titre: e.target.value})} 
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
-                      required 
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type</label>
-                      <select 
-                        value={selectedPoste.type} 
-                        onChange={(e) => setSelectedPoste({ ...selectedPoste, type: e.target.value as Poste['type'] })} 
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white"
-                      >
-                        <option value="CDI">CDI</option>
-                        <option value="CDD">CDD</option>
-                        <option value="Stage">Stage</option>
-                        <option value="Freelance">Freelance</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Niveau</label>
-                      <select 
-                        value={selectedPoste.niveau} 
-                        onChange={(e) => setSelectedPoste({ ...selectedPoste, niveau: e.target.value as Poste['niveau'] })} 
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl dark:text-white"
-                      >
-                        <option value="Junior">Junior</option>
-                        <option value="Mid">Mid-Level</option>
-                        <option value="Senior">Senior</option>
-                        <option value="Manager">Manager</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description</label>
-                    <textarea 
-                      value={selectedPoste.description} 
-                      onChange={(e) => setSelectedPoste({...selectedPoste, description: e.target.value})} 
-                      rows={3} 
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl resize-none dark:text-white focus:ring-2 focus:ring-amber-500 focus:outline-none" 
-                    />
-                  </div>
-                  <div className="flex space-x-3 pt-4">
-                    <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                    <button 
-                      type="submit" 
-                      disabled={isSubmittingEdit}
-                      className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 flex items-center justify-center gap-2 disabled:opacity-75 font-medium"
-                    >
-                      {isSubmittingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
-                      <span>Enregistrer</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </>
+      )}
+
+      {/* Modal de Création */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Créer un nouveau poste</h2>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl"
+              >
+                <Users className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Titre du poste</label>
+                <input 
+                  type="text" 
+                  required
+                  value={formData.titre}
+                  onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                  placeholder="Ex: Développeur Full Stack"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Service / Département</label>
+                <select 
+                  required
+                  value={formData.id_service}
+                  onChange={(e) => setFormData({ ...formData, id_service: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                >
+                  <option value="">Sélectionner un service</option>
+                  {servicesDeLentrepriseActifs.map((s) => (
+                    <option key={s.id_service} value={s.id_service}>
+                      {s.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Description / Détails</label>
+                <textarea 
+                  rows={3}
+                  value={formData.detail}
+                  onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+                  placeholder="Description du poste..."
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingCreate}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
+                >
+                  {isSubmittingCreate && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>Créer</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Modification */}
+      {showEditModal && selectedPoste && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Modifier le poste</h2>
+              <button 
+                onClick={() => setShowEditModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-xl"
+              >
+                <Users className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Titre du poste</label>
+                <input 
+                  type="text" 
+                  required
+                  value={selectedPoste.titre}
+                  onChange={(e) => setSelectedPoste({ ...selectedPoste, titre: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Statut</label>
+                <select 
+                  value={selectedPoste.statut}
+                  onChange={(e) => setSelectedPoste({ ...selectedPoste, statut: e.target.value as 'Actif' | 'Archivé' })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                >
+                  <option value="Actif">Actif</option>
+                  <option value="Archivé">Archivé</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Description / Détails</label>
+                <textarea 
+                  rows={3}
+                  value={selectedPoste.description}
+                  onChange={(e) => setSelectedPoste({ ...selectedPoste, description: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-sm font-semibold transition-all"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEdit}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
+                >
+                  {isSubmittingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>Enregistrer</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )
