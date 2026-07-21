@@ -84,13 +84,13 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
       entrepriseAPI.getAll().catch(() => ({})),
       employeAPI.getAll().catch(() => ({})),
       
-      // Correction URL : directeur/services -> direction/services (Accessible si Directeur ou Admin)
+      // Accessible si Directeur ou Admin
       (isAdmin || isDirecteur) ? apiRequest('direction/services').catch(() => ({})) : Promise.resolve({}),
       
       // Uniquement accessible si RH ou Admin
       (isAdmin || isRH) ? apiRequest('rh/contrats').catch(() => ({})) : Promise.resolve({}),
       
-      // Correction URL : directeur/postes -> direction/postes (Accessible si Directeur ou Admin)
+      // Accessible si Directeur ou Admin
       (isAdmin || isDirecteur) ? apiRequest('direction/postes').catch(() => ({})) : Promise.resolve({}),
       
       congeAPI.getAll().catch(() => ({})),
@@ -98,7 +98,7 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
       fichesPaieAPI.getAll().catch(() => ({})),
       avantageAPI.getAll().catch(() => ({})),
       
-      // Récupération dynamique selon le rôle (Espace RH global vs Espace Personnel)
+      // Récupération dynamique selon le rôle
       documentAPI.getAll(isRH || isAdmin ? 'rh' : 'personnel').catch(() => ({})),
       
       offreAPI.getAll().catch(() => ({})),
@@ -121,21 +121,50 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
       if (!entrepriseId) {
         return items
       }
-
       return items.filter((item: any) => item[key] === entrepriseId)
     }
 
-const usersFiltrees = filterByEntreprise(users)
-const employes = filterByEntreprise(extractArray(employesResponse, 'employes'))
-const services = filterByEntreprise(extractArray(servicesResponse, 'services'))
-const postes = filterByEntreprise(extractArray(postesResponse, 'postes'))
-const contrats = filterByEntreprise(extractArray(contratsResponse, 'contrats'))
-const conges = filterByEntreprise(extractArray(congesResponse, 'conges'))
-const presences = filterByEntreprise(extractArray(presencesResponse, 'presences'))
-const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'fichesPaies'))
-const avantages = filterByEntreprise(extractArray(avantagesResponse, 'avantages'))
-const documents = filterByEntreprise(extractArray(documentsResponse, 'documents'))
-const offres = filterByEntreprise(extractArray(offresResponse, 'offres'))
+    const usersFiltrees = filterByEntreprise(users)
+
+    // Extraction globale brute pour appliquer la hiérarchie relationnelle (Entreprise -> Service -> Poste -> Employé)
+    const rawEmployes = extractArray(employesResponse, 'employes')
+      .concat(extractArray(employesResponse, 'direction/membres'))
+      .concat(Array.isArray(employesResponse) ? employesResponse : [])
+
+    const rawServices = extractArray(servicesResponse, 'services')
+      .concat(extractArray(servicesResponse, 'direction/services'))
+      .concat(Array.isArray(servicesResponse) ? servicesResponse : [])
+
+    const rawPostes = extractArray(postesResponse, 'postes')
+      .concat(extractArray(postesResponse, 'direction/postes'))
+      .concat(Array.isArray(postesResponse) ? postesResponse : [])
+
+    // 1. Filtrer les services rattachés à l'entreprise
+    const services = entrepriseId 
+      ? rawServices.filter((s: any) => Number(s.id_entreprise) === Number(entrepriseId))
+      : rawServices
+
+    const serviceIdsSet = new Set(services.map((s: any) => Number(s.id_service)))
+
+    // 2. Filtrer les postes rattachés aux services de l'entreprise (ou directement liés par id_entreprise si présent)
+    const postes = entrepriseId
+      ? rawPostes.filter((p: any) => serviceIdsSet.has(Number(p.id_service)) || Number(p.id_entreprise) === Number(entrepriseId))
+      : rawPostes
+
+    const posteIdsSet = new Set(postes.map((p: any) => Number(p.id_poste)))
+
+    // 3. Filtrer les employés rattachés aux postes de l'entreprise
+    const employes = entrepriseId
+      ? rawEmployes.filter((e: any) => posteIdsSet.has(Number(e.id_poste)) || Number(e.id_entreprise) === Number(entrepriseId))
+      : rawEmployes
+
+    const contrats = filterByEntreprise(extractArray(contratsResponse, 'rh/contrats'))
+    const conges = filterByEntreprise(extractArray(congesResponse, 'rh/conges'))
+    const presences = filterByEntreprise(extractArray(presencesResponse, 'rh/presences'))
+    const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'rh/fichesPaies'))
+    const avantages = filterByEntreprise(extractArray(avantagesResponse, 'rh/avantages'))
+    const documents = filterByEntreprise(extractArray(documentsResponse, 'rh/documents'))
+    const offres = filterByEntreprise(extractArray(offresResponse, 'rh/offres'))
 
     const context = {
       user: currentUser,

@@ -61,6 +61,28 @@ export const DirecteurDashboard = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // useEffect(() => {
+  //   let mounted = true
+
+  //   loadDashboardContext()
+  //     .then((context) => {
+  //       if (mounted) {
+  //         // 🔍 AJOUTEZ CE CONSOLE.LOG POUR VOIR LE CONTEXTE CHARGÉ
+  //         console.log("CONTEXTE REÇU DANS LE DASHBOARD :", context);
+          
+  //         setDashboardData(context)
+  //       }
+  //     })
+  //     .finally(() => {
+  //       if (mounted) {
+  //         setLoading(false)
+  //       }
+  //     })
+
+  //   return () => {
+  //     mounted = false
+  //   }
+  // }, [])
   useEffect(() => {
     let mounted = true
 
