@@ -33,23 +33,17 @@ export const DirecteurMembresPage = () => {
   
   const [availablePostes, setAvailablePostes] = useState<any[]>([])
 
-  // Charger les données initiales et logger les réponses pour le débogage
+  // Charger les données initiales
   const loadData = async () => {
     try {
-      console.log('🔄 Chargement du contexte dashboard...');
       const context = await loadDashboardContext()
-      console.log('📦 Réponse brute loadDashboardContext :', context)
-
       setDashboardData(context)
     } catch (error) {
       console.error('❌ Erreur chargement dashboard :', error)
     }
 
     try {
-      console.log('🔄 Chargement des postes...');
       const postesRes = await posteAPI.getAll()
-      console.log('📦 Réponse brute posteAPI.getAll :', postesRes)
-
       setAvailablePostes(postesRes?.postes || postesRes || [])
     } catch (error) {
       console.error('❌ Erreur chargement postes :', error)
@@ -59,10 +53,6 @@ export const DirecteurMembresPage = () => {
 
   useEffect(() => {
     loadData()
-
-    posteAPI.getAll()
-      .then((response) => setAvailablePostes(response.postes || []))
-      .catch(() => setAvailablePostes([]))
   }, [])
 
   // Récupération sécurisée de l'ID de l'entreprise connectée
@@ -130,28 +120,41 @@ export const DirecteurMembresPage = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     
-    // Nettoyage : On ne garde que les champs attendus par le contrôleur
     const payload = {
-        prenom: createForm.prenom,
-        nom: createForm.nom,
-        email: createForm.email,
-        telephone: createForm.telephone,
-        sexe: createForm.sexe,
-        poste_id: createForm.poste_id,
-    };
-
-    setIsSubmitting(true);
-    try {
-        await membreAPI.create(payload); // Utilisation du payload nettoyé
-        // ... suite de la logique
-    } catch (err) {
-        console.error(err);
-    } finally {
-        setIsSubmitting(false);
+      prenom: createForm.prenom,
+      nom: createForm.nom,
+      email: createForm.email,
+      telephone: createForm.telephone,
+      sexe: createForm.sexe,
+      poste_id: createForm.poste_id,
+      role_name: createForm.role_name,
+      company_id: companyId,
     }
-};
+
+    setIsSubmitting(true)
+    try {
+      await membreAPI.create(payload)
+      setShowCreateModal(false)
+      setCreateForm({
+        prenom: '',
+        nom: '',
+        sexe: '',
+        email: '',
+        telephone: '',
+        poste_id: '',
+        role_name: 'employe',
+      })
+      setToast({ type: 'success', message: 'Employé ajouté avec succès !' })
+      loadData() // Recharger les données pour mettre à jour la liste
+    } catch (err: any) {
+      console.error(err)
+      setToast({ type: 'error', message: err?.response?.data?.message || 'Erreur lors de la création de l\'employé.' })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -212,7 +215,7 @@ export const DirecteurMembresPage = () => {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredMembers.map((emp: any) => (
-            <div key={emp.matricule} onClick={() => setSelectedMember(emp)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all cursor-pointer">
+            <div key={emp.matricule || emp.id} onClick={() => setSelectedMember(emp)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all cursor-pointer">
               <div className="flex items-center space-x-3 mb-4">
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-pink-500 to-pink-600'}`}>
                   <span className="text-white font-bold text-lg">{emp.prenom ? emp.prenom[0] : 'U'}</span>
@@ -248,7 +251,7 @@ export const DirecteurMembresPage = () => {
             </thead>
             <tbody>
               {filteredMembers.map((emp: any) => (
-                <tr key={emp.matricule} onClick={() => setSelectedMember(emp)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer">
+                <tr key={emp.matricule || emp.id} onClick={() => setSelectedMember(emp)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer">
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-pink-100 dark:bg-pink-900/30'}`}>
@@ -296,7 +299,7 @@ export const DirecteurMembresPage = () => {
                   { icon: Phone, label: 'Téléphone', value: selectedMember.telephone || 'N/A' },
                   { icon: MapPin, label: 'Adresse', value: selectedMember.adresse || 'Non renseignée' },
                   { icon: Calendar, label: 'Date embauche', value: selectedMember.date_embauche?.split('T')[0] || 'N/A' },
-                  { icon: Briefcase, label: 'Matricule', value: selectedMember.matricule },
+                  { icon: Briefcase, label: 'Matricule', value: selectedMember.matricule || 'N/A' },
                   { icon: Users, label: 'Sexe', value: selectedMember.sexe === 'M' ? 'Masculin' : 'Féminin' },
                 ].map((item, i) => (
                   <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
