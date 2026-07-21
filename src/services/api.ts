@@ -722,29 +722,29 @@ export const candidatAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const fichesPaieAPI = {
   getAll: async () => {
-    return await apiRequest('/fiches_paies');
+    return await apiRequest('/rh/fiches_paies');
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/fiches_paies/${id}`);
+    return await apiRequest(`/rh/fiches_paies/${id}`);
   },
 
   create: async (data: Partial<FichePaie>) => {
-    return await apiRequest('/fiches_paies', {
+    return await apiRequest('/rh/fiches_paies', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<FichePaie>) => {
-    return await apiRequest(`/fiches_paies/${id}`, {
+    return await apiRequest(`/rh/fiches_paies/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/fiches_paies/${id}`, {
+    return await apiRequest(`/rh/fiches_paies/${id}`, {
       method: 'DELETE',
     });
   },
@@ -755,29 +755,29 @@ export const fichesPaieAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const avantageAPI = {
   getAll: async () => {
-    return await apiRequest('/avantages');
+    return await apiRequest('/rh/avantages');
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/avantages/${id}`);
+    return await apiRequest(`/rh/avantages/${id}`);
   },
 
   create: async (data: Partial<Avantage>) => {
-    return await apiRequest('/avantages', {
+    return await apiRequest('/rh/avantages', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<Avantage>) => {
-    return await apiRequest(`/avantages/${id}`, {
+    return await apiRequest(`/rh/avantages/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/avantages/${id}`, {
+    return await apiRequest(`/rh/avantages/${id}`, {
       method: 'DELETE',
     });
   },
@@ -855,35 +855,35 @@ export const documentAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const presenceAPI = {
   getAll: async () => {
-    return await apiRequest('/presences');
+    return await apiRequest('/rh/presences');
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/presences/${id}`);
+    return await apiRequest(`/rh/presences/${id}`);
   },
 
   create: async (data: Partial<Presence>) => {
-    return await apiRequest('/presences', {
+    return await apiRequest('/rh/presences', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<Presence>) => {
-    return await apiRequest(`/presences/${id}`, {
+    return await apiRequest(`/rh/presences/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/presences/${id}`, {
+    return await apiRequest(`/rh/presences/${id}`, {
       method: 'DELETE',
     });
   },
 
   pointer: async (data: any) => {
-    return await apiRequest('/presences/pointer', {
+    return await apiRequest('/rh/presences/pointer', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -1033,29 +1033,29 @@ export const userAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const congeAPI = {
   getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/conges?entreprise_id=${entrepriseId}` : '/conges';
+    const url = entrepriseId ? `/conges?entreprise_id=${entrepriseId}` : '/rh/conges';
     return await apiRequest(url);
   },
 
   getMesConges: async () => {
-    return await apiRequest('/conges/mes-conges');
+    return await apiRequest('/rh/conges/mes-conges');
   },
 
   create: async (data: Partial<Conge>) => {
-    return await apiRequest('/conges', {
+    return await apiRequest('/rh/conges', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   approuver: async (id: number) => {
-    return await apiRequest(`/conges/${id}/approuver`, {
+    return await apiRequest(`/rh/conges/${id}/approuver`, {
       method: 'PUT',
     });
   },
 
   refuser: async (id: number) => {
-    return await apiRequest(`/conges/${id}/refuser`, {
+    return await apiRequest(`/rh/conges/${id}/refuser`, {
       method: 'PUT',
     });
   },
