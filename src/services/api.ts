@@ -471,34 +471,34 @@ export const membreAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const employeAPI = {
   getAll: async (entrepriseId?: number) => {
-    const url = entrepriseId ? `/employes?entreprise_id=${entrepriseId}` : '/employes';
+    const url = entrepriseId ? `/rh/employes?entreprise_id=${entrepriseId}` : '/rh/employes';
     return await apiRequest(url);
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/employes/${id}`);
+    return await apiRequest(`/rh/employes/${id}`);
   },
 
   getByMatricule: async (matricule: string) => {
-    return await apiRequest(`/employes/${matricule}`);
+    return await apiRequest(`/rh/employes/${matricule}`);
   },
 
   create: async (data: Partial<Employe>) => {
-    return await apiRequest('/employes', {
+    return await apiRequest('/rh/employes', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<Employe>) => {
-    return await apiRequest(`/employes/${id}`, {
+    return await apiRequest(`/rh/employes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number) => {
-    return await apiRequest(`/employes/${id}`, {
+    return await apiRequest(`/rh/employes/${id}`, {
       method: 'DELETE',
     });
   },

@@ -59,10 +59,10 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
     const currentUser = currentUserResponse?.user ?? currentUserResponse ?? localUser
 
     // Extraction sécurisée du rôle pour éviter les erreurs 403 (Forbidden)
-    const userRole = currentUser?.role?.toLowerCase() || '';
-    const isAdmin = userRole === 'admin';
-    const isRH = userRole === 'rh';
-    const isDirecteur = userRole === 'directeur';
+    const userRole = currentUser?.role?.toLowerCase() || ''
+    const isAdmin = userRole === 'admin'
+    const isRH = userRole === 'rh'
+    const isDirecteur = userRole === 'directeur'
 
     const [
       usersResponse, 
@@ -82,7 +82,11 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
       (isAdmin || isDirecteur) ? userAPI.getAll('direction').catch(() => ({})) : Promise.resolve({}),
       
       entrepriseAPI.getAll().catch(() => ({})),
-      employeAPI.getAll().catch(() => ({})),
+      
+      // Adapté selon le rôle : 'direction/membres' pour directeur/admin, sinon 'employeAPI.getAll()' ou 'rh/employes'
+      (isAdmin || isDirecteur) 
+        ? apiRequest('direction/membres').catch(() => ({})) 
+        : employeAPI.getAll().catch(() => ({})),
       
       // Accessible si Directeur ou Admin
       (isAdmin || isDirecteur) ? apiRequest('direction/services').catch(() => ({})) : Promise.resolve({}),
