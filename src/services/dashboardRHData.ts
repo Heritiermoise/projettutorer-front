@@ -2,7 +2,7 @@ import { apiRequest } from './api'
 
 export async function loadDashboardRHContext() {
   try {
-    console.log("🔍 [DEBUG API] Chargement Dashboard RH unifié via indexrh");
+    // console.log("🔍 [DEBUG API] Chargement Dashboard RH unifié via indexrh");
     
     // Appel unique vers la route optimisée du backend Laravel
     const response = await apiRequest('rh/dashboard-data');
@@ -11,7 +11,7 @@ export async function loadDashboardRHContext() {
       throw new Error(response?.message || "Erreur lors du chargement des données RH");
     }
 
-    console.log("✅ Données RH unifiées chargées avec succès :", response);
+    // console.log("✅ Données RH unifiées chargées avec succès :", response);
 
     return {
       success: true,
