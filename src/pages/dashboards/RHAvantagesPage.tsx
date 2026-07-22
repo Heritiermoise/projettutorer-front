@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Award, Search, Plus, Edit, Trash2, User, DollarSign, Calendar, X, RefreshCw } from 'lucide-react'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { apiRequest } from '../../services/api'
@@ -25,7 +25,7 @@ export const RHAvantagesPage = () => {
     statut: 'Actif'
   })
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const data = await loadDashboardContext()
@@ -35,19 +35,19 @@ export const RHAvantagesPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
-  const avantages = dashboardData?.avantages || []
-  const employes = dashboardData?.employes || []
+  const avantages = useMemo(() => dashboardData?.avantages || [], [dashboardData])
+  const employes = useMemo(() => dashboardData?.employes || [], [dashboardData])
 
-  const getEmployeName = (matricule: string) => {
+  const getEmployeName = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
-  }
+  }, [employes])
 
   const filteredAvantages = useMemo(() => {
     return avantages.filter((a: any) => {
@@ -59,7 +59,7 @@ export const RHAvantagesPage = () => {
       const matchesType = filterType === 'all' || a.type_avantage === filterType
       return matchesSearch && matchesType
     })
-  }, [avantages, searchTerm, filterType, employes])
+  }, [avantages, searchTerm, filterType, getEmployeName])
 
   const stats = useMemo(() => {
     const actifs = avantages.filter((a: any) => a.statut?.toLowerCase() === 'actif').length
@@ -72,7 +72,7 @@ export const RHAvantagesPage = () => {
   }, [avantages])
 
   // Ouvrir le modal pour un Ajout
-  const handleOpenAdd = () => {
+  const handleOpenAdd = useCallback(() => {
     setEditingAvantage(null)
     setFormData({
       matricule: '',
@@ -85,10 +85,10 @@ export const RHAvantagesPage = () => {
     })
     setErrorMsg('')
     setShowModal(true)
-  }
+  }, [])
 
   // Ouvrir le modal pour une Modification
-  const handleOpenEdit = (avantage: any) => {
+  const handleOpenEdit = useCallback((avantage: any) => {
     setEditingAvantage(avantage)
     setFormData({
       matricule: avantage.matricule || '',
@@ -101,7 +101,7 @@ export const RHAvantagesPage = () => {
     })
     setErrorMsg('')
     setShowModal(true)
-  }
+  }, [])
 
   // Soumission du formulaire (Création ou Mise à jour)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,13 +111,11 @@ export const RHAvantagesPage = () => {
 
     try {
       if (editingAvantage) {
-        // Route de mise à jour (adaptez l'URL selon votre API backend Laravel ex: rh/avantages/{id})
         await apiRequest(`rh/avantages/${editingAvantage.id_avantage || editingAvantage.id}`, {
           method: 'PUT',
           body: JSON.stringify(formData)
         })
       } else {
-        // Route de création
         await apiRequest('rh/avantages', {
           method: 'POST',
           body: JSON.stringify(formData)

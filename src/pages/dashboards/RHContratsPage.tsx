@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { FileText, Search, Plus, Eye, Edit, Trash2, Download, Calendar, DollarSign, User, X } from 'lucide-react'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
@@ -25,21 +25,21 @@ export const RHContratsPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true)
     loadDashboardRHContext()
       .then((data) => setDashboardData(data))
       .catch(() => setDashboardData(null))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
-  const rawEmployes = dashboardData?.employes || []
-  const postes = dashboardData?.postes || []
-  const rawContrats = dashboardData?.contrats || []
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
+  const postes = useMemo(() => dashboardData?.postes || [], [dashboardData])
+  const rawContrats = useMemo(() => dashboardData?.contrats || [], [dashboardData])
 
   // Filtrer uniquement les employés ayant le rôle 'employe'
   const employes = useMemo(() => {
@@ -59,32 +59,34 @@ export const RHContratsPage = () => {
     }))
   }, [rawContrats])
 
-  const filteredContrats = contrats.filter((c: any) => {
-    const emp = employes.find((e: any) => String(e.matricule) === String(c.matricule))
-    const searchLower = searchTerm.toLowerCase()
-    
-    const matchesSearch = 
-      (c.reference?.toLowerCase() || '').includes(searchLower) || 
-      (emp?.nom?.toLowerCase() || '').includes(searchLower) ||
-      (emp?.prenom?.toLowerCase() || '').includes(searchLower) ||
-      (c.matricule?.toLowerCase() || '').includes(searchLower)
+  const filteredContrats = useMemo(() => {
+    return contrats.filter((c: any) => {
+      const emp = employes.find((e: any) => String(e.matricule) === String(c.matricule))
+      const searchLower = searchTerm.toLowerCase()
+      
+      const matchesSearch = 
+        (c.reference?.toLowerCase() || '').includes(searchLower) || 
+        (emp?.nom?.toLowerCase() || '').includes(searchLower) ||
+        (emp?.prenom?.toLowerCase() || '').includes(searchLower) ||
+        (c.matricule?.toLowerCase() || '').includes(searchLower)
 
-    const matchesType = filterType === 'all' || c.type_contrat === filterType
-    const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
-    return matchesSearch && matchesType && matchesStatut
-  })
+      const matchesType = filterType === 'all' || c.type_contrat === filterType
+      const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
+      return matchesSearch && matchesType && matchesStatut
+    })
+  }, [contrats, employes, searchTerm, filterType, filterStatut])
 
-  const getEmployeName = (matricule: string) => {
+  const getEmployeName = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
-  }
+  }, [employes])
 
-  const getPosteTitle = (matricule: string) => {
+  const getPosteTitle = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
     if (!emp) return 'N/A'
     const poste = postes.find((p: any) => Number(p.id_poste ?? p.id) === Number(emp.id_poste))
     return poste?.titre_poste || poste?.nom || 'N/A'
-  }
+  }, [employes, postes])
 
   const handleAddContrat = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -114,12 +116,12 @@ export const RHContratsPage = () => {
     }
   }
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: contrats.length,
     actifs: contrats.filter((c: any) => c.statut === 'Actif').length,
     cdi: contrats.filter((c: any) => c.type_contrat === 'CDI').length,
     cdd: contrats.filter((c: any) => c.type_contrat === 'CDD').length,
-  }
+  }), [contrats])
 
   return (
     <div className="space-y-6">
@@ -161,15 +163,15 @@ export const RHContratsPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher par référence ou employé..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
+            <input type="text" placeholder="Rechercher par référence ou employé..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white" />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
             <option value="all">Tous les types</option>
             <option value="CDI">CDI</option>
             <option value="CDD">CDD</option>
             <option value="Stage">Stage</option>
           </select>
-          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
+          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
             <option value="all">Tous les statuts</option>
             <option value="Actif">Actif</option>
             <option value="Expire">Expiré</option>
@@ -249,7 +251,7 @@ export const RHContratsPage = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">Détails du contrat</h3>
-              <button onClick={() => setSelectedContrat(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
+              <button onClick={() => setSelectedContrat(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
@@ -273,7 +275,7 @@ export const RHContratsPage = () => {
                 ].map((item, i) => (
                   <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</p>
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm flex items-center space-x-2"><item.icon className="w-4 h-4" /><span>{item.value}</span></p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm flex items-center space-x-2"><item.icon className="w-4 h-4 text-slate-400" /><span className="truncate">{item.value}</span></p>
                   </div>
                 ))}
               </div>
@@ -292,7 +294,7 @@ export const RHContratsPage = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">Créer un nouveau contrat</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <form onSubmit={handleAddContrat} className="p-6 space-y-4">
               {errorMsg && (
@@ -301,7 +303,7 @@ export const RHContratsPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Employé</label>
-                  <select required value={formData.matricule} onChange={(e) => setFormData({...formData, matricule: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
+                  <select required value={formData.matricule} onChange={(e) => setFormData({...formData, matricule: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
                     <option value="">Sélectionner un employé</option>
                     {employes.map((emp: any) => (
                       <option key={emp.matricule} value={emp.matricule}>
@@ -312,7 +314,7 @@ export const RHContratsPage = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Type de contrat</label>
-                  <select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
+                  <select value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
                     <option value="CDI">CDI</option>
                     <option value="CDD">CDD</option>
                     <option value="Stage">Stage</option>
@@ -320,19 +322,19 @@ export const RHContratsPage = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Salaire de base ($)</label>
-                  <input type="number" step="0.01" required value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} placeholder="1500" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="number" step="0.01" required value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} placeholder="1500" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date de début</label>
-                  <input type="date" required value={formData.date_debut} onChange={(e) => setFormData({...formData, date_debut: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="date" required value={formData.date_debut} onChange={(e) => setFormData({...formData, date_debut: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date de fin (Optionnel)</label>
-                  <input type="date" value={formData.date_fin} onChange={(e) => setFormData({...formData, date_fin: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="date" value={formData.date_fin} onChange={(e) => setFormData({...formData, date_fin: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Détails / Clauses</label>
-                  <textarea rows={3} value={formData.details} onChange={(e) => setFormData({...formData, details: e.target.value})} placeholder="Clauses particulières..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm"></textarea>
+                  <textarea rows={3} value={formData.details} onChange={(e) => setFormData({...formData, details: e.target.value})} placeholder="Clauses particulières..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white"></textarea>
                 </div>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
