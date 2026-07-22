@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X } from 'lucide-react'
+import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X, Copy, Check } from 'lucide-react'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
 
@@ -12,7 +12,11 @@ export const RHEmployesPage = () => {
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  // Formulaire d'ajout (company_id inclus, matricule retiré car généré par le backend)
+  // État pour afficher les identifiants générés après succès
+  const [newCredentials, setNewCredentials] = useState<any>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  // Formulaire d'ajout
   const [formData, setFormData] = useState({
     nom: '',
     post_nom: '',
@@ -35,7 +39,6 @@ export const RHEmployesPage = () => {
     loadDashboardRHContext()
       .then((data) => {
         setDashboardData(data)
-        // Pré-remplir automatiquement le company_id dès que les données du dashboard sont chargées
         if (data?.entreprise?.id_entreprise) {
           setFormData(prev => ({ ...prev, company_id: data.entreprise.id_entreprise }))
         }
@@ -53,7 +56,6 @@ export const RHEmployesPage = () => {
   const services = dashboardData?.services || []
   const contrats = dashboardData?.contrats || []
 
-  // Filtrage strict : on ne garde que les employés (exclut les RH, directeurs, etc.)
   const employes = useMemo(() => {
     if (!rawEmployes.length) return []
     return rawEmployes.filter((emp: any) => {
@@ -93,12 +95,23 @@ export const RHEmployesPage = () => {
     setSubmitting(true)
     setErrorMsg('')
     try {
-      await apiRequest('rh/employes', {
+      const response: any = await apiRequest('rh/employes', {
         method: 'POST',
         body: JSON.stringify(formData)
       })
+      
       setShowAddModal(false)
-      // Réinitialiser le formulaire en conservant le company_id courant
+
+      // Si le backend renvoie le mot de passe temporaire et l'employé/matricule
+      if (response && response.password) {
+        setNewCredentials({
+          email: formData.email,
+          password: response.password,
+          matricule: response.matricule || response.employe?.matricule,
+          nomComplet: `${formData.prenom} ${formData.nom}`
+        })
+      }
+
       setFormData({
         nom: '',
         post_nom: '',
@@ -119,6 +132,12 @@ export const RHEmployesPage = () => {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const copyToClipboard = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedField(fieldKey)
+    setTimeout(() => setCopiedField(null), 2000)
   }
 
   return (
@@ -259,6 +278,48 @@ export const RHEmployesPage = () => {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* MODAL COPIE IDENTIFIANTS APRÈS CRÉATION */}
+      {newCredentials && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Identifiants de connexion</h3>
+              <button onClick={() => setNewCredentials(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              Veuillez copier ces identifiants dès maintenant. Le mot de passe ne sera plus affiché ultérieurement.
+            </p>
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Employé :</span>
+                <span className="font-semibold text-sm text-slate-800 dark:text-white">{newCredentials.nomComplet} ({newCredentials.matricule})</span>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 block">Email :</span>
+                  <span className="font-mono text-sm text-slate-800 dark:text-white">{newCredentials.email}</span>
+                </div>
+                <button onClick={() => copyToClipboard(newCredentials.email, 'email')} className="p-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 text-xs flex items-center space-x-1">
+                  {copiedField === 'email' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 block">Mot de passe temporaire :</span>
+                  <span className="font-mono text-sm text-slate-800 dark:text-white font-bold">{newCredentials.password}</span>
+                </div>
+                <button onClick={() => copyToClipboard(newCredentials.password, 'password')} className="p-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 text-xs flex items-center space-x-1">
+                  {copiedField === 'password' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="pt-3 flex justify-end">
+              <button onClick={() => setNewCredentials(null)} className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700">Fermer</button>
+            </div>
+          </div>
         </div>
       )}
 
