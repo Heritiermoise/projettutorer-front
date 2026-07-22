@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { 
   Briefcase, Plus, Search, Edit, Trash2, Users, 
-  CheckCircle2, EyeOff, LayoutGrid, List, Eye, Loader2 
+  CheckCircle2, EyeOff, LayoutGrid, List, Eye, Loader2, RefreshCw 
 } from 'lucide-react'
 import { posteAPI, serviceAPI } from '../../services/api'
 import { loadDashboardContext } from '../../services/dashboardData'
@@ -48,6 +48,7 @@ export const DirecteurPostesPage = () => {
   
   // Loading & Submission States
   const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de synchro en arrière-plan
   const [isSubmittingCreate, setIsSubmittingCreate] = useState(false)
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
   const [deletingPosteId, setDeletingPosteId] = useState<number | null>(null)
@@ -67,50 +68,68 @@ export const DirecteurPostesPage = () => {
     id_service: '',
   })
 
-  // Charger les données initiales au montage
-  useEffect(() => {
-    const loadInitialData = async () => {
+  // Fonction de chargement des données (réutilisable pour le polling et le rafraîchissement manuel)
+  const loadData = useCallback(async (isBackground = false) => {
+    if (isBackground) {
+      setIsRefreshing(true)
+    } else {
       setIsLoading(true)
-      try {
-        const [postesRes, context, servicesRes] = await Promise.all([
-          posteAPI.getAll(),
-          loadDashboardContext().catch(() => null),
-          serviceAPI.getAll().catch(() => ({ services: [] }))
-        ])
+    }
 
-        setDashboardData(context)
-        setServices(servicesRes.services || servicesRes || [])
-        
-        setPostes((postesRes.postes || []).map((p: any) => ({
-          id: p.id_poste,
-          titre: p.titre_poste || '',
-          type: 'CDI',
-          niveau: 'Junior',
-          departement: p.service_nom || 'N/A',
-          nombre_postes: 1,
-          postes_occupes: p.total_employes || 0,
-          salaire_min: 0,
-          salaire_max: 0,
-          description: p.detail || '',
-          competences: '',
-          statut: p.statut === 'Archivé' ? 'Archivé' : 'Actif',
-          date_creation: p.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-        })))
-      } catch (error) {
-        console.error('Erreur chargement données:', error)
+    try {
+      const [postesRes, context, servicesRes] = await Promise.all([
+        posteAPI.getAll(),
+        loadDashboardContext().catch(() => null),
+        serviceAPI.getAll().catch(() => ({ services: [] }))
+      ])
+
+      setDashboardData(context)
+      setServices(servicesRes.services || servicesRes || [])
+      
+      setPostes((postesRes.postes || []).map((p: any) => ({
+        id: p.id_poste,
+        titre: p.titre_poste || '',
+        type: 'CDI',
+        niveau: 'Junior',
+        departement: p.service_nom || 'N/A',
+        nombre_postes: 1,
+        postes_occupes: p.total_employes || 0,
+        salaire_min: 0,
+        salaire_max: 0,
+        description: p.detail || '',
+        competences: '',
+        statut: p.statut === 'Archivé' ? 'Archivé' : 'Actif',
+        date_creation: p.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      })))
+    } catch (error) {
+      console.error('Erreur chargement données:', error)
+      if (!isBackground) {
         setFeedback({ 
           type: 'error', 
           text: error instanceof Error ? error.message : 'Erreur lors du chargement des données' 
         })
-      } finally {
+      }
+    } finally {
+      if (isBackground) {
+        setIsRefreshing(false)
+      } else {
         setIsLoading(false)
       }
     }
-
-    loadInitialData()
   }, [])
 
-  // Filtrer les services : uniquement ceux de l'entreprise connectée ET actifs (Sécurisé contre les valeurs undefined)
+  // Chargement initial + Polling automatique toutes les 60 secondes
+  useEffect(() => {
+    loadData(false)
+
+    const intervalId = setInterval(() => {
+      loadData(true) // Actualisation discrète en arrière-plan
+    }, 60000)
+
+    return () => clearInterval(intervalId)
+  }, [loadData])
+
+  // Filtrer les services : uniquement ceux de l'entreprise connectée ET actifs
   const servicesDeLentrepriseActifs = useMemo(() => {
     if (!services || services.length === 0) return []
     const entrepriseId = dashboardData?.id_entreprise || dashboardData?.entreprise?.id_entreprise
@@ -125,7 +144,7 @@ export const DirecteurPostesPage = () => {
     })
   }, [services, dashboardData])
 
-  // Filtrer et trier les postes selon la recherche et l'état d'archivage (Sécurisé)
+  // Filtrer et trier les postes selon la recherche et l'état d'archivage
   const filteredPostes = useMemo(() => {
     if (!postes) return []
     return postes.filter(p => {
@@ -151,7 +170,6 @@ export const DirecteurPostesPage = () => {
   }, [postes])
 
   // Soumission Création Poste
-  // Soumission Création Poste
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.id_service) {
@@ -159,15 +177,11 @@ export const DirecteurPostesPage = () => {
       return
     }
 
-    const selectedService = servicesDeLentrepriseActifs.find(
-      (s) => String(s.id_service) === String(formData.id_service)
-    )
-
     setIsSubmittingCreate(true)
     try {
       const response = await posteAPI.create({
         titre_poste: formData.titre,
-        detail: formData.detail || 'Aucun détail fourni', // <--- Solution : Fournir une valeur par défaut si vide
+        detail: formData.detail || 'Aucun détail fourni',
         statut: formData.statut,
         id_service: Number(formData.id_service),
       })
@@ -176,28 +190,12 @@ export const DirecteurPostesPage = () => {
       if (!created || !created.id_poste) {
         throw new Error("Format de réponse invalide lors de la création du poste.")
       }
-
-      setPostes((current) => [
-        {
-          id: created.id_poste,
-          titre: created.titre_poste || '',
-          type: 'CDI',
-          niveau: 'Junior',
-          departement: selectedService ? selectedService.nom : 'N/A',
-          nombre_postes: 1,
-          postes_occupes: 0,
-          salaire_min: 0,
-          salaire_max: 0,
-          description: created.detail || '',
-          competences: '',
-          statut: 'Actif',
-          date_creation: new Date().toISOString().split('T')[0],
-        },
-        ...current,
-      ])
       
       setShowCreateModal(false)
       setFormData({ titre: '', detail: '', statut: 'Actif', id_service: '' })
+      
+      // 🔄 Rechargement immédiat et silencieux des données
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Poste créé avec succès !' })
     } catch (error) {
       console.error('Erreur creation poste:', error)
@@ -223,10 +221,10 @@ export const DirecteurPostesPage = () => {
         detail: selectedPoste.description,
       })
 
-      setPostes((current) =>
-        current.map((p) => (p.id === selectedPoste.id ? selectedPoste : p))
-      )
       setShowEditModal(false)
+      
+      // 🔄 Rechargement immédiat et silencieux
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Poste mis à jour avec succès.' })
     } catch (error) {
       console.error('Erreur mise à jour poste:', error)
@@ -245,9 +243,9 @@ export const DirecteurPostesPage = () => {
     setArchivingPosteId(id)
     try {
       await posteAPI.update(id, { statut: newStatut })
-      setPostes((current) =>
-        current.map((p) => (p.id === id ? { ...p, statut: newStatut } : p))
-      )
+      
+      // 🔄 Rechargement immédiat et silencieux
+      await loadData(true)
       setFeedback({ 
         type: 'success', 
         text: newStatut === 'Archivé' ? 'Poste archivé avec succès.' : 'Poste restauré avec succès.' 
@@ -269,7 +267,9 @@ export const DirecteurPostesPage = () => {
     setDeletingPosteId(id)
     try {
       await posteAPI.delete(id)
-      setPostes((current) => current.filter((p) => p.id !== id))
+      
+      // 🔄 Rechargement immédiat et silencieux
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Poste supprimé définitivement.' })
     } catch (error) {
       console.error('Erreur suppression poste:', error)
@@ -284,19 +284,38 @@ export const DirecteurPostesPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Postes</h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Postes</h1>
+            {isRefreshing && (
+              <span className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-900/50">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Sync...</span>
+              </span>
+            )}
+          </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
             {showArchived ? 'Visualisation de vos postes archivés' : 'Créer et gérer les postes de votre entreprise'}
           </p>
         </div>
-        <button 
-          type="button" 
-          onClick={() => setShowCreateModal(true)} 
-          className="flex items-center space-x-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 text-sm transition-all shadow-md font-semibold"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Nouveau poste</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button 
+            type="button" 
+            onClick={() => loadData(true)}
+            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 text-sm"
+            title="Rafraîchir manuellement"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Actualiser</span>
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setShowCreateModal(true)} 
+            className="flex items-center space-x-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 text-sm transition-all shadow-md font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Nouveau poste</span>
+          </button>
+        </div>
       </div>
 
       {/* Cartes statistiques */}

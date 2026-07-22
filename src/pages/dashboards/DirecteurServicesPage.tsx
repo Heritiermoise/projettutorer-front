@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Briefcase, Users, Plus, Edit, Trash2, Search, Grid, List, X, Loader2, Eye, EyeOff } from 'lucide-react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import { Briefcase, Users, Plus, Edit, Trash2, Search, Grid, List, X, Loader2, Eye, EyeOff, RefreshCw } from 'lucide-react'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { serviceAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
@@ -12,6 +12,7 @@ export const DirecteurServicesPage = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedService, setSelectedService] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de synchro arrière-plan
   const [isSubmittingCreate, setIsSubmittingCreate] = useState(false)
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
   const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null)
@@ -21,14 +22,19 @@ export const DirecteurServicesPage = () => {
   // Afficher ou masquer les services inactifs (archivés)
   const [showArchived, setShowArchived] = useState(false)
 
-  const loadData = async () => {
-    setIsLoading(true)
+  const loadData = useCallback(async (isBackground = false) => {
+    if (isBackground) {
+      setIsRefreshing(true)
+    } else {
+      setIsLoading(true)
+    }
+
     try {
       // 1. Chargement du contexte du dashboard
-      const context = await loadDashboardContext()
+      const context = await loadDashboardContext().catch(() => null)
       
       // 2. Chargement des services depuis l'API Laravel
-      const servicesResponse = await serviceAPI.getAll()
+      const servicesResponse = await serviceAPI.getAll().catch(() => ({ services: [] }))
       
       // Extraction robuste de la clé "services" du contrôleur PHP ou de "data"
       const servicesRecuperes = servicesResponse?.services 
@@ -40,18 +46,31 @@ export const DirecteurServicesPage = () => {
         services: servicesRecuperes
       })
     } catch (error) {
-      setFeedback({ 
-        type: 'error', 
-        text: error instanceof Error ? error.message : 'Erreur lors du chargement des services' 
-      })
+      if (!isBackground) {
+        setFeedback({ 
+          type: 'error', 
+          text: error instanceof Error ? error.message : 'Erreur lors du chargement des services' 
+        })
+      }
     } finally {
-      setIsLoading(false)
+      if (isBackground) {
+        setIsRefreshing(false)
+      } else {
+        setIsLoading(false)
+      }
     }
-  }
-
-  useEffect(() => {
-    loadData()
   }, [])
+
+  // Chargement initial + Polling automatique toutes les 60 secondes
+  useEffect(() => {
+    loadData(false)
+
+    const intervalId = setInterval(() => {
+      loadData(true)
+    }, 60000)
+
+    return () => clearInterval(intervalId)
+  }, [loadData])
 
   // Déconstruction des données
   const user = dashboardData?.user
@@ -64,7 +83,7 @@ export const DirecteurServicesPage = () => {
   const activeEntreprise = useMemo(() => {
     if (!user?.id) return null
     return entreprises.find((e: any) => Number(e.user_id) === Number(user.id)) || dashboardData?.entreprise || null
-  }, [entreprises, user])
+  }, [entreprises, user, dashboardData])
 
   const entrepriseId = activeEntreprise?.id_entreprise || activeEntreprise?.id
 
@@ -118,8 +137,10 @@ export const DirecteurServicesPage = () => {
       await serviceAPI.create(payload)
       setShowCreateModal(false)
       setFormData({ nom: '', description: '', statut: 'Actif' })
+      
+      // 🔄 Synchronisation silencieuse
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Service créé avec succès.' })
-      await loadData()
     } catch (error) {
       setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la création' })
     } finally {
@@ -142,8 +163,10 @@ export const DirecteurServicesPage = () => {
       })
       setShowEditModal(false)
       setSelectedService(null)
+      
+      // 🔄 Synchronisation silencieuse
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Service mis à jour avec succès.' })
-      await loadData()
     } catch (error) {
       setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la modification' })
     } finally {
@@ -158,8 +181,10 @@ export const DirecteurServicesPage = () => {
     setDeletingServiceId(idService)
     try {
       await serviceAPI.delete(idService)
+      
+      // 🔄 Synchronisation silencieuse
+      await loadData(true)
       setFeedback({ type: 'success', text: 'Service désactivé avec succès (statut Inactif).' })
-      await loadData()
     } catch (error) {
       setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la désactivation' })
     } finally {
@@ -172,22 +197,43 @@ export const DirecteurServicesPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">
-            Services de {activeEntreprise?.nom || "l'entreprise"}
-          </h1>
+          <div className="flex items-center space-x-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">
+              Services de {activeEntreprise?.nom || "l'entreprise"}
+            </h1>
+            {isRefreshing && (
+              <span className="flex items-center space-x-1 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-900/50">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Sync...</span>
+              </span>
+            )}
+          </div>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base mt-1">
             {companyServices.filter((s: any) => s.statut === 'Actif').length} services actifs 
             {companyServices.filter((s: any) => s.statut !== 'Actif').length > 0 && ` (${companyServices.filter((s: any) => s.statut !== 'Actif').length} archivés)`}
           </p>
         </div>
-        <button 
-          type="button" 
-          onClick={() => setShowCreateModal(true)} 
-          className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all shadow-md shadow-amber-600/10 hover:shadow-lg font-medium"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Nouveau service</span>
-        </button>
+        
+        <div className="flex items-center space-x-2">
+          <button 
+            type="button" 
+            onClick={() => loadData(true)}
+            className="flex items-center space-x-2 px-3 sm:px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 text-sm font-medium"
+            title="Rafraîchir manuellement"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Actualiser</span>
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={() => setShowCreateModal(true)} 
+            className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all shadow-md shadow-amber-600/10 hover:shadow-lg font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Nouveau service</span>
+          </button>
+        </div>
       </div>
 
       {feedback && (
@@ -249,7 +295,7 @@ export const DirecteurServicesPage = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
           <Loader2 className="w-8 h-8 text-amber-600 animate-spin mb-4" />
-          <p className="text-slate-500 text-sm">Chargement de vos services de TiDB Cloud...</p>
+          <p className="text-slate-500 text-sm">Chargement de vos services...</p>
         </div>
       ) : filteredServices.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-16 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
@@ -394,7 +440,7 @@ export const DirecteurServicesPage = () => {
                   placeholder="Ex: Ressources Humaines, Comptabilité" 
                   value={formData.nom} 
                   onChange={(e) => setFormData({ ...formData, nom: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
                 />
               </div>
 
@@ -405,7 +451,7 @@ export const DirecteurServicesPage = () => {
                   placeholder="Décrivez brièvement le rôle et les tâches principales de ce service..." 
                   value={formData.description} 
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
                 />
               </div>
 
@@ -459,7 +505,7 @@ export const DirecteurServicesPage = () => {
                   required 
                   value={selectedService.nom} 
                   onChange={(e) => setSelectedService({ ...selectedService, nom: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
                 />
               </div>
 
@@ -469,7 +515,7 @@ export const DirecteurServicesPage = () => {
                   rows={3} 
                   value={selectedService.description || ''} 
                   onChange={(e) => setSelectedService({ ...selectedService, description: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
                 />
               </div>
 
