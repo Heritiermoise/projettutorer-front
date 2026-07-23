@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react'
+import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X, Copy, Check, CheckCircle2, Link as LinkIcon } from 'lucide-react'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
 
@@ -9,6 +9,9 @@ type CredentialsModalState = {
   password: string
   matricule: string
   nomComplet: string
+  loginUrl: string
+  mailSendUrl: string
+  mailSent?: boolean
   message?: string
 }
 
@@ -25,6 +28,9 @@ export const RHEmployesPage = () => {
   const [newCredentials, setNewCredentials] = useState<CredentialsModalState | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [mailSending, setMailSending] = useState(false)
+  const [mailSuccessMsg, setMailSuccessMsg] = useState('')
+  const [mailErrorMsg, setMailErrorMsg] = useState('')
 
   // Formulaire d'ajout
   const [formData, setFormData] = useState({
@@ -108,24 +114,9 @@ export const RHEmployesPage = () => {
       if (source?.data && source.data[key]) return source.data[key]
       if (source?.employe && source.employe[key]) return source.employe[key]
       if (source?.membre && source.membre[key]) return source.membre[key]
+      if (source?.credentials && source.credentials[key]) return source.credentials[key]
+      if (source?.mail && source.mail[key]) return source.mail[key]
     }
-    return undefined
-  }
-
-  const inferEmailSent = (source: any): boolean | undefined => {
-    const explicit = getResponseValue(source, ['email_sent', 'mail_sent', 'emailSent', 'mailSent'])
-    if (typeof explicit === 'boolean') return explicit
-
-    const emailStatus = String(getResponseValue(source, ['email_status', 'mail_status', 'status_email']) || '').toLowerCase()
-    if (emailStatus) {
-      if (['sent', 'envoye', 'envoyé', 'ok', 'success', 'succeeded'].some((flag) => emailStatus.includes(flag))) return true
-      if (['failed', 'error', 'erreur', 'echec', 'échec', 'not_sent', 'non_envoye', 'non envoyé'].some((flag) => emailStatus.includes(flag))) return false
-    }
-
-    const message = String(source?.message || source?.data?.message || '').toLowerCase()
-    if (/email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)) return false
-    if (/email|mail/.test(message) && /envoye|envoyé|sent/.test(message)) return true
-
     return undefined
   }
 
@@ -135,27 +126,56 @@ export const RHEmployesPage = () => {
       ? `${formData.nom.charAt(0).toUpperCase()}${formData.nom.slice(1).toLowerCase()}@${currentYear}`
       : 'Non communiqué'
 
+    const credentialsSource = source?.credentials || source?.data?.credentials || source?.employe || source?.membre || source
+    const mailSource = source?.mail || source?.data?.mail || {}
+
     return {
       status,
-      email: String(getResponseValue(source, ['email']) || formData.email || '-'),
-      password: String(getResponseValue(source, ['password', 'temp_password', 'temporary_password']) || fallbackPassword),
-      matricule: String(getResponseValue(source, ['matricule']) || `EMP-${currentYear}-XXXXX`),
-      nomComplet: `${String(getResponseValue(source, ['prenom']) || formData.prenom || '').trim()} ${String(getResponseValue(source, ['nom']) || formData.nom || '').trim()}`.trim(),
+      email: String(getResponseValue(credentialsSource, ['email']) || formData.email || '-'),
+      password: String(getResponseValue(credentialsSource, ['password', 'temp_password', 'temporary_password']) || fallbackPassword),
+      matricule: String(getResponseValue(credentialsSource, ['matricule']) || `EMP-${currentYear}-XXXXX`),
+      nomComplet: `${String(getResponseValue(credentialsSource, ['prenom']) || formData.prenom || '').trim()} ${String(getResponseValue(credentialsSource, ['nom']) || formData.nom || '').trim()}`.trim(),
+      loginUrl: String(getResponseValue(credentialsSource, ['login_url', 'loginUrl']) || ''),
+      mailSendUrl: String(getResponseValue(mailSource, ['send_url', 'sendUrl']) || ''),
+      mailSent: typeof getResponseValue(mailSource, ['sent']) === 'boolean' ? Boolean(getResponseValue(mailSource, ['sent'])) : undefined,
       message: String(source?.message || source?.data?.message || ''),
     }
   }
 
-  const detectPartialCreationError = (error: any) => {
-    const payload = error?.payload || error?.response?.data || {}
-    const message = String(payload?.message || error?.message || '').toLowerCase()
-    const hasCredentials = Boolean(
-      getResponseValue(payload, ['email']) ||
-      getResponseValue(payload, ['matricule']) ||
-      getResponseValue(payload, ['password', 'temp_password', 'temporary_password'])
-    )
-    const emailFailure = /email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)
-    const likelyCreated = hasCredentials || Boolean(payload?.employe || payload?.membre || getResponseValue(payload, ['matricule']))
-    return emailFailure && likelyCreated ? payload : null
+  const refreshDashboardData = useCallback(() => {
+    loadDashboardRHContext()
+      .then((data) => {
+        setDashboardData(data)
+        if (data?.entreprise?.id_entreprise) {
+          setFormData(prev => ({ ...prev, company_id: data.entreprise.id_entreprise }))
+        }
+      })
+      .catch(() => {
+        // Rafraîchissement non bloquant.
+      })
+  }, [])
+
+  const callSendUrl = async (sendUrl: string) => {
+    if (!sendUrl) {
+      throw new Error('Aucun lien d’envoi du mail n’a été fourni par l’API.')
+    }
+
+    const resolvedUrl = new URL(sendUrl, window.location.origin)
+    if (resolvedUrl.origin === window.location.origin) {
+      return await apiRequest(`${resolvedUrl.pathname}${resolvedUrl.search}`, { method: 'GET' })
+    }
+
+    const response = await fetch(resolvedUrl.toString(), {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    })
+
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok || payload?.success === false) {
+      throw new Error(payload?.message || `Erreur HTTP ${response.status}`)
+    }
+
+    return payload
   }
 
   const handleAddEmploye = async (e: React.FormEvent) => {
@@ -163,16 +183,20 @@ export const RHEmployesPage = () => {
     setSubmitting(true)
     setErrorMsg('')
     setSuccessMsg(null)
+    setMailSuccessMsg('')
+    setMailErrorMsg('')
     try {
       const response: any = await apiRequest('/rh/employes', {
         method: 'POST',
         body: JSON.stringify(formData)
       })
-      
-      setShowAddModal(false)
-      const emailSent = inferEmailSent(response)
-      const status: 'success' | 'warning' = emailSent === false ? 'warning' : 'success'
-      setNewCredentials(buildCredentialsFromSource(response, status))
+
+      if (response?.success !== true) {
+        throw new Error(response?.message || "Erreur lors de l'enregistrement de l'employé.")
+      }
+
+      setNewCredentials(buildCredentialsFromSource(response, 'success'))
+      setShowAddModal(true)
 
       setFormData({
         nom: '',
@@ -188,23 +212,45 @@ export const RHEmployesPage = () => {
         date_naissance: '',
         lieu_naissance: ''
       })
-      loadData()
-      setSuccessMsg(emailSent === false
-        ? 'Employé créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.'
-        : `Employé créé avec succès. Les identifiants ont été envoyés à ${formData.email}.`)
+
+      refreshDashboardData()
+      setSuccessMsg(response?.message || 'Employé créé avec succès. Les identifiants sont affichés ci-dessous.')
     } catch (err: any) {
-      const partialPayload = detectPartialCreationError(err)
-      if (partialPayload) {
-        setShowAddModal(false)
-        setNewCredentials(buildCredentialsFromSource(partialPayload, 'warning'))
-        setSuccessMsg('Employé créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.')
-        loadData()
-      } else {
-        setErrorMsg(err?.payload?.message || err?.response?.data?.message || err?.message || "Erreur lors de l'enregistrement de l'employé.")
-      }
+      setErrorMsg(err?.payload?.message || err?.response?.data?.message || err?.message || "Erreur lors de l'enregistrement de l'employé.")
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleSendMail = async () => {
+    if (!newCredentials?.mailSendUrl) {
+      setMailErrorMsg('Le lien d’envoi du mail est introuvable.')
+      return
+    }
+
+    setMailSending(true)
+    setMailErrorMsg('')
+    setMailSuccessMsg('')
+
+    try {
+      const payload = await callSendUrl(newCredentials.mailSendUrl)
+      setMailSuccessMsg(payload?.message || 'Le mail a été envoyé avec succès.')
+      setNewCredentials(prev => prev ? { ...prev, mailSent: true } : prev)
+    } catch (err: any) {
+      setMailErrorMsg(err?.payload?.message || err?.response?.data?.message || err?.message || 'Erreur lors de l’envoi du mail.')
+    } finally {
+      setMailSending(false)
+    }
+  }
+
+  const closeAddModal = () => {
+    setShowAddModal(false)
+    setNewCredentials(null)
+    setSuccessMsg(null)
+    setErrorMsg('')
+    setMailSending(false)
+    setMailSuccessMsg('')
+    setMailErrorMsg('')
   }
 
   const copyToClipboard = async (text: string, fieldKey: string) => {
@@ -224,6 +270,7 @@ export const RHEmployesPage = () => {
       `Email: ${credentials.email}`,
       `Matricule: ${credentials.matricule}`,
       `Mot de passe temporaire: ${credentials.password}`,
+      `Lien de connexion: ${credentials.loginUrl || 'Non communiqué'}`,
     ].join('\n')
   }
 
@@ -375,18 +422,16 @@ export const RHEmployesPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 backdrop-blur-md p-4">
           <div className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 space-y-5 border ${newCredentials.status === 'warning' ? 'border-amber-300 dark:border-amber-700/50' : 'border-emerald-200 dark:border-emerald-800/50'}`}>
             <div className="flex items-start gap-3">
-              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${newCredentials.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'}`}>
-                {newCredentials.status === 'warning' ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Identifiants du nouvel employé</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Création de l’employé réussie</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
-                  {newCredentials.status === 'warning'
-                    ? 'Le compte est créé, mais l\'envoi de l\'email a échoué. Partagez les accès manuellement.'
-                    : `Compte créé avec succès. Les identifiants ont été envoyés à ${newCredentials.email}.`}
+                  {successMsg || 'Les identifiants sont affichés ci-dessous. Le mail sera envoyé manuellement après vérification.'}
                 </p>
               </div>
-              <button onClick={() => setNewCredentials(null)} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">Fermer</button>
+              <button onClick={closeAddModal} className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">Fermer</button>
             </div>
 
             <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl space-y-3 text-sm border border-slate-200 dark:border-slate-700">
@@ -414,15 +459,55 @@ export const RHEmployesPage = () => {
                   {copiedField === 'password' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-200" />}
                 </button>
               </div>
+
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 block">Lien de connexion</span>
+                  {newCredentials.loginUrl ? (
+                    <a href={newCredentials.loginUrl} target="_blank" rel="noreferrer" className="font-mono text-sm text-primary-700 dark:text-primary-300 break-all hover:underline">
+                      {newCredentials.loginUrl}
+                    </a>
+                  ) : (
+                    <span className="text-sm text-slate-500 dark:text-slate-400">Aucun lien retourné par l’API</span>
+                  )}
+                </div>
+                {newCredentials.loginUrl && (
+                  <button onClick={() => copyToClipboard(newCredentials.loginUrl, 'loginUrl')} className="p-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 text-xs flex items-center space-x-1">
+                    {copiedField === 'loginUrl' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-200" />}
+                  </button>
+                )}
+              </div>
+
+              {newCredentials.mailSent === false && (
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/25 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-800 dark:text-amber-200">
+                  Le mail n’a pas encore été envoyé. Le bouton ci-dessous déclenchera l’envoi manuel.
+                </div>
+              )}
+
+              {newCredentials.mailSent === true && (
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-200">
+                  Le mail a bien été envoyé.
+                </div>
+              )}
             </div>
 
-            <div className={`p-3 rounded-xl border ${newCredentials.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/40' : 'bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/40'}`}>
-              <p className={`text-xs leading-relaxed ${newCredentials.status === 'warning' ? 'text-amber-800 dark:text-amber-200' : 'text-emerald-800 dark:text-emerald-200'}`}>
-                {newCredentials.status === 'warning'
-                  ? 'Alerte email: l\'utilisateur ne recevra pas automatiquement son lien de connexion. Transmettez les identifiants de manière sécurisée.'
-                  : 'L\'utilisateur recevra son lien de connexion par email. Gardez cette copie en secours uniquement.'}
+            <div className="p-3 rounded-xl border bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/40">
+              <p className="text-xs leading-relaxed text-emerald-800 dark:text-emerald-200">
+                Les informations sont affichées avant tout envoi de mail. Utilisez le bouton ci-dessous pour déclencher l’envoi quand vous êtes prêt.
               </p>
             </div>
+
+            {mailSuccessMsg && (
+              <div className="p-3 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 rounded-xl text-sm border border-emerald-200 dark:border-emerald-800">
+                {mailSuccessMsg}
+              </div>
+            )}
+
+            {mailErrorMsg && (
+              <div className="p-3 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-200 rounded-xl text-sm border border-red-200 dark:border-red-800">
+                {mailErrorMsg}
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2">
               <button
@@ -435,11 +520,12 @@ export const RHEmployesPage = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setNewCredentials(null)}
-                className={`flex-1 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 ${newCredentials.status === 'warning' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                onClick={handleSendMail}
+                disabled={mailSending || !newCredentials.mailSendUrl}
+                className="flex-1 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <LinkIcon className="w-4 h-4" />
-                <span>Terminer</span>
+                <LinkIcon className={`w-4 h-4 ${mailSending ? 'animate-pulse' : ''}`} />
+                <span>{mailSending ? 'Envoi du mail...' : 'Envoyer le mail'}</span>
               </button>
             </div>
           </div>
@@ -564,7 +650,7 @@ export const RHEmployesPage = () => {
                 </div>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold">Annuler</button>
+                <button type="button" onClick={closeAddModal} className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold">Annuler</button>
                 <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700">{submitting ? 'Enregistrement...' : 'Enregistrer'}</button>
               </div>
             </form>
