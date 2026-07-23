@@ -446,7 +446,7 @@ export const membreAPI = {
   },
 
   create: async (data: Partial<Employe>) => {
-    return await apiRequest('direction/membres', {
+    return await apiRequest('/direction/membres', {
       method: 'POST',
       body: JSON.stringify(data),
     });

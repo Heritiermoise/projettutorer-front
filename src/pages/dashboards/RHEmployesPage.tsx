@@ -24,6 +24,7 @@ export const RHEmployesPage = () => {
   // État pour afficher les identifiants générés après création
   const [newCredentials, setNewCredentials] = useState<CredentialsModalState | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   // Formulaire d'ajout
   const [formData, setFormData] = useState({
@@ -161,8 +162,9 @@ export const RHEmployesPage = () => {
     e.preventDefault()
     setSubmitting(true)
     setErrorMsg('')
+    setSuccessMsg(null)
     try {
-      const response: any = await apiRequest('rh/employes', {
+      const response: any = await apiRequest('/rh/employes', {
         method: 'POST',
         body: JSON.stringify(formData)
       })
@@ -187,15 +189,15 @@ export const RHEmployesPage = () => {
         lieu_naissance: ''
       })
       loadData()
-      setErrorMsg(emailSent === false
+      setSuccessMsg(emailSent === false
         ? 'Employé créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.'
-        : `Employé créé. Les identifiants ont été envoyés à ${formData.email}.`)
+        : `Employé créé avec succès. Les identifiants ont été envoyés à ${formData.email}.`)
     } catch (err: any) {
       const partialPayload = detectPartialCreationError(err)
       if (partialPayload) {
         setShowAddModal(false)
         setNewCredentials(buildCredentialsFromSource(partialPayload, 'warning'))
-        setErrorMsg('Employé créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.')
+        setSuccessMsg('Employé créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.')
         loadData()
       } else {
         setErrorMsg(err?.payload?.message || err?.response?.data?.message || err?.message || "Erreur lors de l'enregistrement de l'employé.")
@@ -504,6 +506,11 @@ export const RHEmployesPage = () => {
               <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <form onSubmit={handleAddEmploye} className="p-6 space-y-4">
+              {successMsg && (
+                <div className="p-3 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 rounded-xl text-sm border border-emerald-200 dark:border-emerald-800">
+                  {successMsg}
+                </div>
+              )}
               {errorMsg && (
                 <div className="p-3 bg-red-100 text-red-700 rounded-xl text-sm">{errorMsg}</div>
               )}

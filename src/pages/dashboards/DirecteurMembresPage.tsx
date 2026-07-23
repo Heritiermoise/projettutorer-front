@@ -30,6 +30,7 @@ export const DirecteurMembresPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de rafraîchissement
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   
   // État pour afficher les identifiants de connexion (succès complet ou création partielle)
   const [createdCredentials, setCreatedCredentials] = useState<CredentialsModalState | null>(null)
@@ -234,6 +235,7 @@ export const DirecteurMembresPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSuccessMsg(null)
     
     const payload = {
       prenom: createForm.prenom,
@@ -268,6 +270,9 @@ export const DirecteurMembresPage = () => {
       
       // 🔄 Rechargement immédiat et silencieux des données après enregistrement réussi
       await loadData(true)
+      setSuccessMsg(emailSent === false
+        ? 'Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles ci-dessous.'
+        : `Membre créé avec succès. Les identifiants ont été envoyés à ${createForm.email}.`)
       if (emailSent === false) {
         setToast({ type: 'info', message: 'Membre créé, mais l\'email automatique n\'a pas pu être envoyé.' })
       } else {
@@ -321,6 +326,12 @@ export const DirecteurMembresPage = () => {
           </button>
         </div>
       </div>
+
+      {successMsg && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/25 dark:text-emerald-200">
+          {successMsg}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
