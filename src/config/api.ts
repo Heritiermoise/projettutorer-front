@@ -1,16 +1,22 @@
 // Configuration API
-//const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000/api';
-const VITE_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api';
+const DEFAULT_REMOTE_API_BASE_URL = 'https://rhmanager-877l.onrender.com/api';
+const DEFAULT_LOCAL_API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-const rawApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)?.trim();
+const rawRemoteApiBaseUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)?.trim();
+const rawLocalApiBaseUrl = (import.meta.env.VITE_API_BASE_URL_LOCAL || DEFAULT_LOCAL_API_BASE_URL)?.trim();
+const useLocalApi = String(import.meta.env.VITE_USE_LOCAL_API || '').toLowerCase() === 'true';
+
+const normalizeApiBaseUrl = (baseUrl: string) => {
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '');
+  return normalizedBaseUrl.endsWith('/api') ? normalizedBaseUrl : `${normalizedBaseUrl}/api`;
+};
 
 export const API_BASE_URL = (() => {
-  if (!rawApiBaseUrl) {
-    return VITE_API_BASE_URL;
-  }
+  const chosenBaseUrl = useLocalApi
+    ? (rawLocalApiBaseUrl || DEFAULT_LOCAL_API_BASE_URL)
+    : (rawRemoteApiBaseUrl || DEFAULT_REMOTE_API_BASE_URL);
 
-  const normalizedBaseUrl = rawApiBaseUrl.replace(/\/$/, '');
-  return normalizedBaseUrl.endsWith('/api') ? normalizedBaseUrl : `${normalizedBaseUrl}/api`;
+  return normalizeApiBaseUrl(chosenBaseUrl);
 })();
 
 export const API_CONFIG = {

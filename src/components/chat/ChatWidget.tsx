@@ -1,218 +1,258 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { MessageBubble } from './MessageBubble';
-import { TypingIndicator } from './TypingIndicator';
-import { chatAPI } from '../../services/chatAPI';
-import type { ChatMessage } from '../../services/chatAPI';
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, matchPath } from 'react-router-dom'
+import { Bot, PauseCircle, RefreshCcw, ShieldCheck, Sparkles, X, AlertTriangle, Copy, Check } from 'lucide-react'
+import { MessageBubble } from './MessageBubble'
+import { TypingIndicator } from './TypingIndicator'
+import { chatAPI, type ChatMessage } from '../../services/chatAPI'
+
+type ConversationMode = 'metier' | 'pause'
+
+const WELCOME_MESSAGE: ChatMessage = {
+  id: 'welcome',
+  text: 'Bonjour. Je suis l’assistant RH. Posez-moi une question métier, ou passez en pause détente si vous voulez un ton plus léger.',
+  sender: 'assistant',
+  timestamp: new Date(),
+  status: 'sent',
+  source: 'welcome',
+}
+
+const QUICK_QUESTIONS = [
+  'Comment devenir employé ?',
+  'Quelles sont les conditions de recrutement ?',
+  'Comment m’inscrire ?',
+  'Quels services proposez-vous ?',
+]
 
 export const ChatWidget: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'welcome',
-      text: '👋 Bonjour ! Je suis l\'assistant RH Manager AI. Comment puis-je vous aider aujourd\'hui ?\n\nVous pouvez me poser des questions sur :\n• Comment devenir employé\n• Les conditions de recrutement\n• Les étapes d\'inscription\n• Les informations de l\'entreprise',
-      sender: 'assistant',
-      timestamp: new Date(),
-      status: 'sent',
-    },
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [sessionId] = useState<string>(() => {
-    return localStorage.getItem('chat_session_id') || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  });
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation()
+  const isProtectedRhArea = useMemo(() => {
+    return Boolean(
+      matchPath('/dashboard/rh/*', location.pathname) ||
+      matchPath('/dashboard/directeur/*', location.pathname) ||
+      matchPath('/dashboard/admin/*', location.pathname) ||
+      matchPath('/dashboard/employe/*', location.pathname)
+    )
+  }, [location.pathname])
 
-  // Scroll automatique vers le dernier message
+  const [isOpen, setIsOpen] = useState(false)
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const stored = chatAPI.getHistoryFromStorage()
+    return stored.length > 0 ? stored : [WELCOME_MESSAGE]
+  })
+  const [inputValue, setInputValue] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [conversationMode, setConversationMode] = useState<ConversationMode>('metier')
+  const [debugMeta, setDebugMeta] = useState<{ source?: string; warning?: string } | null>(null)
+  const [isFallbackMode, setIsFallbackMode] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    chatAPI.saveHistory(messages)
+  }, [messages])
 
-  // Focus sur l'input quand le chat s'ouvre
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isTyping])
+
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      window.setTimeout(() => inputRef.current?.focus(), 250)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isTyping) return;
+  useEffect(() => {
+    if (!isProtectedRhArea) {
+      setIsOpen(false)
+    }
+  }, [isProtectedRhArea])
+
+  const buildIntroMessage = (mode: ConversationMode) => {
+    if (mode === 'pause') {
+      return 'Pause détente activée. Je reste utile, mais avec un ton plus léger. Revenez au mode métier à tout moment.'
+    }
+    return 'Mode métier activé. Je réponds en priorité avec des données RH et opérationnelles.'
+  }
+
+  const copyToClipboard = async (text: string, fieldKey: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(fieldKey)
+      window.setTimeout(() => setCopiedField(null), 1800)
+    } catch {
+      setDebugMeta((prev) => ({
+        source: prev?.source,
+        warning: 'Impossible de copier dans le presse-papiers',
+      }))
+    }
+  }
+
+  const handleSendMessage = async (messageOverride?: string) => {
+    const content = (messageOverride ?? inputValue).trim()
+    if (!content || isTyping) return
 
     const userMessage: ChatMessage = {
       id: `user_${Date.now()}`,
-      text: inputValue.trim(),
+      text: content,
       sender: 'user',
       timestamp: new Date(),
       status: 'sending',
-    };
+    }
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
-    setIsTyping(true);
+    setMessages((prev) => [...prev, userMessage])
+    setInputValue('')
+    setIsTyping(true)
+    setDebugMeta(null)
 
-    // Mettre à jour le statut du message utilisateur
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === userMessage.id ? { ...msg, status: 'sent' } : msg
-        )
-      );
-    }, 500);
+    window.setTimeout(() => {
+      setMessages((prev) => prev.map((message) => (message.id === userMessage.id ? { ...message, status: 'sent' } : message)))
+    }, 350)
 
-    // Envoyer au backend
-    const response = await chatAPI.sendMessage(inputValue.trim(), sessionId);
+    const response = await chatAPI.sendMessage(content)
+    const reply = response.reply || response.response || ''
+    const source = response.source || 'unknown'
+    const warning = response.warning || ''
 
-    setIsTyping(false);
+    setIsTyping(false)
+    setDebugMeta({ source, warning })
+    setIsFallbackMode(source === 'local-fallback')
 
-    if (response.success && response.response) {
+    if (response.success && reply) {
       const assistantMessage: ChatMessage = {
         id: `assistant_${Date.now()}`,
-        text: response.response,
+        text: reply,
         sender: 'assistant',
         timestamp: new Date(),
         status: 'sent',
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-    } else {
-      const errorMessage: ChatMessage = {
+        source,
+        warning,
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+      return
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
         id: `error_${Date.now()}`,
-        text: '❌ Désolé, une erreur est survenue. Veuillez réessayer.',
+        text: source === 'local-fallback'
+          ? 'Mode secours actif. Je n’ai pas pu joindre le backend RH pour le moment.'
+          : 'Désolé, une erreur est survenue. Veuillez réessayer.',
         sender: 'assistant',
         timestamp: new Date(),
         status: 'error',
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+        source,
+        warning,
+      },
+    ])
+  }
 
   const handleClearChat = () => {
-    if (window.confirm('Voulez-vous vraiment effacer la conversation ?')) {
-      chatAPI.clearHistory();
-      setMessages([
+    if (!window.confirm('Voulez-vous vraiment effacer la conversation ?')) return
+    chatAPI.clearHistory()
+    setMessages([{ ...WELCOME_MESSAGE, text: buildIntroMessage(conversationMode), timestamp: new Date() }])
+    setDebugMeta(null)
+    setIsFallbackMode(false)
+  }
+
+  const toggleMode = () => {
+    setConversationMode((prev) => {
+      const nextMode = prev === 'metier' ? 'pause' : 'metier'
+      setMessages((current) => [
+        ...current,
         {
-          id: 'welcome',
-          text: '👋 Conversation effacée. Comment puis-je vous aider ?',
+          id: `mode_${Date.now()}`,
+          text: buildIntroMessage(nextMode),
           sender: 'assistant',
           timestamp: new Date(),
           status: 'sent',
+          source: 'mode-switch',
         },
-      ]);
-    }
-  };
-
-  const quickQuestions = [
-    'Comment devenir employé ?',
-    'Quelles sont les conditions de recrutement ?',
-    'Comment m\'inscrire ?',
-    'Quels services proposez-vous ?',
-  ];
+      ])
+      return nextMode
+    })
+  }
 
   return (
     <>
-      {/* Bouton flottant */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-          isOpen
-            ? 'bg-gradient-to-br from-red-500 to-red-600 rotate-90'
-            : 'bg-gradient-to-br from-green-500 to-green-600 animate-pulse'
-        }`}
-        aria-label={isOpen ? 'Fermer le chat' : 'Ouvrir le chat'}
-      >
-        {isOpen ? (
-          <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-          </svg>
-        )}
-      </button>
+      {isProtectedRhArea && (
+        <>
+          <button
+            type="button"
+            onClick={() => setIsOpen((prev) => !prev)}
+            className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${
+              isOpen
+                ? 'bg-slate-800 text-white rotate-90'
+                : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
+            }`}
+            aria-label={isOpen ? 'Fermer le chat' : 'Ouvrir le chat'}
+          >
+            {isOpen ? <X className="w-7 h-7" /> : <Bot className="w-8 h-8" />}
+          </button>
 
-      {/* Badge de notification */}
-      {!isOpen && (
-        <div className="fixed bottom-20 right-6 z-50 bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-lg animate-bounce">
-          💬 Discutez avec nous !
-        </div>
+          {!isOpen && (
+            <div className="fixed bottom-20 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs text-white shadow-lg animate-bounce">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Assistant RH disponible</span>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Fenêtre de chat */}
-      {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-8rem)] bg-slate-100 dark:bg-slate-900 rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp border border-slate-200 dark:border-slate-700">
-          
-          {/* En-tête style WhatsApp */}
-          <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 flex items-center justify-between shadow-md">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border-2 border-white/30">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                </svg>
+      {isOpen && isProtectedRhArea && (
+        <div className="fixed bottom-24 right-6 z-50 flex h-[min(78vh,720px)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:w-[420px]">
+          <div className="flex items-center justify-between bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-4 text-white shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
+                <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-base">Assistant RH Manager AI</h3>
-                <div className="flex items-center space-x-1 text-xs text-green-100">
-                  <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span>
-                  <span>En ligne</span>
+                <h3 className="text-base font-bold">Assistant RH</h3>
+                <div className="flex items-center gap-2 text-xs text-emerald-200">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300"></span>
+                  <span>{conversationMode === 'pause' ? 'Pause détente' : 'Mode métier'}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleClearChat}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                title="Effacer la conversation"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={toggleMode} className="rounded-full p-2 transition-colors hover:bg-white/10" title="Basculer en pause détente">
+                <PauseCircle className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                title="Fermer"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+              <button type="button" onClick={handleClearChat} className="rounded-full p-2 transition-colors hover:bg-white/10" title="Effacer la conversation">
+                <RefreshCcw className="h-5 w-5" />
+              </button>
+              <button type="button" onClick={() => setIsOpen(false)} className="rounded-full p-2 transition-colors hover:bg-white/10" title="Fermer">
+                <X className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          {/* Zone des messages */}
-          <div className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-800" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          }}>
+          {isFallbackMode && (
+            <div className="mx-4 mt-4 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>Mode secours activé. Le backend RH n’a pas répondu correctement, les réponses peuvent être limitées.</p>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-900/80">
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
-            
             {isTyping && <TypingIndicator />}
-            
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggestions rapides */}
           {messages.length <= 2 && (
-            <div className="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Questions suggérées :</p>
+            <div className="border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+              <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Suggestions rapides</p>
               <div className="flex flex-wrap gap-2">
-                {quickQuestions.map((question, index) => (
+                {QUICK_QUESTIONS.map((question) => (
                   <button
-                    key={index}
-                    onClick={() => {
-                      setInputValue(question);
-                      setTimeout(() => handleSendMessage(), 100);
-                    }}
-                    className="text-xs px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors border border-green-200 dark:border-green-800"
+                    key={question}
+                    type="button"
+                    onClick={() => handleSendMessage(question)}
+                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/30"
                   >
                     {question}
                   </button>
@@ -221,61 +261,83 @@ export const ChatWidget: React.FC = () => {
             </div>
           )}
 
-          {/* Zone d'envoi */}
-          <div className="p-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
+          <div className="border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Tapez votre message..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    void handleSendMessage()
+                  }
+                }}
+                placeholder={conversationMode === 'pause' ? 'Une petite question, sans stress...' : 'Tapez votre message RH...'}
                 disabled={isTyping}
-                className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 text-sm disabled:opacity-50"
+                className="flex-1 rounded-2xl border border-transparent bg-slate-100 px-4 py-3 text-sm outline-none transition-all focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900"
               />
               <button
-                onClick={handleSendMessage}
+                type="button"
+                onClick={() => void handleSendMessage()}
                 disabled={!inputValue.trim() || isTyping}
-                className="p-2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-3 text-white transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </button>
             </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 text-center mt-2">
-              Propulsé par RH Manager AI • Réponses instantanées
-            </p>
+            <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400 dark:text-slate-500">
+              <p>Propulsé par RH Manager AI</p>
+              <p className="truncate">
+                {debugMeta?.source ? `source: ${debugMeta.source}` : 'source: en attente'}{debugMeta?.warning ? ` • warning: ${debugMeta.warning}` : ''}
+              </p>
+            </div>
+            {debugMeta?.warning && !isFallbackMode && (
+              <div className="mt-2">
+                <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+                  <ShieldCheck className="h-3 w-3" />
+                  {debugMeta.warning}
+                </span>
+              </div>
+            )}
+            <div className="mt-2 flex items-center gap-2">
+              <button type="button" onClick={() => copyToClipboard('Mode métier prioritaire', 'mode')} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+                {copiedField === 'mode' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                Debug
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Animations CSS */}
+      {!isProtectedRhArea && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-xs rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
+          Le chat RH est disponible après connexion dans la zone protégée.
+        </div>
+      )}
+
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        
+
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
-        
+
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
       `}</style>
     </>
-  );
-};
+  )
+}
