@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Loader2, RefreshCw } from 'lucide-react'
+import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Loader2, RefreshCw, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { membreAPI, posteAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
@@ -9,6 +9,16 @@ const ROLES_OPTIONS = [
   { slug: 'employe', nom: 'Employé' },
   { slug: 'rh', nom: 'Ressources Humaines (RH)' },
 ] as const
+
+type CredentialsModalState = {
+  status: 'success' | 'warning'
+  prenom: string
+  nom: string
+  email: string
+  password: string
+  matricule: string
+  message?: string
+}
 
 export const DirecteurMembresPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -21,8 +31,9 @@ export const DirecteurMembresPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de rafraîchissement
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   
-  // État pour stocker temporairement les identifiants et le mot de passe renvoyé par l'API
-  const [createdCredentials, setCreatedCredentials] = useState<any>(null)
+  // État pour afficher les identifiants de connexion (succès complet ou création partielle)
+  const [createdCredentials, setCreatedCredentials] = useState<CredentialsModalState | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
   
   // Formulaire d'ajout direct de l'employé
   const [createForm, setCreateForm] = useState({
@@ -144,6 +155,83 @@ export const DirecteurMembresPage = () => {
     return poste?.titre_poste || 'N/A'
   }
 
+  const copyToClipboard = async (text: string, fieldKey: string) => {
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(fieldKey)
+      setTimeout(() => setCopiedField(null), 1800)
+    } catch {
+      setToast({ type: 'error', message: 'Impossible de copier dans le presse-papiers.' })
+    }
+  }
+
+  const buildCredentialsSummary = (credentials: CredentialsModalState) => {
+    return [
+      `Nom: ${credentials.prenom} ${credentials.nom}`,
+      `Email: ${credentials.email}`,
+      `Matricule: ${credentials.matricule}`,
+      `Mot de passe temporaire: ${credentials.password}`,
+    ].join('\n')
+  }
+
+  const getResponseValue = (source: any, keys: string[]) => {
+    for (const key of keys) {
+      if (source && source[key]) return source[key]
+      if (source?.data && source.data[key]) return source.data[key]
+      if (source?.employe && source.employe[key]) return source.employe[key]
+      if (source?.membre && source.membre[key]) return source.membre[key]
+    }
+    return undefined
+  }
+
+  const inferEmailSent = (source: any): boolean | undefined => {
+    const explicit = getResponseValue(source, ['email_sent', 'mail_sent', 'emailSent', 'mailSent'])
+    if (typeof explicit === 'boolean') return explicit
+
+    const emailStatus = String(getResponseValue(source, ['email_status', 'mail_status', 'status_email']) || '').toLowerCase()
+    if (emailStatus) {
+      if (['sent', 'envoye', 'envoyé', 'ok', 'success', 'succeeded'].some((flag) => emailStatus.includes(flag))) return true
+      if (['failed', 'error', 'erreur', 'echec', 'échec', 'not_sent', 'non_envoye', 'non envoyé'].some((flag) => emailStatus.includes(flag))) return false
+    }
+
+    const message = String(source?.message || source?.data?.message || '').toLowerCase()
+    if (/email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)) return false
+    if (/email|mail/.test(message) && /envoye|envoyé|sent/.test(message)) return true
+
+    return undefined
+  }
+
+  const buildCredentialsFromSource = (source: any, status: 'success' | 'warning'): CredentialsModalState => {
+    const anneeCourante = new Date().getFullYear()
+    const fallbackPassword = createForm.nom
+      ? `${createForm.nom.charAt(0).toUpperCase()}${createForm.nom.slice(1).toLowerCase()}@${anneeCourante}`
+      : 'Non communiqué'
+
+    return {
+      status,
+      prenom: String(getResponseValue(source, ['prenom']) || createForm.prenom || '-'),
+      nom: String(getResponseValue(source, ['nom']) || createForm.nom || '-'),
+      email: String(getResponseValue(source, ['email']) || createForm.email || '-'),
+      password: String(getResponseValue(source, ['password', 'temp_password', 'temporary_password']) || fallbackPassword),
+      matricule: String(getResponseValue(source, ['matricule']) || `EMP-${anneeCourante}-XXXXX`),
+      message: String(source?.message || source?.data?.message || ''),
+    }
+  }
+
+  const detectPartialCreationError = (error: any) => {
+    const payload = error?.payload || error?.response?.data || {}
+    const message = String(payload?.message || error?.message || '').toLowerCase()
+    const hasCredentials = Boolean(
+      getResponseValue(payload, ['email']) ||
+      getResponseValue(payload, ['matricule']) ||
+      getResponseValue(payload, ['password', 'temp_password', 'temporary_password'])
+    )
+    const emailFailure = /email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)
+    const likelyCreated = hasCredentials || Boolean(payload?.employe || payload?.membre || getResponseValue(payload, ['matricule']))
+    return emailFailure && likelyCreated ? payload : null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -163,20 +251,10 @@ export const DirecteurMembresPage = () => {
       const response = await membreAPI.create(payload)
       
       setShowCreateModal(false)
-      
-      const anneeCourante = new Date().getFullYear()
-      const fallbackPassword = createForm.nom ? (createForm.nom.charAt(0).toUpperCase() + createForm.nom.slice(1).toLowerCase() + '@' + anneeCourante) : 'N/A'
-      
-      const generatedPassword = response?.password || response?.temp_password || fallbackPassword
-      const matricule = response?.matricule || response?.employe?.matricule || 'EMP-' + anneeCourante + '-XXXXX'
 
-      setCreatedCredentials({
-        prenom: createForm.prenom,
-        nom: createForm.nom,
-        email: createForm.email,
-        password: generatedPassword,
-        matricule: matricule,
-      })
+      const emailSent = inferEmailSent(response)
+      const modalStatus: 'success' | 'warning' = emailSent === false ? 'warning' : 'success'
+      setCreatedCredentials(buildCredentialsFromSource(response, modalStatus))
 
       setCreateForm({
         prenom: '',
@@ -190,10 +268,22 @@ export const DirecteurMembresPage = () => {
       
       // 🔄 Rechargement immédiat et silencieux des données après enregistrement réussi
       await loadData(true)
-      setToast({ type: 'success', message: 'Employé créé avec succès et liste actualisée !' })
+      if (emailSent === false) {
+        setToast({ type: 'info', message: 'Membre créé, mais l\'email automatique n\'a pas pu être envoyé.' })
+      } else {
+        setToast({ type: 'success', message: `Membre créé. Les identifiants ont été envoyés à ${createForm.email}.` })
+      }
     } catch (err: any) {
       console.error(err)
-      setToast({ type: 'error', message: err?.response?.data?.message || 'Erreur lors de la création de l\'employé.' })
+      const partialPayload = detectPartialCreationError(err)
+      if (partialPayload) {
+        setShowCreateModal(false)
+        setCreatedCredentials(buildCredentialsFromSource(partialPayload, 'warning'))
+        setToast({ type: 'info', message: 'Le membre est créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.' })
+        await loadData(true)
+      } else {
+        setToast({ type: 'error', message: err?.payload?.message || err?.response?.data?.message || err?.message || 'Erreur lors de la création de l\'employé.' })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -370,56 +460,98 @@ export const DirecteurMembresPage = () => {
         </div>
       )}
 
-      {/* Modal d'alerte des identifiants (Bloquant) */}
+      {/* Modal des identifiants et statut d'envoi email */}
       {createdCredentials && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5 border-2 border-amber-500">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 font-bold text-2xl">
-                🔑
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 backdrop-blur-md p-4">
+          <div className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 space-y-5 border ${createdCredentials.status === 'warning' ? 'border-amber-300 dark:border-amber-700/50' : 'border-emerald-200 dark:border-emerald-800/50'}`}>
+            <div className="flex items-start gap-3">
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${createdCredentials.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'}`}>
+                {createdCredentials.status === 'warning' ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white">Identifiants de connexion</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Compte créé avec succès</p>
+              <div className="flex-1">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Identifiants du nouveau membre</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                  {createdCredentials.status === 'warning'
+                    ? 'Le compte est créé, mais l\'envoi de l\'email a échoué. Transmettez les accès manuellement.'
+                    : `Compte créé avec succès. Les identifiants ont été envoyés à ${createdCredentials.email}.`}
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setCreatedCredentials(null)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+              >
+                Fermer
+              </button>
             </div>
 
-            <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl space-y-3 text-sm border border-slate-200 dark:border-slate-600">
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl space-y-3 text-sm border border-slate-200 dark:border-slate-700">
               <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 block">Nom complet :</span>
-                <span className="font-bold text-slate-800 dark:text-white">{createdCredentials.prenom} {createdCredentials.nom}</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 block">Nom complet</span>
+                <span className="font-semibold text-slate-900 dark:text-white">{createdCredentials.prenom} {createdCredentials.nom}</span>
               </div>
               <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 block">Matricule :</span>
-                <span className="font-semibold text-amber-600 dark:text-amber-400">{createdCredentials.matricule}</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 block">Matricule</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-100">{createdCredentials.matricule}</span>
               </div>
-              <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 block">Email (Identifiant) :</span>
-                <span className="font-semibold text-slate-800 dark:text-white select-all">{createdCredentials.email}</span>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 block mb-1">Mot de passe temporaire :</span>
-                <div className="bg-amber-50 dark:bg-slate-900 p-3 rounded-xl border border-amber-300 dark:border-amber-900/50 text-center">
-                  <span className="font-mono text-lg font-bold text-amber-700 dark:text-amber-300 tracking-wider select-all">
-                    {createdCredentials.password}
-                  </span>
+
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 block">Email (identifiant)</span>
+                  <span className="font-mono text-sm text-slate-900 dark:text-slate-100 break-all">{createdCredentials.email}</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(createdCredentials.email, 'email')}
+                  className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0"
+                  title="Copier l'email"
+                >
+                  {copiedField === 'email' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-300" />}
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 block">Mot de passe temporaire</span>
+                  <span className="font-mono text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 break-all">{createdCredentials.password}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(createdCredentials.password, 'password')}
+                  className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0"
+                  title="Copier le mot de passe"
+                >
+                  {copiedField === 'password' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-300" />}
+                </button>
               </div>
             </div>
 
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/30 rounded-xl">
-              <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
-                ⚠️ Veuillez copier et transmettre ce mot de passe à l'employé. Cette fenêtre restera ouverte jusqu'à ce que vous confirmiez avoir pris note.
+            <div className={`p-3 rounded-xl border ${createdCredentials.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/40' : 'bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/40'}`}>
+              <p className={`text-xs leading-relaxed ${createdCredentials.status === 'warning' ? 'text-amber-800 dark:text-amber-200' : 'text-emerald-800 dark:text-emerald-200'}`}>
+                {createdCredentials.status === 'warning'
+                  ? 'Alerte email: l\'utilisateur n\'a pas reçu automatiquement son lien de connexion. Partagez ces identifiants de façon sécurisée et demandez-lui d\'utiliser la procédure de première connexion.'
+                  : 'Un lien de connexion a été envoyé par email à cette adresse. Vous pouvez également copier les accès ci-dessous en cas de besoin.'}
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setCreatedCredentials(null)}
-              className="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold shadow-lg shadow-amber-600/30 transition-all text-sm"
-            >
-              J'ai bien noté le mot de passe (Fermer)
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => copyToClipboard(buildCredentialsSummary(createdCredentials), 'all')}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center gap-2"
+              >
+                {copiedField === 'all' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                <span>Copier tous les identifiants</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreatedCredentials(null)}
+                className={`flex-1 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 ${createdCredentials.status === 'warning' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+              >
+                <LinkIcon className="w-4 h-4" />
+                <span>Terminer</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
