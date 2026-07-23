@@ -1,9 +1,9 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Users, FileText, DollarSign, Calendar,
   LogOut, Menu, X, Moon, Sun, Search, Bell,
-  Clock, Award, UserPlus, Settings
+  Clock, Award, UserPlus, Settings, RefreshCw
 } from 'lucide-react'
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend,
@@ -23,54 +23,68 @@ import { RHRecrutementPage } from './RHRecrutementPage'
 import { RHNotificationsPage } from './RHNotificationsPage'
 import { RHParametresPage } from './RHParametresPage'
 
+const SECTIONS_ROUTES = ['employes', 'contrats', 'paie', 'conges', 'presences', 'avantages', 'recrutement', 'notifications', 'parametres']
+
 export const RHDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [notifications, setNotifications] = useState(rhNotifications)
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
   const navigate = useNavigate()
   const location = useLocation()
 
-  useEffect(() => {
-    let mounted = true
-    loadDashboardRHContext()
-      .then((context) => {
-        if (mounted) {
-          setDashboardData(context)
-        }
-      })
-      .catch((err) => {
-        console.error("Erreur lors du chargement du contexte RH :", err)
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false)
-        }
-      })
-    return () => {
-      mounted = false
+  // Chargement centralisé et sécurisé avec support du polling en arrière-plan
+  const fetchData = useCallback(async (isBackground = false) => {
+    if (!isBackground) {
+      setLoading(true)
+    } else {
+      setIsRefreshing(true)
+    }
+
+    try {
+      const context = await loadDashboardRHContext()
+      setDashboardData(context)
+    } catch (err) {
+      console.error("Erreur lors du chargement du contexte RH :", err)
+    } finally {
+      setLoading(false)
+      setIsRefreshing(false)
     }
   }, [])
 
+  useEffect(() => {
+    fetchData(false)
+
+    // Polling automatique toutes les 60 secondes pour garder les données à jour
+    const intervalId = setInterval(() => {
+      fetchData(true)
+    }, 60000)
+
+    return () => clearInterval(intervalId)
+  }, [fetchData])
+
   const toggleDark = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
+    const newDarkState = !isDark
+    setIsDark(newDarkState)
+    document.documentElement.classList.toggle('dark', newDarkState)
   }
 
   const handleMarkAsRead = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n))
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
   }
 
   const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })))
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }
 
   const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id))
+    setNotifications(prev => prev.filter(n => n.id !== id))
   }
 
-  const menuItems = [
+  const menuItems = useMemo(() => [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard', path: '/dashboard/rh' },
     { icon: Users, label: 'Employés', id: 'employes', path: '/dashboard/rh/employes' },
     { icon: FileText, label: 'Contrats', id: 'contrats', path: '/dashboard/rh/contrats' },
@@ -81,31 +95,23 @@ export const RHDashboard = () => {
     { icon: UserPlus, label: 'Recrutement', id: 'recrutement', path: '/dashboard/rh/recrutement' },
     { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/rh/notifications' },
     { icon: Settings, label: 'Paramètres', id: 'parametres', path: '/dashboard/rh/parametres' },
-  ]
+  ], [])
 
-  const getCurrentSection = () => {
+  const activeSection = useMemo(() => {
     const path = location.pathname
-    if (path.includes('/employes')) return 'employes'
-    if (path.includes('/contrats')) return 'contrats'
-    if (path.includes('/paie')) return 'paie'
-    if (path.includes('/conges')) return 'conges'
-    if (path.includes('/presences')) return 'presences'
-    if (path.includes('/avantages')) return 'avantages'
-    if (path.includes('/recrutement')) return 'recrutement'
-    if (path.includes('/notifications')) return 'notifications'
-    if (path.includes('/parametres')) return 'parametres'
+    for (const section of SECTIONS_ROUTES) {
+      if (path.includes('/' + section)) return section
+    }
     return 'dashboard'
-  }
+  }, [location.pathname])
 
-  const activeSection = getCurrentSection()
-
-  const rawEmployes = dashboardData?.employes || []
-  const contrats = dashboardData?.contrats || []
-  const conges = dashboardData?.conges || []
-  const presences = dashboardData?.presences || []
-  const services = dashboardData?.services || []
-  const postes = dashboardData?.postes || []
-  const entrepriseActuelle = dashboardData?.entreprise
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
+  const contrats = useMemo(() => dashboardData?.contrats || [], [dashboardData])
+  const conges = useMemo(() => dashboardData?.conges || [], [dashboardData])
+  const presences = useMemo(() => dashboardData?.presences || [], [dashboardData])
+  const services = useMemo(() => dashboardData?.services || [], [dashboardData])
+  const postes = useMemo(() => dashboardData?.postes || [], [dashboardData])
+  const entrepriseActuelle = useMemo(() => dashboardData?.entreprise, [dashboardData])
 
   // Filtrage sécurisé des employés
   const employes = useMemo(() => {
@@ -116,42 +122,33 @@ export const RHDashboard = () => {
     })
   }, [rawEmployes])
 
-  const stats = {
+  const stats = useMemo(() => ({
     totalEmployes: employes.length,
     contratsActifs: contrats.filter((c: any) => c.statut === 'Actif').length,
     congesEnAttente: conges.filter((c: any) => c.statut === 'En attente').length,
     masseSalariale: contrats.reduce((sum: number, c: any) => sum + Number(c.salaire_base || 0), 0),
     presencesAujourdhui: presences.filter((p: any) => p.statut === 'Present').length,
     offresActives: dashboardData?.offres?.length || 0,
-  }
+  }), [employes, contrats, conges, presences, dashboardData])
 
-  const kpiCards = [
+  const kpiCards = useMemo(() => [
     { icon: Users, label: 'Total Employés', value: stats.totalEmployes, change: '+12', color: 'from-primary-500 to-primary-700' },
     { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-accent-500 to-accent-700' },
     { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-warm-500 to-warm-600' },
     { icon: Calendar, label: 'Congés en attente', value: stats.congesEnAttente, change: '', color: 'from-slate-500 to-slate-700' },
-  ]
+  ], [stats])
 
-  // Données factices de démonstration pour le graphique d'évolution
-  const evolutionData = [
+  const evolutionData = useMemo(() => [
     { mois: 'Jan', employes: stats.totalEmployes > 5 ? stats.totalEmployes - 5 : 2, nouveaux: 2 },
     { mois: 'Fév', employes: stats.totalEmployes > 4 ? stats.totalEmployes - 4 : 3, nouveaux: 1 },
     { mois: 'Mar', employes: stats.totalEmployes > 2 ? stats.totalEmployes - 2 : 4, nouveaux: 2 },
     { mois: 'Avr', employes: stats.totalEmployes > 1 ? stats.totalEmployes - 1 : 5, nouveaux: 1 },
     { mois: 'Mai', employes: stats.totalEmployes, nouveaux: 3 },
-  ]
+  ], [stats.totalEmployes])
 
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+  const COLORS = useMemo(() => ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'], [])
 
   const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-        </div>
-      )
-    }
-
     switch (activeSection) {
       case 'employes': return <RHEmployesPage />
       case 'contrats': return <RHContratsPage />
@@ -170,11 +167,21 @@ export const RHDashboard = () => {
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Tableau de bord RH</h1>
                 <p className="text-slate-600 dark:text-slate-400">Gestion des ressources humaines</p>
               </div>
-              {entrepriseActuelle && (
-                <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 px-4 py-2 rounded-xl text-primary-700 dark:text-primary-300 font-medium text-sm">
-                  Entreprise : <span className="font-bold">{entrepriseActuelle.nom}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => fetchData(true)}
+                  disabled={isRefreshing}
+                  className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl shadow-sm transition-all text-sm font-medium"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-primary-500' : ''}`} />
+                  <span>{isRefreshing ? 'Mise à jour...' : 'Actualiser'}</span>
+                </button>
+                {entrepriseActuelle && (
+                  <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 px-4 py-2 rounded-xl text-primary-700 dark:text-primary-300 font-medium text-sm">
+                    Entreprise : <span className="font-bold">{entrepriseActuelle.nom}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -197,10 +204,10 @@ export const RHDashboard = () => {
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Évolution des effectifs</h3>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={evolutionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
-                    <XAxis dataKey="mois" stroke="#9ca3af" />
-                    <YAxis stroke="#9ca3af" />
-                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e5e7eb'} opacity={0.3} />
+                    <XAxis dataKey="mois" stroke={isDark ? '#94a3b8' : '#9ca3af'} />
+                    <YAxis stroke={isDark ? '#94a3b8' : '#9ca3af'} />
+                    <Tooltip contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
                     <Legend />
                     <Line type="monotone" dataKey="employes" name="Total Employés" stroke="#3b82f6" strokeWidth={3} />
                     <Line type="monotone" dataKey="nouveaux" name="Nouveaux" stroke="#06b6d4" strokeWidth={2} />
@@ -229,7 +236,7 @@ export const RHDashboard = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+                    <Tooltip contentStyle={{ backgroundColor: isDark ? '#1e293b' : '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -310,14 +317,14 @@ export const RHDashboard = () => {
                 <p className="text-xs text-slate-500 dark:text-slate-400">{entrepriseActuelle?.nom || 'RH'}</p>
               </div>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden"><X className="w-6 h-6" /></button>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-slate-700 dark:text-slate-400"><X className="w-6 h-6" /></button>
           </div>
 
           <nav className="flex-1 overflow-y-auto p-4 space-y-1">
             {menuItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => navigate(item.path)}
+                onClick={() => { navigate(item.path); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
                     ? 'bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-lg' 
@@ -341,13 +348,15 @@ export const RHDashboard = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="sticky top-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><Menu className="w-6 h-6" /></button>
+              <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"><Menu className="w-6 h-6" /></button>
+              
               <div className="flex-1 max-w-md mx-4 hidden md:block">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="text" placeholder="Rechercher un employé..." className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl border-0 focus:ring-2 focus:ring-primary-500" />
+                  <input type="text" placeholder="Rechercher un employé..." className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-white text-sm" />
                 </div>
               </div>
+
               <div className="flex items-center space-x-4">
                 <NotificationBell
                   notifications={notifications}
@@ -374,10 +383,16 @@ export const RHDashboard = () => {
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-            {renderContent()}
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+              </div>
+            ) : (
+              renderContent()
+            )}
           </main>
         </div>
       </div>
     </div>
   )
-};
+}

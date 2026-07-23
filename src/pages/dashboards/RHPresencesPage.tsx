@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar, Download, Fingerprint, X, RefreshCw } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
@@ -12,9 +12,9 @@ export const RHPresencesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false)
 
   // Fonction utilitaire pour s'assurer du format HH:mm strict (H:i pour Laravel)
-  const formatTimeForApi = (dateObj: Date) => {
+  const formatTimeForApi = useCallback((dateObj: Date) => {
     return dateObj.toTimeString().slice(0, 5)
-  }
+  }, [])
 
   // Formulaire de pointage dynamique basé sur l'heure actuelle
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ export const RHPresencesPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const data = await loadDashboardRHContext()
@@ -40,14 +40,14 @@ export const RHPresencesPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
-  const rawEmployes = dashboardData?.employes || []
-  const rawPresences = dashboardData?.presences || []
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
+  const rawPresences = useMemo(() => dashboardData?.presences || [], [dashboardData])
 
   // Filtrer uniquement les employés valides (rôle employé)
   const employes = useMemo(() => {
@@ -64,13 +64,10 @@ export const RHPresencesPage = () => {
     return map
   }, [employes])
 
-  const getEmployeDetails = (matricule: string) => getEmployeInfo.get(String(matricule))
+  const getEmployeDetails = useCallback((matricule: string) => getEmployeInfo.get(String(matricule)), [getEmployeInfo])
 
-  // Fonction utilitaire pour déterminer automatiquement le statut selon les règles horaires :
-  // - Avant 08h30 (<= 8h30) -> Present
-  // - Entre 08h30 et 17h00 -> Retard
-  // - Après 17h00 -> Absent
-  const determineStatutByTime = (timeStr: string) => {
+  // Fonction utilitaire pour déterminer automatiquement le statut selon les règles horaires
+  const determineStatutByTime = useCallback((timeStr: string) => {
     if (!timeStr) return 'Present'
     const [hours, minutes] = timeStr.split(':').map(Number)
     const totalMinutes = hours * 60 + minutes
@@ -82,10 +79,10 @@ export const RHPresencesPage = () => {
     } else {
       return 'Absent'
     }
-  }
+  }, [])
 
   // Gestion dynamique lorsqu'on change d'employé dans le modal
-  const handleEmployeChange = (matricule: string) => {
+  const handleEmployeChange = useCallback((matricule: string) => {
     const today = new Date().toISOString().split('T')[0]
     const found = rawPresences.find((p: any) => 
       String(p.matricule) === String(matricule) && String(p.date_presence) === String(today)
@@ -98,11 +95,9 @@ export const RHPresencesPage = () => {
     setExistingPresenceToday(found || null)
 
     if (found && found.heure_arrivee && !found.heure_depart) {
-      // Sécurité sur le format de l'heure d'arrivée existante et s'assurer que le départ est postérieur
       const arriveeClean = found.heure_arrivee.slice(0, 5)
       let departClean = currentTime
 
-      // Validation anti-erreur Laravel : si l'heure actuelle est identique ou inférieure à l'arrivée, on décale d'une minute ou on fixe après
       if (departClean <= arriveeClean) {
         const [h, m] = arriveeClean.split(':').map(Number)
         const dateComputed = new Date()
@@ -128,9 +123,9 @@ export const RHPresencesPage = () => {
         justification: autoStatut === 'Present' ? '' : 'Pointage après l\'heure limite'
       })
     }
-  }
+  }, [rawPresences, formatTimeForApi, determineStatutByTime])
 
-  const handleStatutChange = (statut: string) => {
+  const handleStatutChange = useCallback((statut: string) => {
     const now = new Date()
     const currentTime = formatTimeForApi(now)
 
@@ -141,7 +136,7 @@ export const RHPresencesPage = () => {
       heure_depart: ['Present', 'Retard'].includes(statut) ? prev.heure_depart : '',
       justification: statut === 'Present' ? '' : prev.justification
     }))
-  }
+  }, [formatTimeForApi])
 
   const filteredPresences = useMemo(() => {
     return rawPresences.filter((p: any) => {
@@ -154,7 +149,7 @@ export const RHPresencesPage = () => {
       const matchesStatut = filterStatut === 'all' || p.statut?.toLowerCase() === filterStatut.toLowerCase()
       return matchesSearch && matchesStatut
     })
-  }, [rawPresences, searchTerm, filterStatut, getEmployeInfo])
+  }, [rawPresences, searchTerm, filterStatut, getEmployeDetails])
 
   const stats = useMemo(() => {
     const presents = rawPresences.filter((p: any) => ['present', 'présent'].includes(p.statut?.toLowerCase())).length
@@ -168,11 +163,11 @@ export const RHPresencesPage = () => {
     }
   }, [rawPresences])
 
-  const presenceData = [
+  const presenceData = useMemo(() => [
     { name: 'Présents', value: stats.presents, color: '#10b981' },
     { name: 'Retards', value: stats.retards, color: '#f59e0b' },
     { name: 'Absents', value: stats.absents, color: '#ef4444' },
-  ]
+  ], [stats])
 
   const handlePointageSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,7 +196,6 @@ export const RHPresencesPage = () => {
     }
   }
 
-  // Adaptation intelligente du texte selon l'action en cours
   const getSubmitButtonLabel = () => {
     if (submitting) return 'Enregistrement...'
     if (existingPresenceToday && existingPresenceToday.heure_arrivee && !existingPresenceToday.heure_depart) {

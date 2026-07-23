@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Edit, Trash2, X, Copy, Check } from 'lucide-react'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
@@ -34,7 +34,7 @@ export const RHEmployesPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true)
     loadDashboardRHContext()
       .then((data) => {
@@ -45,16 +45,16 @@ export const RHEmployesPage = () => {
       })
       .catch(() => setDashboardData(null))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
-  const rawEmployes = dashboardData?.employes || []
-  const postes = dashboardData?.postes || []
-  const services = dashboardData?.services || []
-  const contrats = dashboardData?.contrats || []
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
+  const postes = useMemo(() => dashboardData?.postes || [], [dashboardData])
+  const services = useMemo(() => dashboardData?.services || [], [dashboardData])
+  const contrats = useMemo(() => dashboardData?.contrats || [], [dashboardData])
 
   const employes = useMemo(() => {
     if (!rawEmployes.length) return []
@@ -64,31 +64,33 @@ export const RHEmployesPage = () => {
     })
   }, [rawEmployes])
 
-  const filteredMembers = employes.filter((emp: any) => {
-    const matchesSearch = 
-      (emp.prenom?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
-      (emp.nom?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (emp.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (emp.matricule?.toLowerCase() || '').includes(searchTerm.toLowerCase())
-    const matchesStatut = filterStatut === 'all' || emp.statut === filterStatut
-    return matchesSearch && matchesStatut
-  })
+  const filteredMembers = useMemo(() => {
+    return employes.filter((emp: any) => {
+      const matchesSearch = 
+        (emp.prenom?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || 
+        (emp.nom?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (emp.email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (emp.matricule?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+      const matchesStatut = filterStatut === 'all' || emp.statut === filterStatut
+      return matchesSearch && matchesStatut
+    })
+  }, [employes, searchTerm, filterStatut])
 
-  const getPosteTitle = (idPoste: number) => {
+  const getPosteTitle = useCallback((idPoste: number) => {
     const poste = postes.find((p: any) => Number(p.id_poste) === Number(idPoste))
     return poste?.titre_poste || 'N/A'
-  }
+  }, [postes])
 
-  const getServiceName = (idPoste: number) => {
+  const getServiceName = useCallback((idPoste: number) => {
     const poste = postes.find((p: any) => Number(p.id_poste) === Number(idPoste))
     if (!poste) return 'N/A'
     const service = services.find((s: any) => Number(s.id_service) === Number(poste.id_service))
     return service?.nom || 'N/A'
-  }
+  }, [postes, services])
 
-  const getContratInfo = (matricule: string) => {
+  const getContratInfo = useCallback((matricule: string) => {
     return contrats.find((c: any) => c.matricule === matricule)
-  }
+  }, [contrats])
 
   const handleAddEmploye = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -102,7 +104,6 @@ export const RHEmployesPage = () => {
       
       setShowAddModal(false)
 
-      // Si le backend renvoie le mot de passe temporaire et l'employé/matricule
       if (response && response.password) {
         setNewCredentials({
           email: formData.email,
@@ -140,6 +141,13 @@ export const RHEmployesPage = () => {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
+  const statsCards = useMemo(() => [
+    { label: 'Total Employés', value: employes.length, color: 'from-primary-500 to-purple-600', icon: Users },
+    { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
+    { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
+    { label: 'Actifs', value: employes.filter((e: any) => e.statut === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
+  ], [employes])
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -160,12 +168,7 @@ export const RHEmployesPage = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-        {[
-          { label: 'Total Employés', value: employes.length, color: 'from-primary-500 to-purple-600', icon: Users },
-          { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
-          { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
-          { label: 'Actifs', value: employes.filter((e: any) => e.statut === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
-        ].map((stat, i) => (
+        {statsCards.map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
               <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -180,17 +183,17 @@ export const RHEmployesPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher par nom, email ou matricule..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
+            <input type="text" placeholder="Rechercher par nom, email ou matricule..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white" />
           </div>
-          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
+          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
             <option value="all">Tous les statuts</option>
             <option value="Actif">Actif</option>
             <option value="Inactif">Inactif</option>
             <option value="En conge">En congé</option>
           </select>
           <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
-            <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}><Grid className="w-4 h-4" /></button>
-            <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}><List className="w-4 h-4" /></button>
+            <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}><Grid className="w-4 h-4 text-slate-700 dark:text-slate-200" /></button>
+            <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow' : ''}`}><List className="w-4 h-4 text-slate-700 dark:text-slate-200" /></button>
           </div>
         </div>
       </div>
@@ -281,13 +284,13 @@ export const RHEmployesPage = () => {
         </div>
       )}
 
-      {/* MODAL COPIE IDENTIFIANTS APRÈS CRÉATION */}
+      {/* MODAL COPIE IDENTIFIANTS */}
       {newCredentials && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3 border-slate-200 dark:border-slate-700">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white">Identifiants de connexion</h3>
-              <button onClick={() => setNewCredentials(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-5 h-5" /></button>
+              <button onClick={() => setNewCredentials(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
             </div>
             <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
               Veuillez copier ces identifiants dès maintenant. Le mot de passe ne sera plus affiché ultérieurement.
@@ -303,7 +306,7 @@ export const RHEmployesPage = () => {
                   <span className="font-mono text-sm text-slate-800 dark:text-white">{newCredentials.email}</span>
                 </div>
                 <button onClick={() => copyToClipboard(newCredentials.email, 'email')} className="p-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 text-xs flex items-center space-x-1">
-                  {copiedField === 'email' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  {copiedField === 'email' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-200" />}
                 </button>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl flex items-center justify-between">
@@ -312,7 +315,7 @@ export const RHEmployesPage = () => {
                   <span className="font-mono text-sm text-slate-800 dark:text-white font-bold">{newCredentials.password}</span>
                 </div>
                 <button onClick={() => copyToClipboard(newCredentials.password, 'password')} className="p-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 text-xs flex items-center space-x-1">
-                  {copiedField === 'password' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                  {copiedField === 'password' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-700 dark:text-slate-200" />}
                 </button>
               </div>
             </div>
@@ -323,12 +326,13 @@ export const RHEmployesPage = () => {
         </div>
       )}
 
+      {/* MODAL PROFIL */}
       {selectedMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">Profil de l'employé</h3>
-              <button onClick={() => setSelectedMember(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
+              <button onClick={() => setSelectedMember(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4">
@@ -353,7 +357,7 @@ export const RHEmployesPage = () => {
                 ].map((item, i) => (
                   <div key={i} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{item.label}</p>
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm flex items-center space-x-2"><item.icon className="w-4 h-4 flex-shrink-0" /><span className="truncate">{item.value || 'N/A'}</span></p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm flex items-center space-x-2"><item.icon className="w-4 h-4 flex-shrink-0 text-slate-400" /><span className="truncate">{item.value || 'N/A'}</span></p>
                   </div>
                 ))}
               </div>
@@ -361,10 +365,10 @@ export const RHEmployesPage = () => {
                 <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-xl">
                   <h5 className="font-bold text-primary-800 dark:text-primary-200 mb-2">Informations du contrat</h5>
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div><span className="text-slate-600 dark:text-slate-400">Type :</span> <span className="font-semibold">{getContratInfo(selectedMember.matricule)?.type}</span></div>
-                    <div><span className="text-slate-600 dark:text-slate-400">Salaire :</span> <span className="font-semibold">${getContratInfo(selectedMember.matricule)?.salaire_base}</span></div>
-                    <div><span className="text-slate-600 dark:text-slate-400">Début :</span> <span className="font-semibold">{getContratInfo(selectedMember.matricule)?.date_debut}</span></div>
-                    <div><span className="text-slate-600 dark:text-slate-400">Fin :</span> <span className="font-semibold">{getContratInfo(selectedMember.matricule)?.date_fin || 'Indéterminée'}</span></div>
+                    <div><span className="text-slate-600 dark:text-slate-400">Type :</span> <span className="font-semibold text-slate-800 dark:text-white">{getContratInfo(selectedMember.matricule)?.type}</span></div>
+                    <div><span className="text-slate-600 dark:text-slate-400">Salaire :</span> <span className="font-semibold text-slate-800 dark:text-white">${getContratInfo(selectedMember.matricule)?.salaire_base}</span></div>
+                    <div><span className="text-slate-600 dark:text-slate-400">Début :</span> <span className="font-semibold text-slate-800 dark:text-white">{getContratInfo(selectedMember.matricule)?.date_debut}</span></div>
+                    <div><span className="text-slate-600 dark:text-slate-400">Fin :</span> <span className="font-semibold text-slate-800 dark:text-white">{getContratInfo(selectedMember.matricule)?.date_fin || 'Indéterminée'}</span></div>
                   </div>
                 </div>
               )}
@@ -373,12 +377,13 @@ export const RHEmployesPage = () => {
         </div>
       )}
 
+      {/* MODAL AJOUT */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">Ajouter un employé</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <form onSubmit={handleAddEmploye} className="p-6 space-y-4">
               {errorMsg && (
@@ -387,30 +392,30 @@ export const RHEmployesPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Prénom</label>
-                  <input type="text" required value={formData.prenom} onChange={(e) => setFormData({...formData, prenom: e.target.value})} placeholder="Jean" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="text" required value={formData.prenom} onChange={(e) => setFormData({...formData, prenom: e.target.value})} placeholder="Jean" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nom</label>
-                  <input type="text" required value={formData.nom} onChange={(e) => setFormData({...formData, nom: e.target.value})} placeholder="Dupont" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="text" required value={formData.nom} onChange={(e) => setFormData({...formData, nom: e.target.value})} placeholder="Dupont" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email</label>
-                  <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="jean.dupont@mail.com" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="jean.dupont@mail.com" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Téléphone</label>
-                  <input type="text" required value={formData.telephone} onChange={(e) => setFormData({...formData, telephone: e.target.value})} placeholder="+243..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="text" required value={formData.telephone} onChange={(e) => setFormData({...formData, telephone: e.target.value})} placeholder="+243..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Sexe</label>
-                  <select value={formData.sexe} onChange={(e) => setFormData({...formData, sexe: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
+                  <select value={formData.sexe} onChange={(e) => setFormData({...formData, sexe: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
                     <option value="M">Masculin</option>
                     <option value="F">Féminin</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Salaire de base</label>
-                  <input type="number" required value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} placeholder="1000" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="number" required value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} placeholder="1000" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Poste de travail</label>
@@ -418,7 +423,7 @@ export const RHEmployesPage = () => {
                     required 
                     value={formData.id_poste} 
                     onChange={(e) => setFormData(prev => ({ ...prev, id_poste: e.target.value }))} 
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white"
                   >
                     <option value="">Sélectionner un poste</option>
                     {postes.map((p: any) => {

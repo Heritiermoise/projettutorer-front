@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Calendar, Search, Plus, CheckCircle2, XCircle, Clock, X } from 'lucide-react'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
@@ -23,20 +23,20 @@ export const RHCongesPage = () => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     setLoading(true)
     loadDashboardRHContext()
       .then((data) => setDashboardData(data))
       .catch(() => setDashboardData(null))
       .finally(() => setLoading(false))
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
-  const rawEmployes = dashboardData?.employes || []
-  const rawConges = dashboardData?.conges || []
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
+  const rawConges = useMemo(() => dashboardData?.conges || [], [dashboardData])
 
   // Filtrer uniquement les employés valides
   const employes = useMemo(() => {
@@ -47,28 +47,30 @@ export const RHCongesPage = () => {
     })
   }, [rawEmployes])
 
-  const getEmployeName = (matricule: string) => {
+  const getEmployeName = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
-  }
+  }, [employes])
 
-  const filteredConges = rawConges.filter((c: any) => {
-    const empName = getEmployeName(c.matricule).toLowerCase()
-    const typeConge = (c.type_conge || '').toLowerCase()
-    const searchLower = searchTerm.toLowerCase()
+  const filteredConges = useMemo(() => {
+    return rawConges.filter((c: any) => {
+      const empName = getEmployeName(c.matricule).toLowerCase()
+      const typeConge = (c.type_conge || '').toLowerCase()
+      const searchLower = searchTerm.toLowerCase()
 
-    const matchesSearch = empName.includes(searchLower) || typeConge.includes(searchLower) || (c.matricule || '').toLowerCase().includes(searchLower)
-    const matchesType = filterType === 'all' || c.type_conge === filterType
-    const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
-    return matchesSearch && matchesType && matchesStatut
-  })
+      const matchesSearch = empName.includes(searchLower) || typeConge.includes(searchLower) || (c.matricule || '').toLowerCase().includes(searchLower)
+      const matchesType = filterType === 'all' || c.type_conge === filterType
+      const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
+      return matchesSearch && matchesType && matchesStatut
+    })
+  }, [rawConges, getEmployeName, searchTerm, filterType, filterStatut])
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: rawConges.length,
     approuves: rawConges.filter((c: any) => c.statut === 'Approuve').length,
     enAttente: rawConges.filter((c: any) => c.statut === 'En attente').length,
     refuses: rawConges.filter((c: any) => c.statut === 'Refuse').length,
-  }
+  }), [rawConges])
 
   const handleStatutChange = async (id: number, nouveauStatut: string) => {
     try {
@@ -142,9 +144,9 @@ export const RHCongesPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher par employé ou type..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
+            <input type="text" placeholder="Rechercher par employé ou type..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white" />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
             <option value="all">Tous les types</option>
             <option value="Annuel">Annuel</option>
             <option value="Maladie">Maladie</option>
@@ -155,7 +157,7 @@ export const RHCongesPage = () => {
             <option value="Mariage">Mariage</option>
             <option value="Décès d'un proche">Décès d'un proche</option>
           </select>
-          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
+          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
             <option value="all">Tous les statuts</option>
             <option value="Approuve">Approuvé</option>
             <option value="En attente">En attente</option>
@@ -222,7 +224,7 @@ export const RHCongesPage = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white">Nouvelle demande de congé</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
             </div>
             <form onSubmit={handleAddConge} className="p-6 space-y-4">
               {errorMsg && (
@@ -230,7 +232,7 @@ export const RHCongesPage = () => {
               )}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Employé</label>
-                <select required value={formData.matricule} onChange={(e) => setFormData({...formData, matricule: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
+                <select required value={formData.matricule} onChange={(e) => setFormData({...formData, matricule: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
                   <option value="">Sélectionner un employé</option>
                   {employes.map((emp: any) => (
                     <option key={emp.matricule} value={emp.matricule}>
@@ -241,7 +243,7 @@ export const RHCongesPage = () => {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Type de congé</label>
-                <select value={formData.type_conge} onChange={(e) => setFormData({...formData, type_conge: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
+                <select value={formData.type_conge} onChange={(e) => setFormData({...formData, type_conge: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
                   <option value="Annuel">Annuel</option>
                   <option value="Maladie">Maladie</option>
                   <option value="Maternité">Maternité</option>
@@ -255,20 +257,20 @@ export const RHCongesPage = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date début</label>
-                  <input type="date" required value={formData.date_debut} onChange={(e) => setFormData({...formData, date_debut: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="date" required value={formData.date_debut} onChange={(e) => setFormData({...formData, date_debut: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date fin</label>
-                  <input type="date" required value={formData.date_fin} onChange={(e) => setFormData({...formData, date_fin: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                  <input type="date" required value={formData.date_fin} onChange={(e) => setFormData({...formData, date_fin: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nombre de jours</label>
-                <input type="number" min="1" required value={formData.nombre_jours} onChange={(e) => setFormData({...formData, nombre_jours: e.target.value})} placeholder="5" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm" />
+                <input type="number" min="1" required value={formData.nombre_jours} onChange={(e) => setFormData({...formData, nombre_jours: e.target.value})} placeholder="5" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Motif</label>
-                <textarea rows={3} value={formData.motif} onChange={(e) => setFormData({...formData, motif: e.target.value})} placeholder="Raison de la demande..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm"></textarea>
+                <textarea rows={3} value={formData.motif} onChange={(e) => setFormData({...formData, motif: e.target.value})} placeholder="Raison de la demande..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white"></textarea>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold">Annuler</button>
