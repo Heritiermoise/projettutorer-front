@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Award, Search, Plus, Edit, Trash2, User, DollarSign, Calendar, X, RefreshCw } from 'lucide-react'
 import { loadDashboardContext } from '../../services/dashboardData'
-import { apiRequest } from '../../services/api'
+import { avantageAPI } from '../../services/api'
 
 export const RHAvantagesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -9,7 +9,7 @@ export const RHAvantagesPage = () => {
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  // États pour les modals et formulaires (Ajout / Modification)
+  // États pour les modals et formulaires
   const [showModal, setShowModal] = useState(false)
   const [editingAvantage, setEditingAvantage] = useState<any>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -26,16 +26,18 @@ export const RHAvantagesPage = () => {
   })
 
   const loadData = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await loadDashboardContext()
-      setDashboardData(data)
-    } catch {
-      setDashboardData(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  setLoading(true)
+  try {
+    const data = await loadDashboardContext()
+    console.log("Données reçues du dashboard :", data) // <-- Vérifiez ceci dans la console du navigateur
+    setDashboardData(data)
+  } catch (err) {
+    console.error("Erreur API Dashboard :", err)
+    setDashboardData(null)
+  } finally {
+    setLoading(false)
+  }
+}, [])
 
   useEffect(() => {
     loadData()
@@ -46,7 +48,7 @@ export const RHAvantagesPage = () => {
 
   const getEmployeName = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
-    return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
+    return emp ? `${emp.prenom} ${emp.nom}` : 'Employé inconnu'
   }, [employes])
 
   const filteredAvantages = useMemo(() => {
@@ -63,7 +65,7 @@ export const RHAvantagesPage = () => {
 
   const stats = useMemo(() => {
     const actifs = avantages.filter((a: any) => a.statut?.toLowerCase() === 'actif').length
-    const valeurTotale = avantages.reduce((sum: number, a: any) => sum + parseInt(a.valeur || '0', 10), 0)
+    const valeurTotale = avantages.reduce((sum: number, a: any) => sum + parseFloat(a.valeur || '0'), 0)
     return {
       total: avantages.length,
       actifs,
@@ -71,7 +73,6 @@ export const RHAvantagesPage = () => {
     }
   }, [avantages])
 
-  // Ouvrir le modal pour un Ajout
   const handleOpenAdd = useCallback(() => {
     setEditingAvantage(null)
     setFormData({
@@ -87,7 +88,6 @@ export const RHAvantagesPage = () => {
     setShowModal(true)
   }, [])
 
-  // Ouvrir le modal pour une Modification
   const handleOpenEdit = useCallback((avantage: any) => {
     setEditingAvantage(avantage)
     setFormData({
@@ -96,30 +96,24 @@ export const RHAvantagesPage = () => {
       description: avantage.description || '',
       type_avantage: avantage.type_avantage || 'Sante',
       valeur: avantage.valeur || '',
-      date_expiration: avantage.date_expiration || '',
+      date_expiration: avantage.date_expiration ? avantage.date_expiration.split('T')[0] : '',
       statut: avantage.statut || 'Actif'
     })
     setErrorMsg('')
     setShowModal(true)
   }, [])
 
-  // Soumission du formulaire (Création ou Mise à jour)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
     setErrorMsg('')
 
     try {
-      if (editingAvantage) {
-        await apiRequest(`rh/avantages/${editingAvantage.id_avantage || editingAvantage.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(formData)
-        })
+      const avantageId = editingAvantage?.id_avantage || editingAvantage?.id
+      if (avantageId) {
+        await avantageAPI.update(avantageId, formData)
       } else {
-        await apiRequest('rh/avantages', {
-          method: 'POST',
-          body: JSON.stringify(formData)
-        })
+        await avantageAPI.create(formData)
       }
       setShowModal(false)
       loadData()
@@ -130,14 +124,11 @@ export const RHAvantagesPage = () => {
     }
   }
 
-  // Suppression d'un avantage
   const handleDelete = async (id: number | string) => {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet avantage ?")) return
 
     try {
-      await apiRequest(`rh/avantages/${id}`, {
-        method: 'DELETE'
-      })
+      await avantageAPI.delete(Number(id))
       loadData()
     } catch (err: any) {
       alert(err.message || "Erreur lors de la suppression.")
@@ -148,8 +139,8 @@ export const RHAvantagesPage = () => {
     <div className="space-y-6 animate-fade-in pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Gestion des Avantages</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{stats.total} avantages attribués au total</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Avantages</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">{stats.total} avantages attribués</p>
         </div>
         <div className="flex items-center space-x-3">
           <button 
@@ -161,39 +152,47 @@ export const RHAvantagesPage = () => {
           </button>
           <button 
             onClick={handleOpenAdd}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all active:scale-95"
+            className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm shadow-md transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Nouvel avantage</span>
+            <span className="hidden sm:inline">Nouvel avantage</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {[
-          { label: 'Total avantages', value: stats.total, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/50', icon: Award },
-          { label: 'Avantages actifs', value: stats.actifs, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/50', icon: Award },
-          { label: 'Valeur totale', value: '$' + stats.valeurTotale, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/50', icon: DollarSign },
+          { label: 'Total avantages', value: stats.total, color: 'from-primary-500 to-purple-600', icon: Award },
+          { label: 'Avantages actifs', value: stats.actifs, color: 'from-green-500 to-emerald-600', icon: Award },
+          { label: 'Valeur totale', value: '$' + stats.valeurTotale.toLocaleString(), color: 'from-amber-500 to-orange-600', icon: DollarSign },
         ].map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/85 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stat.value}</p>
+          <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
+              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div className={`w-12 h-12 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center`}>
-              <stat.icon className="w-6 h-6" />
-            </div>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{stat.label}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/85">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Rechercher par employé ou avantage..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Rechercher par employé ou avantage..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm dark:text-white" 
+            />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white">
+          <select 
+            value={filterType} 
+            onChange={(e) => setFilterType(e.target.value)} 
+            className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm dark:text-white"
+          >
             <option value="all">Tous les types</option>
             <option value="Sante">Santé</option>
             <option value="Alimentation">Alimentation</option>
@@ -208,42 +207,42 @@ export const RHAvantagesPage = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         </div>
       ) : filteredAvantages.length === 0 ? (
-        <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-12 text-center border border-slate-200/80 dark:border-slate-700/85">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-700">
           <Award className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
           <p className="text-slate-500 dark:text-slate-400 text-sm">Aucun avantage trouvé</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredAvantages.map((avantage: any) => {
             const isActif = avantage.statut?.toLowerCase() === 'actif'
             const avantageId = avantage.id_avantage || avantage.id
 
             return (
-              <div key={avantageId} className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/85 hover:shadow-md transition-all flex flex-col justify-between">
+              <div key={avantageId} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all flex flex-col justify-between">
                 <div>
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-11 h-11 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center font-bold">
-                      <Award className="w-5 h-5" />
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                      <Award className="w-6 h-6 text-white" />
                     </div>
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isActif ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}`}>
-                      {avantage.statut}
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isActif ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300'}`}>
+                      {avantage.statut || 'Inconnu'}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">{avantage.libelle}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">{avantage.description}</p>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">{avantage.libelle}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">{avantage.description || 'Aucune description fournie.'}</p>
                   
-                  <div className="space-y-2 mb-5 text-xs border-t border-slate-100 dark:border-slate-700/50 pt-3">
-                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
-                      <User className="w-4 h-4 text-slate-400" />
-                      <span className="font-medium">{getEmployeName(avantage.matricule)}</span>
+                  <div className="space-y-2 mb-4 text-sm">
+                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+                      <User className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{getEmployeName(avantage.matricule)}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
-                      <DollarSign className="w-4 h-4 text-slate-400" />
-                      <span className="font-bold text-amber-600 dark:text-amber-400">${avantage.valeur}</span>
+                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+                      <DollarSign className="w-4 h-4 flex-shrink-0" />
+                      <span className="font-bold text-amber-600">${avantage.valeur}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
-                      <Calendar className="w-4 h-4 text-slate-400" />
-                      <span>Expire : {avantage.date_expiration || 'Indéterminée'}</span>
+                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+                      <Calendar className="w-4 h-4 flex-shrink-0" />
+                      <span>Expire : {avantage.date_expiration ? new Date(avantage.date_expiration).toLocaleDateString() : 'Indéterminée'}</span>
                     </div>
                   </div>
                 </div>
@@ -251,16 +250,15 @@ export const RHAvantagesPage = () => {
                 <div className="flex space-x-2 pt-2 border-t border-slate-100 dark:border-slate-700/50">
                   <button 
                     onClick={() => handleOpenEdit(avantage)}
-                    className="flex-1 px-3 py-2 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors"
+                    className="flex-1 px-3 py-2 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm hover:bg-primary-200 dark:hover:bg-primary-900/50 flex items-center justify-center space-x-1"
                   >
-                    <Edit className="w-3.5 h-3.5" />
-                    <span>Modifier</span>
+                    <Edit className="w-4 h-4" /><span>Modifier</span>
                   </button>
                   <button 
                     onClick={() => handleDelete(avantageId)}
-                    className="px-3 py-2 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 hover:bg-rose-100 rounded-xl text-xs font-semibold flex items-center justify-center transition-colors"
+                    className="px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center justify-center"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
