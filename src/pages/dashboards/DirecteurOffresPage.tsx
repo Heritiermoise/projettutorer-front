@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Briefcase, Plus, Search, Edit, Eye, Send, Pause, TrendingUp, Users, Calendar, MapPin, DollarSign, X, CheckCircle2, AlertCircle } from 'lucide-react'
-import type { OffrePublication } from '../../data/advancedData'
+import { Briefcase, Plus, Search, Edit, Eye, Send, Pause, Users, Calendar, DollarSign, X, AlertCircle } from 'lucide-react'
 import { offreAPI } from '../../services/api'
 
-type OfferDisplay = Omit<OffrePublication, 'remote' | 'nombre_vues'> & { remote: string; nombre_vues: null }
+type OfferDisplay = {
+  id: number
+  titre: string
+  description: string
+  salaire_base: number
+  date_limite: string
+  statut: 'Publiee' | 'Brouillon' | 'Expiree' | 'Suspendue'
+  nombre_candidatures: number
+}
 
 export const DirecteurOffresPage = () => {
   const [offres, setOffres] = useState<OfferDisplay[]>([])
@@ -22,27 +29,12 @@ export const DirecteurOffresPage = () => {
 
   const toDisplayOffer = (offre: any): OfferDisplay => ({
     id: offre.id_offre,
-    poste_id: 0,
     titre: offre.titre,
     description: offre.description,
-    type_contrat: 'Non renseigné',
-    niveau: 'Non renseigné',
-    departement: 'Non renseigné',
-    salaire_min: Number(offre.salaire_base),
-    salaire_max: Number(offre.salaire_base),
-    localisation: 'Non renseignée',
-    remote: 'Non renseigné',
-    experience_requise: 'Non renseignée',
-    niveau_etude: 'Non renseigné',
-    date_publication: offre.created_at,
-    date_expiration: offre.date_limite,
+    salaire_base: Number(offre.salaire_base),
+    date_limite: offre.date_limite,
     statut: new Date(offre.date_limite) < new Date() ? 'Expiree' : offre.statut === 'Publiée' ? 'Publiee' : offre.statut === 'Archivée' ? 'Suspendue' : 'Brouillon',
-    nombre_vues: null,
     nombre_candidatures: Number(offre.postulations_count ?? 0),
-    exigences: [],
-    avantages: [],
-    competences_requises: [],
-    langues: [],
   })
 
   const loadOffres = async () => {
@@ -211,7 +203,6 @@ export const DirecteurOffresPage = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-800 dark:text-white text-lg">{offre.titre}</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">{offre.departement} • {offre.type_contrat}</p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatutColor(offre.statut)}`}>
@@ -224,15 +215,11 @@ export const DirecteurOffresPage = () => {
                 <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <DollarSign className="w-4 h-4" />
-                    <span>${offre.salaire_min} - ${offre.salaire_max}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                    <MapPin className="w-4 h-4" />
-                    <span className="truncate">{offre.localisation}</span>
+                    <span>{offre.salaire_base} $</span>
                   </div>
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <Calendar className="w-4 h-4" />
-                    <span>Exp: {offre.date_expiration}</span>
+                    <span>Exp: {offre.date_limite}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <Users className="w-4 h-4" />
@@ -241,12 +228,6 @@ export const DirecteurOffresPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-600">
-                  <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
-                    <span className="flex items-center space-x-1">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>{offre.remote}</span>
-                    </span>
-                  </div>
                   <div className="flex space-x-2">
                     {offre.statut === 'Brouillon' && (
                       <button onClick={() => handlePublish(offre.id)} className="p-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200">
@@ -320,60 +301,19 @@ export const DirecteurOffresPage = () => {
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatutColor(selectedOffre.statut)}`}>
                   {selectedOffre.statut}
                 </span>
-                <span className="text-sm text-slate-600 dark:text-slate-400">{selectedOffre.type_contrat} • {selectedOffre.niveau}</span>
               </div>
               <div>
                 <h4 className="font-bold text-slate-800 dark:text-white mb-2">Description</h4>
                 <p className="text-slate-600 dark:text-slate-400">{selectedOffre.description}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Salaire</p>
-                  <p className="font-bold text-slate-800 dark:text-white">${selectedOffre.salaire_min} - ${selectedOffre.salaire_max}</p>
+                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.salaire_base} $</p>
                 </div>
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Localisation</p>
-                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.localisation}</p>
-                </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Experience</p>
-                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.experience_requise}</p>
-                </div>
-                <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Mode de travail</p>
-                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.remote}</p>
-                </div>
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-white mb-2">Exigences</h4>
-                <ul className="space-y-1">
-                  {selectedOffre.exigences.map((ex, i) => (
-                    <li key={i} className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      <span>{ex}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-white mb-2">Avantages</h4>
-                <ul className="space-y-1">
-                  {selectedOffre.avantages.map((av, i) => (
-                    <li key={i} className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                      <CheckCircle2 className="w-4 h-4 text-amber-600" />
-                      <span>{av}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-bold text-slate-800 dark:text-white mb-2">Competences requises</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedOffre.competences_requises.map((comp, i) => (
-                    <span key={i} className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm">
-                      {comp}
-                    </span>
-                  ))}
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Échéance</p>
+                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.date_limite}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -382,7 +322,7 @@ export const DirecteurOffresPage = () => {
                   <p className="text-xs text-slate-600 dark:text-slate-400">Candidatures</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedOffre.date_expiration}</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedOffre.date_limite}</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">Expiration</p>
                 </div>
               </div>
