@@ -452,6 +452,13 @@ export const membreAPI = {
     });
   },
 
+  sendWelcomeEmail: async (matricule: string, password: string) => {
+    return await apiRequest(`/direction/membres/${encodeURIComponent(matricule)}/welcome-email`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
+
   update: async (id: number, data: Partial<Employe>) => {
     return await apiRequest(`/direction/membres/${id}`, {
       method: 'PUT',
