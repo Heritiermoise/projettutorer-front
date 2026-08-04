@@ -6,6 +6,11 @@ type OfferDisplay = {
   id: number
   titre: string
   description: string
+  type_contrat: string
+  localisation: string
+  experience_requise: string
+  competences_requises: string
+  avantages: string
   salaire_base: number
   date_limite: string
   statut: 'Publiee' | 'Brouillon' | 'Expiree' | 'Suspendue'
@@ -24,13 +29,18 @@ export const DirecteurOffresPage = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'draft' | 'expired'>('all')
 
   const [formData, setFormData] = useState({
-    titre: '', description: '', salaire_base: '', date_expiration: ''
+    titre: '', description: '', type_contrat: '', localisation: '', experience_requise: '', competences_requises: '', avantages: '', salaire_base: '', date_expiration: ''
   })
 
   const toDisplayOffer = (offre: any): OfferDisplay => ({
     id: offre.id_offre,
     titre: offre.titre,
     description: offre.description,
+    type_contrat: offre.type_contrat,
+    localisation: offre.localisation,
+    experience_requise: offre.experience_requise,
+    competences_requises: offre.competences_requises,
+    avantages: offre.avantages,
     salaire_base: Number(offre.salaire_base),
     date_limite: offre.date_limite,
     statut: new Date(offre.date_limite) < new Date() ? 'Expiree' : offre.statut === 'Publiée' ? 'Publiee' : offre.statut === 'Archivée' ? 'Suspendue' : 'Brouillon',
@@ -79,6 +89,11 @@ export const DirecteurOffresPage = () => {
       await offreAPI.createForCompany({
         titre: formData.titre,
         description: formData.description,
+        type_contrat: formData.type_contrat,
+        localisation: formData.localisation,
+        experience_requise: formData.experience_requise,
+        competences_requises: formData.competences_requises,
+        avantages: formData.avantages,
         date_limite: formData.date_expiration,
         salaire_base: Number(formData.salaire_base),
         statut: 'Brouillon',
@@ -215,7 +230,7 @@ export const DirecteurOffresPage = () => {
                 <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <DollarSign className="w-4 h-4" />
-                    <span>{offre.salaire_base} $</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300">${offre.salaire_base.toLocaleString('en-US')}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <Calendar className="w-4 h-4" />
@@ -270,6 +285,30 @@ export const DirecteurOffresPage = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type de contrat *</label>
+                  <select value={formData.type_contrat} onChange={(e) => setFormData({...formData, type_contrat: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required>
+                    <option value="">Sélectionner</option><option value="CDI">CDI</option><option value="CDD">CDD</option><option value="Stage">Stage</option><option value="Freelance">Freelance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Localisation *</label>
+                  <input type="text" value={formData.localisation} onChange={(e) => setFormData({...formData, localisation: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Expérience requise *</label>
+                <input type="text" value={formData.experience_requise} onChange={(e) => setFormData({...formData, experience_requise: e.target.value})} placeholder="Ex. 3 ans en développement web" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Compétences requises *</label>
+                <textarea value={formData.competences_requises} onChange={(e) => setFormData({...formData, competences_requises: e.target.value})} rows={3} placeholder="Décrivez les compétences techniques et humaines attendues." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl resize-none" required />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Avantages *</label>
+                <textarea value={formData.avantages} onChange={(e) => setFormData({...formData, avantages: e.target.value})} rows={3} placeholder="Décrivez les avantages proposés par l’entreprise." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl resize-none" required />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Salaire de base ($)</label>
                   <input type="number" min="0" value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
                 </div>
@@ -309,13 +348,19 @@ export const DirecteurOffresPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Salaire</p>
-                  <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.salaire_base} $</p>
+                  <p className="font-bold text-emerald-700 dark:text-emerald-300">${selectedOffre.salaire_base.toLocaleString('en-US')}</p>
                 </div>
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Échéance</p>
                   <p className="font-bold text-slate-800 dark:text-white">{selectedOffre.date_limite}</p>
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl"><p className="text-xs text-slate-500 dark:text-slate-400">Contrat</p><p className="font-bold text-slate-800 dark:text-white">{selectedOffre.type_contrat}</p></div>
+                <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl"><p className="text-xs text-slate-500 dark:text-slate-400">Localisation</p><p className="font-bold text-slate-800 dark:text-white">{selectedOffre.localisation}</p></div>
+              </div>
+              <div><h4 className="font-bold text-slate-800 dark:text-white mb-2">Expérience et compétences</h4><p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{selectedOffre.experience_requise}\n{selectedOffre.competences_requises}</p></div>
+              <div><h4 className="font-bold text-slate-800 dark:text-white mb-2">Avantages</h4><p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{selectedOffre.avantages}</p></div>
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedOffre.nombre_candidatures}</p>

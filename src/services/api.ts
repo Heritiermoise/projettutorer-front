@@ -627,6 +627,32 @@ export const invitationAPI = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// MESSAGERIE INTERNE ET SIGNALISATION D'APPEL WEBRTC
+// ═══════════════════════════════════════════════════════════════
+export const internalMessagingAPI = {
+  getContacts: async () => await apiRequest('/internal-messaging/contacts'),
+  updateLocation: async (latitude: number, longitude: number) => await apiRequest('/internal-messaging/location', {
+    method: 'PUT',
+    body: JSON.stringify({ latitude, longitude }),
+  }),
+  getConversations: async () => await apiRequest('/internal-messaging/conversations'),
+  createConversation: async (recipientId: number) => await apiRequest('/internal-messaging/conversations', {
+    method: 'POST',
+    body: JSON.stringify({ recipient_id: recipientId }),
+  }),
+  getMessages: async (conversationId: number) => await apiRequest(`/internal-messaging/conversations/${conversationId}/messages`),
+  sendMessage: async (conversationId: number, body: string) => await apiRequest(`/internal-messaging/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ body }),
+  }),
+  sendSignal: async (conversationId: number, type: 'offer' | 'answer' | 'ice-candidate' | 'hangup', payload?: unknown) => await apiRequest(`/internal-messaging/conversations/${conversationId}/signals`, {
+    method: 'POST',
+    body: JSON.stringify({ type, payload }),
+  }),
+  getSignals: async () => await apiRequest('/internal-messaging/signals'),
+};
+
+// ═══════════════════════════════════════════════════════════════
 // OFFRES D'EMPLOI
 // ═══════════════════════════════════════════════════════════════
 export const offreAPI = {

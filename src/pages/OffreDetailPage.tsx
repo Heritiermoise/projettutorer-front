@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
 import { useEffect } from 'react'
-import { offreAPI, entrepriseAPI } from '../services/api'
+import { offreAPI } from '../services/api'
 
 export const OffreDetailPage = () => {
   const { id } = useParams()
@@ -20,6 +20,7 @@ export const OffreDetailPage = () => {
 
   const [offre, setOffre] = useState<any>(null)
   const [entreprise, setEntreprise] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
@@ -27,19 +28,23 @@ export const OffreDetailPage = () => {
         const offreResponse = await offreAPI.getById(parseInt(id || '0'))
         const currentOffre = offreResponse.offre || offreResponse
         setOffre(currentOffre)
-
-        const entrepriseResponse = await entrepriseAPI.getById(currentOffre.id_entreprise)
-        setEntreprise(entrepriseResponse.entreprise || entrepriseResponse)
+        setEntreprise(currentOffre.entreprise || null)
       } catch {
         setOffre(null)
         setEntreprise(null)
+      } finally {
+        setLoading(false)
       }
     }
 
     load()
   }, [id])
 
-  if (!offre || !entreprise) {
+  if (loading) {
+    return <div className="min-h-screen bg-slate-50 dark:bg-slate-900 grid place-items-center text-slate-600 dark:text-slate-300">Chargement de l'offre...</div>
+  }
+
+  if (!offre) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -106,15 +111,15 @@ export const OffreDetailPage = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{offre.titre}</h1>
-              <p className="text-white/90 text-lg mb-4">{entreprise.nom}</p>
+              <p className="text-white/90 text-lg mb-4">{entreprise?.nom || 'Entreprise partenaire'}</p>
               <div className="flex flex-wrap gap-4 text-white/80">
                 <span className="flex items-center space-x-2">
                   <MapPin className="w-5 h-5" />
-                  <span>{entreprise.adresse}</span>
+                  <span>{offre.localisation}</span>
                 </span>
                 <span className="flex items-center space-x-2">
                   <DollarSign className="w-5 h-5" />
-                  <span className="font-semibold">${offre.salaire_base}</span>
+                  <span className="font-bold text-emerald-200">${Number(offre.salaire_base).toLocaleString('en-US')}</span>
                 </span>
                 <span className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
@@ -135,40 +140,22 @@ export const OffreDetailPage = () => {
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{offre.description}</p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            {offre.experience_requise && offre.competences_requises && <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Profil recherché</h2>
               <ul className="space-y-3">
-                {[
-                  'Expérience significative dans le domaine',
-                  'Maîtrise des outils et technologies requis',
-                  'Capacité à travailler en équipe',
-                  'Bonnes compétences en communication',
-                  'Autonomie et sens des responsabilités',
-                ].map((item, i) => (
+                {[offre.experience_requise, offre.competences_requises].map((item: string, i: number) => (
                   <li key={i} className="flex items-start space-x-3">
                     <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                     <span className="text-slate-600 dark:text-slate-300">{item}</span>
                   </li>
                 ))}
               </ul>
-            </div>
+            </div>}
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            {offre.avantages && <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Avantages</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { icon: DollarSign, text: 'Salaire compétitif' },
-                  { icon: Calendar, text: 'Congés payés' },
-                  { icon: Users, text: 'Travail en équipe' },
-                  { icon: FileText, text: 'Formation continue' },
-                ].map((avantage, i) => (
-                  <div key={i} className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                    <avantage.icon className="w-5 h-5 text-primary-600" />
-                    <span className="text-slate-700 dark:text-slate-300">{avantage.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              <p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{offre.avantages}</p>
+            </div>}
           </div>
 
           <div className="space-y-6">
@@ -180,20 +167,21 @@ export const OffreDetailPage = () => {
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-800 dark:text-white">{entreprise.nom}</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">{entreprise.nom_commercial}</p>
+                    <p className="font-semibold text-slate-800 dark:text-white">{entreprise?.nom || 'Entreprise partenaire'}</p>
+                    {entreprise?.nom_commercial && <p className="text-sm text-slate-600 dark:text-slate-400">{entreprise.nom_commercial}</p>}
                   </div>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{entreprise.description}</p>
+                {entreprise?.description && <p className="text-sm text-slate-600 dark:text-slate-300">{entreprise.description}</p>}
                 <div className="space-y-2 text-sm">
+                  {offre.type_contrat && <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400"><FileText className="w-4 h-4" /><span>{offre.type_contrat}</span></div>}
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <MapPin className="w-4 h-4" />
-                    <span>{entreprise.adresse}</span>
+                    <span>{offre.localisation}</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+                  {entreprise?.created_at && <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <Calendar className="w-4 h-4" />
                     <span>Créée le {entreprise.created_at}</span>
-                  </div>
+                  </div>}
                 </div>
               </div>
               <button
