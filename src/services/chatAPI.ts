@@ -18,13 +18,38 @@ export interface ChatResponse {
   source?: string;
   warning?: string;
   suggestions?: string[];
+  conversationId?: string;
+  access?: {
+    authenticated: boolean;
+    scope: string;
+  };
+}
+
+export interface SendMessageOptions {
+  conversationId?: string;
+  mode?: 'assistant' | 'strict' | 'fun';
 }
 
 const STORAGE_KEY = 'rh_chat_history';
+const CONVERSATION_KEY = 'rh_ai_conversation_id';
+
+const getStorageScope = () => {
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+  if (!token) return 'visitor';
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    return `user_${user?.id || user?.email || 'authenticated'}`;
+  } catch {
+    return 'user_authenticated';
+  }
+};
+
+const scopedKey = (key: string) => `${key}_${getStorageScope()}`;
 
 const readHistory = (): ChatMessage[] => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(scopedKey(STORAGE_KEY));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatMessage[];
     return Array.isArray(parsed)
@@ -39,7 +64,7 @@ const readHistory = (): ChatMessage[] => {
 };
 
 const writeHistory = (messages: ChatMessage[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  localStorage.setItem(scopedKey(STORAGE_KEY), JSON.stringify(messages));
 };
 
 export const chatAPI = {
@@ -50,11 +75,14 @@ export const chatAPI = {
   },
 
   // Envoyer un message à l'assistant RH
-  sendMessage: async (message: string): Promise<ChatResponse> => {
+  getConversationId: (): string | null => localStorage.getItem(scopedKey(CONVERSATION_KEY)),
+
+  sendMessage: async (message: string, options: SendMessageOptions = {}): Promise<ChatResponse> => {
     try {
       const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      const endpoint = token ? '/ai/chat' : '/public/ai/chat';
 
-      const response = await fetch(`${API_BASE_URL}/ai/chat`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,6 +91,11 @@ export const chatAPI = {
         },
         body: JSON.stringify({
           message,
+          conversation_id: options.conversationId || localStorage.getItem(scopedKey(CONVERSATION_KEY)) || undefined,
+          ...(token ? {
+            mode: options.mode || 'assistant',
+            include_suggestions: true,
+          } : {}),
         }),
       });
 
@@ -80,6 +113,11 @@ export const chatAPI = {
       const reply = data.reply || data.response || data.message || '';
       const source = data.source || data.data?.source;
       const warning = data.warning || data.data?.warning;
+      const conversationId = data.conversation_id || data.data?.conversation_id;
+
+      if (conversationId) {
+        localStorage.setItem(scopedKey(CONVERSATION_KEY), conversationId);
+      }
 
       return {
         success: true,
@@ -88,7 +126,9 @@ export const chatAPI = {
         response: reply,
         source,
         warning,
-        suggestions: data.suggestions,
+        suggestions: data.suggested_questions || data.suggestions,
+        conversationId,
+        access: data.access,
       };
     } catch (error: any) {
       console.error('Chat API Error:', error);
@@ -103,6 +143,7 @@ export const chatAPI = {
 
   // Effacer la conversation
   clearHistory: async (): Promise<void> => {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(scopedKey(STORAGE_KEY));
+    localStorage.removeItem(scopedKey(CONVERSATION_KEY));
   },
 };

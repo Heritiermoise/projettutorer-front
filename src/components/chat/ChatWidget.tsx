@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, matchPath } from 'react-router-dom'
-import { Bot, PauseCircle, RefreshCcw, ShieldCheck, Sparkles, X, AlertTriangle, Copy, Check } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { AlertTriangle, Check, Mic, MicOff, PauseCircle, RefreshCcw, Send, ShieldCheck, Sparkles, Volume2, VolumeX, X } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
+import { AssistantMark } from './AssistantMark'
 import { chatAPI, type ChatMessage } from '../../services/chatAPI'
 
 type ConversationMode = 'metier' | 'pause'
@@ -16,22 +17,36 @@ const WELCOME_MESSAGE: ChatMessage = {
   source: 'welcome',
 }
 
-const QUICK_QUESTIONS = [
-  'Comment devenir employé ?',
-  'Quelles sont les conditions de recrutement ?',
-  'Comment m’inscrire ?',
-  'Quels services proposez-vous ?',
-]
+const PUBLIC_QUESTIONS = ['Comment créer un compte ?', 'Comment consulter les offres ?', 'Comment récupérer mon mot de passe ?']
+const PRIVATE_QUESTIONS = ['Combien avons-nous d’employés actifs ?', 'Quels congés sont en attente ?', 'Résume la situation RH actuelle.']
+
+type SpeechRecognitionEventLike = Event & {
+  results: ArrayLike<{ 0: { transcript: string } }>
+}
+
+type SpeechRecognitionLike = {
+  lang: string
+  interimResults: boolean
+  continuous: boolean
+  start: () => void
+  stop: () => void
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
 
 export const ChatWidget: React.FC = () => {
   const location = useLocation()
-  const isProtectedRhArea = useMemo(() => {
-    return Boolean(
-      matchPath('/dashboard/rh/*', location.pathname) ||
-      matchPath('/dashboard/directeur/*', location.pathname) ||
-      matchPath('/dashboard/admin/*', location.pathname) ||
-      matchPath('/dashboard/employe/*', location.pathname)
-    )
+  const session = useMemo(() => {
+    const authenticated = Boolean(localStorage.getItem('auth_token') || localStorage.getItem('token'))
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || 'null')
+      return { authenticated, role: String(user?.role || 'utilisateur').toLowerCase() }
+    } catch {
+      return { authenticated, role: 'utilisateur' }
+    }
   }, [location.pathname])
 
   const [isOpen, setIsOpen] = useState(false)
@@ -42,15 +57,40 @@ export const ChatWidget: React.FC = () => {
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [conversationMode, setConversationMode] = useState<ConversationMode>('metier')
+  const [conversationId, setConversationId] = useState<string | null>(() => chatAPI.getConversationId())
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
   const [debugMeta, setDebugMeta] = useState<{ source?: string; warning?: string } | null>(null)
   const [isFallbackMode, setIsFallbackMode] = useState(false)
-  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [isListening, setIsListening] = useState(false)
+  const [speechEnabled, setSpeechEnabled] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
+
+  const speechRecognitionSupported = typeof window !== 'undefined' && Boolean(
+    (window as Window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor }).SpeechRecognition ||
+    (window as Window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor }).webkitSpeechRecognition
+  )
 
   useEffect(() => {
     chatAPI.saveHistory(messages)
   }, [messages])
+
+  useEffect(() => {
+    const scopedHistory = chatAPI.getHistoryFromStorage()
+    setMessages(scopedHistory.length > 0 ? scopedHistory : [{
+      ...WELCOME_MESSAGE,
+      id: `welcome_${session.authenticated ? session.role : 'visitor'}`,
+      text: session.authenticated
+        ? `Bonjour. NOVA RH est connecté à votre espace ${session.role} et limite ses réponses à vos autorisations.`
+        : 'Bonjour. Je suis NOVA RH. Je peux vous guider sur les offres, l’inscription et les fonctionnalités publiques.',
+      timestamp: new Date(),
+    }])
+    setConversationId(chatAPI.getConversationId())
+    setSuggestedQuestions(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
+    setDebugMeta(null)
+    setIsFallbackMode(false)
+  }, [session.authenticated, session.role])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -62,11 +102,10 @@ export const ChatWidget: React.FC = () => {
     }
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isProtectedRhArea) {
-      setIsOpen(false)
-    }
-  }, [isProtectedRhArea])
+  useEffect(() => () => {
+    recognitionRef.current?.stop()
+    window.speechSynthesis?.cancel()
+  }, [])
 
   const buildIntroMessage = (mode: ConversationMode) => {
     if (mode === 'pause') {
@@ -75,17 +114,40 @@ export const ChatWidget: React.FC = () => {
     return 'Mode métier activé. Je réponds en priorité avec des données RH et opérationnelles.'
   }
 
-  const copyToClipboard = async (text: string, fieldKey: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopiedField(fieldKey)
-      window.setTimeout(() => setCopiedField(null), 1800)
-    } catch {
-      setDebugMeta((prev) => ({
-        source: prev?.source,
-        warning: 'Impossible de copier dans le presse-papiers',
-      }))
+  const speak = (text: string) => {
+    if (!speechEnabled || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'fr-FR'
+    utterance.rate = 1
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const toggleListening = () => {
+    if (!speechRecognitionSupported) return
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
     }
+
+    const speechWindow = window as Window & { SpeechRecognition?: SpeechRecognitionConstructor; webkitSpeechRecognition?: SpeechRecognitionConstructor }
+    const Recognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
+    if (!Recognition) return
+
+    const recognition = new Recognition()
+    recognition.lang = 'fr-FR'
+    recognition.interimResults = false
+    recognition.continuous = false
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript || ''
+      setInputValue(transcript)
+      inputRef.current?.focus()
+    }
+    recognition.onerror = () => setIsListening(false)
+    recognition.onend = () => setIsListening(false)
+    recognitionRef.current = recognition
+    setIsListening(true)
+    recognition.start()
   }
 
   const handleSendMessage = async (messageOverride?: string) => {
@@ -109,7 +171,10 @@ export const ChatWidget: React.FC = () => {
       setMessages((prev) => prev.map((message) => (message.id === userMessage.id ? { ...message, status: 'sent' } : message)))
     }, 350)
 
-    const response = await chatAPI.sendMessage(content)
+    const response = await chatAPI.sendMessage(content, {
+      conversationId: conversationId || undefined,
+      mode: conversationMode === 'pause' ? 'fun' : 'assistant',
+    })
     const reply = response.reply || response.response || ''
     const source = response.source || 'unknown'
     const warning = response.warning || ''
@@ -117,6 +182,8 @@ export const ChatWidget: React.FC = () => {
     setIsTyping(false)
     setDebugMeta({ source, warning })
     setIsFallbackMode(source === 'local-fallback')
+    if (response.conversationId) setConversationId(response.conversationId)
+    if (response.suggestions?.length) setSuggestedQuestions(response.suggestions)
 
     if (response.success && reply) {
       const assistantMessage: ChatMessage = {
@@ -129,6 +196,7 @@ export const ChatWidget: React.FC = () => {
         warning,
       }
       setMessages((prev) => [...prev, assistantMessage])
+      speak(reply)
       return
     }
 
@@ -154,6 +222,8 @@ export const ChatWidget: React.FC = () => {
     setMessages([{ ...WELCOME_MESSAGE, text: buildIntroMessage(conversationMode), timestamp: new Date() }])
     setDebugMeta(null)
     setIsFallbackMode(false)
+    setConversationId(null)
+    setSuggestedQuestions(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
   }
 
   const toggleMode = () => {
@@ -176,42 +246,33 @@ export const ChatWidget: React.FC = () => {
 
   return (
     <>
-      {isProtectedRhArea && (
-        <>
-          <button
-            type="button"
-            onClick={() => setIsOpen((prev) => !prev)}
-            className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-              isOpen
-                ? 'bg-slate-800 text-white rotate-90'
-                : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
-            }`}
-            aria-label={isOpen ? 'Fermer le chat' : 'Ouvrir le chat'}
-          >
-            {isOpen ? <X className="w-7 h-7" /> : <Bot className="w-8 h-8" />}
-          </button>
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-lg shadow-2xl transition-transform duration-200 hover:scale-105 ${isOpen ? 'bg-slate-900 text-white' : 'bg-transparent'}`}
+        aria-label={isOpen ? 'Fermer NOVA RH' : 'Ouvrir NOVA RH'}
+      >
+        {isOpen ? <X className="h-7 w-7" /> : <AssistantMark />}
+      </button>
 
-          {!isOpen && (
-            <div className="fixed bottom-20 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-xs text-white shadow-lg animate-bounce">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Assistant RH disponible</span>
-            </div>
-          )}
-        </>
+      {!isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white shadow-lg">
+          <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+          <span>NOVA RH</span>
+          <span className="text-slate-400">{session.authenticated ? 'Connecté' : 'Visiteur'}</span>
+        </div>
       )}
 
-      {isOpen && isProtectedRhArea && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[min(78vh,720px)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:w-[420px]">
-          <div className="flex items-center justify-between bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-4 text-white shadow-md">
+      {isOpen && (
+        <div className="fixed bottom-24 right-4 z-50 flex h-[min(78vh,720px)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:right-6 sm:w-[440px]">
+          <div className="flex items-center justify-between bg-slate-950 p-4 text-white shadow-md">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-sm">
-                <Bot className="h-5 w-5 text-white" />
-              </div>
+              <AssistantMark compact />
               <div>
-                <h3 className="text-base font-bold">Assistant RH</h3>
+                <h3 className="text-base font-bold">NOVA RH</h3>
                 <div className="flex items-center gap-2 text-xs text-emerald-200">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300"></span>
-                  <span>{conversationMode === 'pause' ? 'Pause détente' : 'Mode métier'}</span>
+                  <span>{session.authenticated ? `Accès ${session.role}` : 'Accès public sécurisé'}</span>
                 </div>
               </div>
             </div>
@@ -247,7 +308,7 @@ export const ChatWidget: React.FC = () => {
             <div className="border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
               <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">Suggestions rapides</p>
               <div className="flex flex-wrap gap-2">
-                {QUICK_QUESTIONS.map((question) => (
+                {suggestedQuestions.map((question) => (
                   <button
                     key={question}
                     type="button"
@@ -263,6 +324,15 @@ export const ChatWidget: React.FC = () => {
 
           <div className="border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleListening}
+                disabled={!speechRecognitionSupported || isTyping}
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isListening ? 'border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950/30' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'}`}
+                title={speechRecognitionSupported ? (isListening ? 'Arrêter l’écoute' : 'Dicter la question') : 'Reconnaissance vocale non disponible'}
+              >
+                {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
               <input
                 ref={inputRef}
                 type="text"
@@ -282,18 +352,17 @@ export const ChatWidget: React.FC = () => {
                 type="button"
                 onClick={() => void handleSendMessage()}
                 disabled={!inputValue.trim() || isTyping}
-                className="rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-3 text-white transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-emerald-600 text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                title="Envoyer"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+                <Send className="h-5 w-5" />
               </button>
             </div>
             <div className="mt-2 flex items-center justify-between gap-3 text-xs text-slate-400 dark:text-slate-500">
-              <p>Propulsé par RH Manager AI</p>
-              <p className="truncate">
-                {debugMeta?.source ? `source: ${debugMeta.source}` : 'source: en attente'}{debugMeta?.warning ? ` • warning: ${debugMeta.warning}` : ''}
-              </p>
+              <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Données limitées à vos autorisations</span>
+              <button type="button" onClick={() => setSpeechEnabled((current) => !current)} className="rounded-lg p-1.5 hover:bg-slate-100 dark:hover:bg-slate-900" title={speechEnabled ? 'Désactiver la lecture vocale' : 'Activer la lecture vocale'}>
+                {speechEnabled ? <Volume2 className="h-4 w-4 text-emerald-600" /> : <VolumeX className="h-4 w-4" />}
+              </button>
             </div>
             {debugMeta?.warning && !isFallbackMode && (
               <div className="mt-2">
@@ -303,19 +372,7 @@ export const ChatWidget: React.FC = () => {
                 </span>
               </div>
             )}
-            <div className="mt-2 flex items-center gap-2">
-              <button type="button" onClick={() => copyToClipboard('Mode métier prioritaire', 'mode')} className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-500 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-                {copiedField === 'mode' ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                Debug
-              </button>
-            </div>
           </div>
-        </div>
-      )}
-
-      {!isProtectedRhArea && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-xs rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600 shadow-lg dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-          Le chat RH est disponible après connexion dans la zone protégée.
         </div>
       )}
 
