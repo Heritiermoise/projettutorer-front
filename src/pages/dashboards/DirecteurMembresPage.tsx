@@ -281,6 +281,35 @@ export const DirecteurMembresPage = () => {
     void sendAfterCredentialsAreVisible()
   }, [createdCredentials])
 
+  const retryWelcomeEmail = async () => {
+    const credentials = createdCredentials
+    if (!credentials || credentials.status !== 'warning') return
+
+    welcomeEmailsInProgress.current.add(credentials.matricule)
+    setCreatedCredentials({ ...credentials, status: 'pending' })
+    setSuccessMsg('Nouvelle tentative d\'envoi de l\'email en cours...')
+
+    try {
+      const response = await membreAPI.sendWelcomeEmail(credentials.matricule, credentials.password)
+      const emailSent = inferEmailSent(response) !== false
+      setCreatedCredentials((current) => current?.matricule === credentials.matricule
+        ? { ...current, status: emailSent ? 'success' : 'warning', message: response?.message }
+        : current)
+      setSuccessMsg(emailSent
+        ? `Membre créé et identifiants envoyés à ${credentials.email}.`
+        : 'Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles.')
+      setToast(emailSent
+        ? { type: 'success', message: `Les identifiants ont été envoyés à ${credentials.email}.` }
+        : { type: 'info', message: 'La nouvelle tentative d\'envoi a échoué.' })
+    } catch (error: any) {
+      setCreatedCredentials((current) => current?.matricule === credentials.matricule
+        ? { ...current, status: 'warning', message: error?.message }
+        : current)
+      setSuccessMsg('Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles.')
+      setToast({ type: 'info', message: error?.message || 'La nouvelle tentative d\'envoi a échoué.' })
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSuccessMsg(null)
@@ -632,6 +661,16 @@ export const DirecteurMembresPage = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
+              {createdCredentials.status === 'warning' && (
+                <button
+                  type="button"
+                  onClick={retryWelcomeEmail}
+                  className="flex-1 py-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 font-semibold text-sm hover:bg-amber-200 dark:hover:bg-amber-900/50 flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Réessayer l'envoi</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => copyToClipboard(buildCredentialsSummary(createdCredentials), 'all')}
