@@ -1,390 +1,153 @@
-import { useState } from 'react'
-import { Users, Search, CheckCircle2, XCircle, Clock, Mail, Phone, MapPin, Key, Shield, UserCheck, Briefcase, Calendar, Eye, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Briefcase, Calendar, CheckCircle2, Clock, Eye, FileText, Mail, MapPin, Phone, Search, Users, X, XCircle } from 'lucide-react'
+import { entretienAPI, posteAPI, postulationAPI } from '../../services/api'
 
-type Candidat = {
-  id: number
-  nom: string
-  prenom: string
-  email: string
-  telephone: string
-  adresse: string
-  poste_postule: string
-  statut: 'en_attente' | 'entretien_planifie' | 'valide' | 'refuse'
-  date_candidature: string
-  entretien: { date: string; heure: string; type: string; resultat?: string } | null
-  role_attribue?: string
-  poste_attribue?: string
-  mot_de_passe?: string
+type Interview = { id_entretien: number; scheduled_at: string; mode: string; lieu: string; statut: string; note?: string | null }
+type Application = {
+  id_postulation: number
+  statut: 'Soumise' | 'Entretien' | 'Acceptée' | 'Refusée'
+  cv: string
+  lettre: string
+  created_at: string
+  candidat: { id_candidat: number; nom: string; post_nom?: string; prenom?: string; email: string; telephone?: string }
+  offre: { id_offre: number; titre: string; type_contrat?: string; localisation?: string; salaire_base?: number }
+  entretiens: Interview[]
+}
+type Job = { id_poste: number; titre_poste: string; statut: string }
+
+const formatDate = (value?: string) => value ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: value.includes('T') ? 'short' : undefined }).format(new Date(value)) : 'Non renseignée'
+const statusLabel: Record<Application['statut'], string> = { Soumise: 'À examiner', Entretien: 'Entretien', Acceptée: 'Recrutée', Refusée: 'Refusée' }
+const statusColor: Record<Application['statut'], string> = {
+  Soumise: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+  Entretien: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+  Acceptée: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+  Refusée: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
 }
 
 export const DirecteurCandidatsPage = () => {
+  const [applications, setApplications] = useState<Application[]>([])
+  const [vacantJobs, setVacantJobs] = useState<Job[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatut, setFilterStatut] = useState('all')
-  const [selectedCandidat, setSelectedCandidat] = useState<Candidat | null>(null)
-  const [showValidationModal, setShowValidationModal] = useState(false)
-  const [showEntretienModal, setShowEntretienModal] = useState(false)
-  const [generatedPassword, setGeneratedPassword] = useState('')
-  const [selectedRole, setSelectedRole] = useState('employe')
-  const [selectedPoste, setSelectedPoste] = useState('')
+  const [filterStatus, setFilterStatus] = useState<'all' | Application['statut']>('all')
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
+  const [interviewApplication, setInterviewApplication] = useState<Application | null>(null)
+  const [recruitmentApplication, setRecruitmentApplication] = useState<Application | null>(null)
+  const [selectedJobId, setSelectedJobId] = useState('')
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [interviewData, setInterviewData] = useState<{ scheduled_at: string; mode: 'Visioconférence' | 'Présentiel' | 'Téléphonique'; lieu: string; note: string }>({ scheduled_at: '', mode: 'Visioconférence', lieu: '', note: '' })
 
-  const postesDisponibles = [
-    { id: 1, titre: 'Developpeur Full Stack', disponibles: 1 },
-    { id: 2, titre: 'Responsable RH', disponibles: 0 },
-    { id: 3, titre: 'Comptable', disponibles: 1 },
-    { id: 4, titre: 'Designer UX/UI', disponibles: 0 },
-  ]
+  const loadData = async () => {
+    try {
+      const [applicationsResponse, jobsResponse] = await Promise.all([postulationAPI.getAll(), posteAPI.getAll()])
+      setApplications(applicationsResponse.postulations || [])
+      setVacantJobs((jobsResponse.postes || []).filter((job: Job) => job.statut === 'Vacant'))
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de charger les candidatures réelles.')
+      setApplications([])
+      setVacantJobs([])
+    }
+  }
 
-  const [candidats, setCandidats] = useState<Candidat[]>([
-    { id: 1, nom: 'Ngoy', prenom: 'Alain', email: 'alain@mail.com', telephone: '+243 900 111 222', adresse: 'Lubumbashi', poste_postule: 'Developpeur Full Stack', statut: 'en_attente', date_candidature: '2026-06-20', entretien: null },
-    { id: 2, nom: 'Lunda', prenom: 'Beatrice', email: 'beatrice@mail.com', telephone: '+243 900 333 444', adresse: 'Kinshasa', poste_postule: 'Designer UX/UI', statut: 'entretien_planifie', date_candidature: '2026-06-21', entretien: { date: '2026-06-26', heure: '14:00', type: 'Visio' } },
-    { id: 3, nom: 'Tshibasu', prenom: 'Christian', email: 'chris@mail.com', telephone: '+243 900 555 666', adresse: 'Lubumbashi', poste_postule: 'Comptable', statut: 'valide', date_candidature: '2026-06-15', role_attribue: 'employe', poste_attribue: 'Comptable', entretien: { date: '2026-06-20', heure: '09:00', type: 'Presentiel', resultat: 'Reussi' } },
-    { id: 4, nom: 'Mukendi', prenom: 'Diane', email: 'diane@mail.com', telephone: '+243 900 777 888', adresse: 'Kinshasa', poste_postule: 'Developpeur Full Stack', statut: 'refuse', date_candidature: '2026-06-18', entretien: { date: '2026-06-18', heure: '11:00', type: 'Visio', resultat: 'Echoue' } },
-  ])
+  useEffect(() => { void loadData() }, [])
 
-  const [entretienData, setEntretienData] = useState({ date: '', heure: '', type: 'Visio' })
+  const scheduleInterview = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!interviewApplication) return
+    try {
+      await entretienAPI.create({ ...interviewData, id_postulation: interviewApplication.id_postulation })
+      setFeedback('Entretien enregistré et candidature mise à jour.')
+      setInterviewApplication(null)
+      setInterviewData({ scheduled_at: '', mode: 'Visioconférence', lieu: '', note: '' })
+      await loadData()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de planifier cet entretien.')
+    }
+  }
 
-  const filteredCandidats = candidats.filter(c => {
-    const matchesSearch = c.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         c.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         c.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
-    return matchesSearch && matchesStatut
+  const recruit = async () => {
+    if (!recruitmentApplication || !selectedJobId) {
+      setFeedback('Sélectionnez un poste vacant avant de recruter.')
+      return
+    }
+    try {
+      const response = await postulationAPI.recruit(recruitmentApplication.id_postulation, Number(selectedJobId))
+      setFeedback(`Candidat recruté. Matricule attribué: ${response.matricule}`)
+      setRecruitmentApplication(null)
+      setSelectedJobId('')
+      await loadData()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de recruter ce candidat.')
+    }
+  }
+
+  const reject = async (application: Application) => {
+    if (!window.confirm(`Refuser la candidature de ${application.candidat.prenom || ''} ${application.candidat.nom} ?`)) return
+    try {
+      await postulationAPI.reject(application.id_postulation)
+      setFeedback('Candidature refusée et décision enregistrée.')
+      await loadData()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de refuser cette candidature.')
+    }
+  }
+
+  const filteredApplications = applications.filter((application) => {
+    const searchable = `${application.candidat.prenom || ''} ${application.candidat.nom} ${application.candidat.email} ${application.offre.titre}`.toLowerCase()
+    return searchable.includes(searchTerm.toLowerCase()) && (filterStatus === 'all' || application.statut === filterStatus)
   })
 
   const stats = {
-    total: candidats.length,
-    enAttente: candidats.filter(c => c.statut === 'en_attente').length,
-    entretien: candidats.filter(c => c.statut === 'entretien_planifie').length,
-    valides: candidats.filter(c => c.statut === 'valide').length,
-    refuses: candidats.filter(c => c.statut === 'refuse').length,
-  }
-
-  const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'
-    let password = ''
-    for (let i = 0; i < 10; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    setGeneratedPassword(password)
-  }
-
-  const handlePlanifierEntretien = (candidat: any) => {
-    setSelectedCandidat(candidat)
-    setShowEntretienModal(true)
-  }
-
-  const handleConfirmEntretien = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedCandidat) return
-    setCandidats(candidats.map(c => 
-      c.id === selectedCandidat.id 
-        ? { ...c, statut: 'entretien_planifie', entretien: entretienData }
-        : c
-    ))
-    setShowEntretienModal(false)
-    setSelectedCandidat(null)
-    setEntretienData({ date: '', heure: '', type: 'Visio' })
-    alert('Entretien planifie avec succes ! Le candidat recevra une notification.')
-  }
-
-  const handleValider = (candidat: any) => {
-    generatePassword()
-    setSelectedCandidat(candidat)
-    setShowValidationModal(true)
-    setSelectedRole('employe')
-    setSelectedPoste('')
-  }
-
-  const handleConfirmValidation = () => {
-    if (!selectedCandidat) return
-    if (!selectedPoste) {
-      alert('Veuillez selectionner un poste disponible')
-      return
-    }
-    setCandidats(candidats.map(c => 
-      c.id === selectedCandidat.id 
-        ? { ...c, statut: 'valide', role_attribue: selectedRole, poste_attribue: selectedPoste, mot_de_passe: generatedPassword }
-        : c
-    ))
-    setShowValidationModal(false)
-    setSelectedCandidat(null)
-    setGeneratedPassword('')
-    alert(`Candidat valide avec succes !\nRole: ${selectedRole}\nPoste: ${selectedPoste}\nMot de passe: ${generatedPassword}\n\nUn email a ete envoye au candidat avec ses identifiants.`)
-  }
-
-  const handleRefuser = (candidat: any) => {
-    if (window.confirm('Etes-vous sur de vouloir refuser ce candidat ?')) {
-      setCandidats(candidats.map(c => 
-        c.id === candidat.id ? { ...c, statut: 'refuse' } : c
-      ))
-    }
-  }
-
-  const getStatutLabel = (statut: string) => {
-    const labels: Record<string, string> = {
-      'en_attente': 'En attente',
-      'entretien_planifie': 'Entretien planifie',
-      'valide': 'Valide',
-      'refuse': 'Refuse',
-    }
-    return labels[statut] || statut
-  }
-
-  const getStatutColor = (statut: string) => {
-    const colors: Record<string, string> = {
-      'en_attente': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
-      'entretien_planifie': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-      'valide': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-      'refuse': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
-    }
-    return colors[statut] || 'bg-slate-100 text-slate-700'
+    total: applications.length,
+    pending: applications.filter((application) => application.statut === 'Soumise').length,
+    interviews: applications.filter((application) => application.statut === 'Entretien').length,
+    accepted: applications.filter((application) => application.statut === 'Acceptée').length,
+    rejected: applications.filter((application) => application.statut === 'Refusée').length,
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Candidats</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gerez les candidatures et planifiez les entretiens</p>
-        </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Dossiers de candidature</h1>
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">Chaque dossier est relié à l’offre, au candidat, au CV et à l’historique de recrutement.</p>
       </div>
 
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-xl">
-        <div className="flex items-start space-x-4">
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
-            <Shield className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold mb-2">Processus de recrutement</h3>
-            <ol className="text-sm text-white/90 space-y-1 list-decimal list-inside">
-              <li>Le candidat postule a une offre d'emploi</li>
-              <li>Vous examinez le profil et planifiez un entretien</li>
-              <li>Apres entretien reussi, vous validez le candidat</li>
-              <li>Vous attribuez un role (Employe/RH/Manager) et un poste</li>
-              <li>Un mot de passe est genere et envoye par email</li>
-              <li>Le candidat devient employe de votre entreprise</li>
-            </ol>
-          </div>
-        </div>
-      </div>
+      {feedback && <p className="text-sm text-slate-600 dark:text-slate-300">{feedback}</p>}
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, color: 'from-amber-500 to-orange-600', icon: Users },
-          { label: 'En attente', value: stats.enAttente, color: 'from-primary-500 to-purple-600', icon: Clock },
-          { label: 'Entretien', value: stats.entretien, color: 'from-blue-500 to-cyan-600', icon: Calendar },
-          { label: 'Validés', value: stats.valides, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'Refusés', value: stats.refuses, color: 'from-red-500 to-rose-600', icon: XCircle },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
-              <stat.icon className="w-5 h-5 text-white" />
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">{stat.label}</p>
-            <p className="text-2xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
-          </div>
-        ))}
+          { label: 'Total', value: stats.total, icon: Users, color: 'from-amber-500 to-orange-600' },
+          { label: 'À examiner', value: stats.pending, icon: Clock, color: 'from-violet-500 to-indigo-600' },
+          { label: 'Entretiens', value: stats.interviews, icon: Calendar, color: 'from-blue-500 to-cyan-600' },
+          { label: 'Recrutées', value: stats.accepted, icon: CheckCircle2, color: 'from-emerald-500 to-green-600' },
+          { label: 'Refusées', value: stats.rejected, icon: XCircle, color: 'from-red-500 to-rose-600' },
+        ].map((stat) => <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg grid place-items-center mb-3`}><stat.icon className="w-5 h-5 text-white" /></div>
+          <p className="text-xs text-slate-600 dark:text-slate-400">{stat.label}</p><p className="text-2xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
+        </div>)}
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher un candidat..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
-          </div>
-          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm">
-            <option value="all">Tous les statuts</option>
-            <option value="en_attente">En attente</option>
-            <option value="entretien_planifie">Entretien planifie</option>
-            <option value="valide">Validés</option>
-            <option value="refuse">Refusés</option>
-          </select>
-        </div>
+      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Rechercher par candidat ou offre" className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg" /></div>
+        <select value={filterStatus} onChange={(event) => setFilterStatus(event.target.value as typeof filterStatus)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg">
+          <option value="all">Tous les statuts</option><option value="Soumise">À examiner</option><option value="Entretien">Entretien</option><option value="Acceptée">Recrutées</option><option value="Refusée">Refusées</option>
+        </select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredCandidats.map(candidat => (
-          <div key={candidat.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">{candidat.prenom[0]}</span>
-                </div>
-                <div>
-                  <p className="font-bold text-slate-800 dark:text-white">{candidat.prenom} {candidat.nom}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{candidat.email}</p>
-                </div>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatutColor(candidat.statut)}`}>
-                {getStatutLabel(candidat.statut)}
-              </span>
-            </div>
-
-            <div className="space-y-2 mb-4 text-sm">
-              <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                <Briefcase className="w-4 h-4" />
-                <span>Postule pour: <span className="font-semibold text-amber-600">{candidat.poste_postule}</span></span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                <Phone className="w-4 h-4" />
-                <span>{candidat.telephone}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                <MapPin className="w-4 h-4" />
-                <span>{candidat.adresse}</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                <Calendar className="w-4 h-4" />
-                <span>Candidature le {candidat.date_candidature}</span>
-              </div>
-              {candidat.entretien && (
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-xs text-blue-600 dark:text-blue-400">Entretien: {candidat.entretien.date} a {candidat.entretien.heure} ({candidat.entretien.type})</p>
-                  {candidat.entretien.resultat && <p className="text-xs font-semibold mt-1">Resultat: {candidat.entretien.resultat}</p>}
-                </div>
-              )}
-              {candidat.role_attribue && (
-                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                  <Shield className="w-4 h-4" />
-                  <span>Role: <span className="font-semibold text-primary-600">{candidat.role_attribue}</span></span>
-                </div>
-              )}
-              {candidat.poste_attribue && (
-                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                  <Briefcase className="w-4 h-4" />
-                  <span>Poste: <span className="font-semibold text-accent-600">{candidat.poste_attribue}</span></span>
-                </div>
-              )}
-            </div>
-
-            {candidat.statut === 'en_attente' && (
-              <div className="flex space-x-2">
-                <button onClick={() => handlePlanifierEntretien(candidat)} className="flex-1 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm hover:bg-blue-200 dark:hover:bg-blue-900/50 flex items-center justify-center space-x-1">
-                  <Calendar className="w-4 h-4" /><span>Entretien</span>
-                </button>
-                <button onClick={() => handleRefuser(candidat)} className="px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50">
-                  <XCircle className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {candidat.statut === 'entretien_planifie' && (
-              <button onClick={() => handleValider(candidat)} className="w-full px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm hover:bg-green-200 dark:hover:bg-green-900/50 flex items-center justify-center space-x-1">
-                <CheckCircle2 className="w-4 h-4" /><span>Valider apres entretien</span>
-              </button>
-            )}
-
-            {candidat.statut === 'valide' && candidat.mot_de_passe && (
-              <div className="space-y-2">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">Mot de passe genere :</p>
-                  <p className="font-mono text-sm font-bold text-blue-700 dark:text-blue-300">{candidat.mot_de_passe}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {filteredApplications.map((application) => <article key={application.id_postulation} className="bg-white dark:bg-slate-800 rounded-lg p-5 shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="flex items-start justify-between gap-4 mb-4"><div><h2 className="font-bold text-slate-800 dark:text-white">{application.candidat.prenom} {application.candidat.nom}</h2><p className="text-sm text-slate-600 dark:text-slate-400">{application.candidat.email}</p></div><span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor[application.statut]}`}>{statusLabel[application.statut]}</span></div>
+          <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300"><p className="flex gap-2"><Briefcase className="w-4 h-4 shrink-0" /><span>Offre: <strong className="text-amber-600 dark:text-amber-300">{application.offre.titre}</strong></span></p><p className="flex gap-2"><MapPin className="w-4 h-4 shrink-0" /><span>{application.offre.localisation || 'Localisation non indiquée'} · {application.offre.type_contrat || 'Contrat non indiqué'}</span></p><p className="flex gap-2"><Phone className="w-4 h-4 shrink-0" /><span>{application.candidat.telephone || 'Téléphone non indiqué'}</span></p><p className="flex gap-2"><Calendar className="w-4 h-4 shrink-0" /><span>Reçue le {formatDate(application.created_at)}</span></p></div>
+          {application.entretiens?.[0] && <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-sm text-blue-800 dark:text-blue-200"><strong>Dernier entretien:</strong> {formatDate(application.entretiens[0].scheduled_at)} · {application.entretiens[0].mode} · {application.entretiens[0].lieu}</div>}
+          <div className="mt-5 flex flex-wrap gap-2"><button onClick={() => setSelectedApplication(application)} className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600"><Eye className="w-4 h-4" />Dossier</button>{application.statut !== 'Acceptée' && application.statut !== 'Refusée' && <><button onClick={() => setInterviewApplication(application)} className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Calendar className="w-4 h-4" />Entretien</button><button onClick={() => { setRecruitmentApplication(application); setSelectedJobId('') }} className="inline-flex items-center gap-1 px-3 py-2 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"><CheckCircle2 className="w-4 h-4" />Recruter</button><button onClick={() => void reject(application)} className="p-2 text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/30 rounded-lg hover:bg-red-200"><XCircle className="w-4 h-4" /></button></>}</div>
+        </article>)}
+        {filteredApplications.length === 0 && <p className="col-span-full text-center py-12 text-slate-600 dark:text-slate-400">Aucune candidature réelle ne correspond à cette recherche.</p>}
       </div>
 
-      {showEntretienModal && selectedCandidat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white">Planifier un entretien</h3>
-              <button onClick={() => setShowEntretienModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6" /></button>
-            </div>
-            <form onSubmit={handleConfirmEntretien} className="p-6 space-y-4">
-              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedCandidat.prenom} {selectedCandidat.nom}</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Postule pour: {selectedCandidat.poste_postule}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Date *</label>
-                  <input type="date" value={entretienData.date} onChange={(e) => setEntretienData({...entretienData, date: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Heure *</label>
-                  <input type="time" value={entretienData.heure} onChange={(e) => setEntretienData({...entretienData, heure: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type d'entretien *</label>
-                <select value={entretienData.type} onChange={(e) => setEntretienData({...entretienData, type: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                  <option value="Visio">Visioconference</option>
-                  <option value="Presentiel">Presentiel</option>
-                  <option value="Telephonique">Telephonique</option>
-                </select>
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={() => setShowEntretienModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700">Planifier</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {selectedApplication && <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 rounded-lg shadow-2xl"><header className="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700"><div><h3 className="font-bold text-slate-800 dark:text-white">Dossier #{selectedApplication.id_postulation}</h3><p className="text-sm text-slate-500">{selectedApplication.offre.titre}</p></div><button onClick={() => setSelectedApplication(null)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5" /></button></header><div className="p-5 space-y-5"><section><h4 className="font-semibold text-slate-800 dark:text-white mb-2">Candidat</h4><p className="text-slate-600 dark:text-slate-300">{selectedApplication.candidat.prenom} {selectedApplication.candidat.post_nom} {selectedApplication.candidat.nom}</p><p className="flex gap-2 mt-1 text-sm text-slate-600 dark:text-slate-300"><Mail className="w-4 h-4" />{selectedApplication.candidat.email}</p></section><section><h4 className="font-semibold text-slate-800 dark:text-white mb-2">Lettre de motivation</h4><p className="whitespace-pre-wrap text-slate-600 dark:text-slate-300">{selectedApplication.lettre}</p></section><section><h4 className="font-semibold text-slate-800 dark:text-white mb-2">CV</h4><p className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300"><FileText className="w-4 h-4" />Document reçu et stocké de façon privée.</p></section><section><h4 className="font-semibold text-slate-800 dark:text-white mb-2">Historique</h4>{selectedApplication.entretiens.length === 0 ? <p className="text-sm text-slate-500">Aucun entretien planifié.</p> : <ul className="space-y-2">{selectedApplication.entretiens.map((interview) => <li key={interview.id_entretien} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-700 text-sm">{formatDate(interview.scheduled_at)} · {interview.mode} · {interview.lieu} · {interview.statut}</li>)}</ul>}</section></div></div></div>}
 
-      {showValidationModal && selectedCandidat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white">Valider le candidat</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{selectedCandidat.prenom} {selectedCandidat.nom} - {selectedCandidat.poste_postule}</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedCandidat.prenom} {selectedCandidat.nom}</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{selectedCandidat.email}</p>
-                <p className="text-sm text-slate-600 dark:text-slate-400">{selectedCandidat.telephone}</p>
-              </div>
+      {interviewApplication && <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><form onSubmit={scheduleInterview} className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-lg shadow-2xl"><header className="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700"><div><h3 className="font-bold text-slate-800 dark:text-white">Planifier un entretien</h3><p className="text-sm text-slate-500">{interviewApplication.candidat.prenom} {interviewApplication.candidat.nom} · {interviewApplication.offre.titre}</p></div><button type="button" onClick={() => setInterviewApplication(null)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5" /></button></header><div className="p-5 space-y-4"><div><label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Date et heure *</label><input type="datetime-local" value={interviewData.scheduled_at} onChange={(event) => setInterviewData({ ...interviewData, scheduled_at: event.target.value })} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" required /></div><div><label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Mode *</label><select value={interviewData.mode} onChange={(event) => setInterviewData({ ...interviewData, mode: event.target.value as typeof interviewData.mode })} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600"><option>Visioconférence</option><option>Présentiel</option><option>Téléphonique</option></select></div><div><label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Lieu ou lien de réunion *</label><input value={interviewData.lieu} onChange={(event) => setInterviewData({ ...interviewData, lieu: event.target.value })} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600" required /></div><div><label className="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">Note de préparation</label><textarea value={interviewData.note} onChange={(event) => setInterviewData({ ...interviewData, note: event.target.value })} rows={3} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 resize-none" /></div></div><footer className="p-5 border-t border-slate-200 dark:border-slate-700 flex gap-3"><button type="button" onClick={() => setInterviewApplication(null)} className="flex-1 p-3 rounded-lg bg-slate-100 dark:bg-slate-700">Annuler</button><button type="submit" className="flex-1 p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enregistrer</button></footer></form></div>}
 
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mot de passe genere</label>
-                <div className="flex items-center space-x-2">
-                  <input type="text" value={generatedPassword} readOnly className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl font-mono" />
-                  <button onClick={generatePassword} className="px-4 py-3 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-xl hover:bg-amber-200">
-                    <Key className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Attribuer un role *</label>
-                <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                  <option value="employe">Employe</option>
-                  <option value="rh">Ressources Humaines</option>
-                  <option value="manager">Manager</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Selectionner un poste disponible *</label>
-                <select value={selectedPoste} onChange={(e) => setSelectedPoste(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                  <option value="">-- Choisir un poste --</option>
-                  {postesDisponibles.filter(p => p.disponibles > 0).map(poste => (
-                    <option key={poste.id} value={poste.titre}>
-                      {poste.titre} ({poste.disponibles} disponible(s))
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Seuls les postes avec des places disponibles sont affiches.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                <UserCheck className="w-5 h-5 text-green-600" />
-                <span className="text-sm text-green-700 dark:text-green-300">Le candidat recevra un email avec ses identifiants</span>
-              </div>
-            </div>
-            <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex space-x-3">
-              <button onClick={() => setShowValidationModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-              <button onClick={handleConfirmValidation} className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700">Confirmer la validation</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {recruitmentApplication && <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"><div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-lg shadow-2xl"><header className="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700"><div><h3 className="font-bold text-slate-800 dark:text-white">Confirmer le recrutement</h3><p className="text-sm text-slate-500">{recruitmentApplication.candidat.prenom} {recruitmentApplication.candidat.nom}</p></div><button onClick={() => setRecruitmentApplication(null)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X className="w-5 h-5" /></button></header><div className="p-5 space-y-4"><p className="text-sm text-slate-600 dark:text-slate-300">Attribuez un poste vacant réel de l’entreprise. Cette action crée le compte employé et marque le poste comme occupé.</p><select value={selectedJobId} onChange={(event) => setSelectedJobId(event.target.value)} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600"><option value="">Choisir un poste vacant</option>{vacantJobs.map((job) => <option key={job.id_poste} value={job.id_poste}>{job.titre_poste}</option>)}</select>{vacantJobs.length === 0 && <p className="text-sm text-red-600 dark:text-red-300">Aucun poste vacant n’est disponible.</p>}</div><footer className="p-5 border-t border-slate-200 dark:border-slate-700 flex gap-3"><button onClick={() => setRecruitmentApplication(null)} className="flex-1 p-3 rounded-lg bg-slate-100 dark:bg-slate-700">Annuler</button><button onClick={() => void recruit()} disabled={!selectedJobId} className="flex-1 p-3 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50">Recruter</button></footer></div></div>}
     </div>
   )
 }

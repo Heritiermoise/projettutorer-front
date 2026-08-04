@@ -237,12 +237,14 @@ export interface Postulation {
 
 export interface Entretien {
   id: number;
-  date: string;
-  heure: string;
-  type: string;
-  resultat?: string;
+  lieu: string;
+  scheduled_at: string;
+  mode: 'Visioconférence' | 'Présentiel' | 'Téléphonique';
+  note?: string;
+  statut?: 'Planifié' | 'Confirmé' | 'Terminé' | 'Annulé';
   id_candidat?: number;
   id_offre?: number;
+  id_postulation?: number;
   id_entreprise?: number;
 }
 
@@ -994,22 +996,22 @@ export const postulationAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const entretienAPI = {
   getAll: async () => {
-    return await apiRequest('/entretiens');
+    return await apiRequest('/rh/entretiens');
   },
 
   getById: async (id: number) => {
-    return await apiRequest(`/entretiens/${id}`);
+    return await apiRequest(`/rh/entretiens/${id}`);
   },
 
   create: async (data: Partial<Entretien>) => {
-    return await apiRequest('/entretiens', {
+    return await apiRequest('/rh/entretiens', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   update: async (id: number, data: Partial<Entretien>) => {
-    return await apiRequest(`/entretiens/${id}`, {
+    return await apiRequest(`/rh/entretiens/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
