@@ -12,6 +12,7 @@ import { AdminDashboard } from './pages/dashboards/AdminDashboard'
 import { DirecteurDashboard } from './pages/dashboards/DirecteurDashboard'
 import { RHDashboard } from './pages/dashboards/RHDashboard'
 import { EmployeDashboard } from './pages/dashboards/EmployeDashboard'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { ChatWidget } from './components/chat/ChatWidget'
 import { loadDashboardContext } from './services/dashboardData'
 
@@ -38,6 +39,7 @@ function App() {
         <Route path="/dashboard/rh/*" element={<RHDashboard />} />
         <Route path="/dashboard/employe/*" element={<EmployeDashboard />} />
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       
       {/* Assistant virtuel flottant - visible sur toutes les pages */}

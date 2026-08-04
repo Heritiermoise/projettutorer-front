@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { PublicNavbar } from '../components/PublicNavbar'
 import { Link } from 'react-router-dom'
 import { Building2, Users, Briefcase, ArrowRight, CheckCircle2, Sparkles, Crown, Star, Zap, Shield, Calendar, MapPin } from 'lucide-react'
+import { API_BASE_URL } from '../config/api'
 
 export const HomePage = () => {
   const [offres, setOffres] = useState([])
@@ -26,9 +27,7 @@ export const HomePage = () => {
       try {
         setLoading(true)
 
-        const rawBase = import.meta.env.VITE_API_BASE_URL || 'https://rhmanager-877l.onrender.com'
-        const cleanBase = rawBase.replace(/\/+$/, '')
-        const apiBase = cleanBase.toLowerCase().endsWith('/api') ? cleanBase : `${cleanBase}/api`
+        const apiBase = API_BASE_URL
 
         // 1. Récupération des dernières offres d'emploi
         const responseOffres = await fetch(`${apiBase}/offres-accueil`)

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
-import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, Download, UserPlus, Grid, List, Loader2, RefreshCw, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react'
-import { loadDashboardContext } from '../../services/dashboardData'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
+import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, UserPlus, Grid, List, Loader2, RefreshCw, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react'
+import { clearDashboardContextCache, loadDashboardContext } from '../../services/dashboardData'
 import { membreAPI, posteAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
 
@@ -11,13 +11,41 @@ const ROLES_OPTIONS = [
 ] as const
 
 type CredentialsModalState = {
-  status: 'success' | 'warning'
+  status: 'pending' | 'success' | 'warning'
   prenom: string
   nom: string
   email: string
   password: string
   matricule: string
   message?: string
+}
+
+const getResponseValue = (source: any, keys: string[]) => {
+  for (const key of keys) {
+    if (source && source[key]) return source[key]
+    if (source?.data && source.data[key]) return source.data[key]
+    if (source?.credentials && source.credentials[key]) return source.credentials[key]
+    if (source?.employe && source.employe[key]) return source.employe[key]
+    if (source?.membre && source.membre[key]) return source.membre[key]
+  }
+  return undefined
+}
+
+const inferEmailSent = (source: any): boolean | undefined => {
+  const explicit = source?.mail?.sent ?? source?.data?.mail?.sent ?? getResponseValue(source, ['email_sent', 'mail_sent', 'emailSent', 'mailSent'])
+  if (typeof explicit === 'boolean') return explicit
+
+  const emailStatus = String(getResponseValue(source, ['email_status', 'mail_status', 'status_email']) || '').toLowerCase()
+  if (emailStatus) {
+    if (['sent', 'envoye', 'envoyé', 'ok', 'success', 'succeeded'].some((flag) => emailStatus.includes(flag))) return true
+    if (['failed', 'error', 'erreur', 'echec', 'échec', 'not_sent', 'non_envoye', 'non envoyé'].some((flag) => emailStatus.includes(flag))) return false
+  }
+
+  const message = String(source?.message || source?.data?.message || '').toLowerCase()
+  if (/email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)) return false
+  if (/email|mail/.test(message) && /envoye|envoyé|sent/.test(message)) return true
+
+  return undefined
 }
 
 export const DirecteurMembresPage = () => {
@@ -35,6 +63,7 @@ export const DirecteurMembresPage = () => {
   // État pour afficher les identifiants de connexion (succès complet ou création partielle)
   const [createdCredentials, setCreatedCredentials] = useState<CredentialsModalState | null>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const welcomeEmailsInProgress = useRef(new Set<string>())
   
   // Formulaire d'ajout direct de l'employé
   const [createForm, setCreateForm] = useState({
@@ -50,13 +79,13 @@ export const DirecteurMembresPage = () => {
   const [availablePostes, setAvailablePostes] = useState<any[]>([])
 
   // Charger les données initiales (avec option pour masquer le loader bloquant lors du polling)
-  const loadData = useCallback(async (isBackground = false) => {
+  const loadData = useCallback(async (isBackground = false, forceRefresh = false) => {
     if (isBackground) {
       setIsRefreshing(true)
     }
 
     try {
-      const context = await loadDashboardContext()
+      const context = await loadDashboardContext(forceRefresh)
       setDashboardData(context)
     } catch (error) {
       console.error('❌ Erreur chargement dashboard :', error)
@@ -78,10 +107,10 @@ export const DirecteurMembresPage = () => {
 
   // Chargement initial + Polling automatique toutes les 60 secondes
   useEffect(() => {
-    loadData(false)
+    loadData(false, false)
 
     const intervalId = setInterval(() => {
-      loadData(true) // Actualisation discrète en arrière-plan
+      loadData(true, true) // Actualisation discrète en arrière-plan (forcée)
     }, 60000)
 
     return () => clearInterval(intervalId)
@@ -127,10 +156,16 @@ export const DirecteurMembresPage = () => {
   const posteIdsSet = useMemo(() => new Set(postes.map((p: any) => Number(p.id_poste))), [postes])
 
   // 3. Liste brute des employés et filtrage strict
-  const rawEmployes = dashboardData?.employes || []
+  const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData?.employes])
 
   const employes = useMemo(() => {
     if (!rawEmployes || rawEmployes.length === 0) return []
+
+    // Fallback: si les postes n'ont pas encore chargé, on n'élimine pas toute la liste.
+    if (posteIdsSet.size === 0) {
+      return rawEmployes
+    }
+
     return rawEmployes.filter((emp: any) => {
       if (!emp.id_poste) return false
       return posteIdsSet.has(Number(emp.id_poste))
@@ -176,34 +211,7 @@ export const DirecteurMembresPage = () => {
     ].join('\n')
   }
 
-  const getResponseValue = (source: any, keys: string[]) => {
-    for (const key of keys) {
-      if (source && source[key]) return source[key]
-      if (source?.data && source.data[key]) return source.data[key]
-      if (source?.employe && source.employe[key]) return source.employe[key]
-      if (source?.membre && source.membre[key]) return source.membre[key]
-    }
-    return undefined
-  }
-
-  const inferEmailSent = (source: any): boolean | undefined => {
-    const explicit = getResponseValue(source, ['email_sent', 'mail_sent', 'emailSent', 'mailSent'])
-    if (typeof explicit === 'boolean') return explicit
-
-    const emailStatus = String(getResponseValue(source, ['email_status', 'mail_status', 'status_email']) || '').toLowerCase()
-    if (emailStatus) {
-      if (['sent', 'envoye', 'envoyé', 'ok', 'success', 'succeeded'].some((flag) => emailStatus.includes(flag))) return true
-      if (['failed', 'error', 'erreur', 'echec', 'échec', 'not_sent', 'non_envoye', 'non envoyé'].some((flag) => emailStatus.includes(flag))) return false
-    }
-
-    const message = String(source?.message || source?.data?.message || '').toLowerCase()
-    if (/email|mail/.test(message) && /non envoye|non envoyé|echec|échec|failed|impossible|n'a pas pu/.test(message)) return false
-    if (/email|mail/.test(message) && /envoye|envoyé|sent/.test(message)) return true
-
-    return undefined
-  }
-
-  const buildCredentialsFromSource = (source: any, status: 'success' | 'warning'): CredentialsModalState => {
+  const buildCredentialsFromSource = (source: any, status: CredentialsModalState['status']): CredentialsModalState => {
     const anneeCourante = new Date().getFullYear()
     const fallbackPassword = createForm.nom
       ? `${createForm.nom.charAt(0).toUpperCase()}${createForm.nom.slice(1).toLowerCase()}@${anneeCourante}`
@@ -233,6 +241,46 @@ export const DirecteurMembresPage = () => {
     return emailFailure && likelyCreated ? payload : null
   }
 
+  const isLikelyNetworkFailure = (error: any) => {
+    const message = String(error?.message || '').toLowerCase()
+    return message.includes('failed to fetch') || message.includes('networkerror') || message.includes('network error')
+  }
+
+  useEffect(() => {
+    const credentials = createdCredentials
+    if (!credentials || credentials.status !== 'pending' || welcomeEmailsInProgress.current.has(credentials.matricule)) return
+
+    welcomeEmailsInProgress.current.add(credentials.matricule)
+
+    const sendAfterCredentialsAreVisible = async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      })
+
+      try {
+        const response = await membreAPI.sendWelcomeEmail(credentials.matricule, credentials.password)
+        const emailSent = inferEmailSent(response) !== false
+        setCreatedCredentials((current) => current?.matricule === credentials.matricule
+          ? { ...current, status: emailSent ? 'success' : 'warning', message: response?.message }
+          : current)
+        setSuccessMsg(emailSent
+          ? `Membre créé et identifiants envoyés à ${credentials.email}.`
+          : 'Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles.')
+        setToast(emailSent
+          ? { type: 'success', message: `Les identifiants ont été envoyés à ${credentials.email}.` }
+          : { type: 'info', message: 'Le membre est créé, mais l\'email n\'a pas pu être envoyé.' })
+      } catch (error: any) {
+        setCreatedCredentials((current) => current?.matricule === credentials.matricule
+          ? { ...current, status: 'warning', message: error?.message }
+          : current)
+        setSuccessMsg('Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles.')
+        setToast({ type: 'info', message: 'Le membre est créé, mais l\'email n\'a pas pu être envoyé.' })
+      }
+    }
+
+    void sendAfterCredentialsAreVisible()
+  }, [createdCredentials])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSuccessMsg(null)
@@ -254,9 +302,16 @@ export const DirecteurMembresPage = () => {
       
       setShowCreateModal(false)
 
-      const emailSent = inferEmailSent(response)
-      const modalStatus: 'success' | 'warning' = emailSent === false ? 'warning' : 'success'
-      setCreatedCredentials(buildCredentialsFromSource(response, modalStatus))
+      setCreatedCredentials(buildCredentialsFromSource(response, 'pending'))
+
+      const createdEmploye = response?.employe || response?.data?.employe
+      if (createdEmploye) {
+        setDashboardData((current: any) => {
+          const currentEmployes = current?.employes || []
+          const withoutCreatedMember = currentEmployes.filter((employe: any) => employe.matricule !== createdEmploye.matricule)
+          return { ...current, employes: [...withoutCreatedMember, createdEmploye] }
+        })
+      }
 
       setCreateForm({
         prenom: '',
@@ -269,15 +324,9 @@ export const DirecteurMembresPage = () => {
       })
       
       // 🔄 Rechargement immédiat et silencieux des données après enregistrement réussi
-      await loadData(true)
-      setSuccessMsg(emailSent === false
-        ? 'Membre créé, mais l\'email n\'a pas pu être envoyé. Les identifiants restent visibles ci-dessous.'
-        : `Membre créé avec succès. Les identifiants ont été envoyés à ${createForm.email}.`)
-      if (emailSent === false) {
-        setToast({ type: 'info', message: 'Membre créé, mais l\'email automatique n\'a pas pu être envoyé.' })
-      } else {
-        setToast({ type: 'success', message: `Membre créé. Les identifiants ont été envoyés à ${createForm.email}.` })
-      }
+      clearDashboardContextCache()
+      void loadData(true, true)
+      setSuccessMsg('Membre créé avec succès. Les informations sont actualisées et l\'envoi de l\'email est en cours.')
     } catch (err: any) {
       console.error(err)
       const partialPayload = detectPartialCreationError(err)
@@ -285,7 +334,40 @@ export const DirecteurMembresPage = () => {
         setShowCreateModal(false)
         setCreatedCredentials(buildCredentialsFromSource(partialPayload, 'warning'))
         setToast({ type: 'info', message: 'Le membre est créé, mais l\'email n\'a pas pu être envoyé. Copiez les identifiants manuellement.' })
-        await loadData(true)
+        clearDashboardContextCache()
+        void loadData(true, true)
+      } else if (isLikelyNetworkFailure(err)) {
+        // Le backend peut avoir créé le membre même si la réponse est bloquée (ex: CORS/proxy).
+        clearDashboardContextCache()
+        const freshContext = await loadDashboardContext(true).catch(() => null)
+        const refreshedEmployes = freshContext?.employes || []
+        const existing = refreshedEmployes.find((emp: any) => String(emp?.email || '').toLowerCase() === String(createForm.email || '').toLowerCase())
+
+        if (existing) {
+          setShowCreateModal(false)
+          setCreatedCredentials(buildCredentialsFromSource({
+            employe: existing,
+            email: existing.email,
+            prenom: existing.prenom,
+            nom: existing.nom,
+            matricule: existing.matricule,
+            message: 'Membre détecté dans la base après erreur réseau. Vérifiez l\'envoi du mail.',
+          }, 'warning'))
+          setToast({ type: 'info', message: 'Création confirmée en base, mais réponse réseau incomplète. Vérifiez l\'email et partagez les accès si nécessaire.' })
+          setSuccessMsg('Le membre est bien présent en base. Le retour API a échoué côté réseau, mais les informations sont disponibles.')
+          setCreateForm({
+            prenom: '',
+            nom: '',
+            sexe: '',
+            email: '',
+            telephone: '',
+            poste_id: '',
+            role_name: 'employe',
+          })
+          setDashboardData(freshContext)
+        } else {
+          setToast({ type: 'error', message: err?.payload?.message || err?.response?.data?.message || err?.message || 'Erreur réseau lors de la création de l\'employé.' })
+        }
       } else {
         setToast({ type: 'error', message: err?.payload?.message || err?.response?.data?.message || err?.message || 'Erreur lors de la création de l\'employé.' })
       }
@@ -474,17 +556,19 @@ export const DirecteurMembresPage = () => {
       {/* Modal des identifiants et statut d'envoi email */}
       {createdCredentials && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 backdrop-blur-md p-4">
-          <div className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 space-y-5 border ${createdCredentials.status === 'warning' ? 'border-amber-300 dark:border-amber-700/50' : 'border-emerald-200 dark:border-emerald-800/50'}`}>
+          <div className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 space-y-5 border ${createdCredentials.status === 'warning' ? 'border-amber-300 dark:border-amber-700/50' : createdCredentials.status === 'pending' ? 'border-blue-200 dark:border-blue-800/50' : 'border-emerald-200 dark:border-emerald-800/50'}`}>
             <div className="flex items-start gap-3">
-              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${createdCredentials.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'}`}>
-                {createdCredentials.status === 'warning' ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${createdCredentials.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : createdCredentials.status === 'pending' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'}`}>
+                {createdCredentials.status === 'warning' ? <AlertTriangle className="w-5 h-5" /> : createdCredentials.status === 'pending' ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
               </div>
               <div className="flex-1">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">Identifiants du nouveau membre</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
                   {createdCredentials.status === 'warning'
                     ? 'Le compte est créé, mais l\'envoi de l\'email a échoué. Transmettez les accès manuellement.'
-                    : `Compte créé avec succès. Les identifiants ont été envoyés à ${createdCredentials.email}.`}
+                    : createdCredentials.status === 'pending'
+                      ? 'Compte créé. Vérifiez les informations ci-dessous pendant l\'envoi de l\'email.'
+                      : `Compte créé avec succès. Les identifiants ont été envoyés à ${createdCredentials.email}.`}
                 </p>
               </div>
               <button
@@ -537,11 +621,13 @@ export const DirecteurMembresPage = () => {
               </div>
             </div>
 
-            <div className={`p-3 rounded-xl border ${createdCredentials.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/40' : 'bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/40'}`}>
-              <p className={`text-xs leading-relaxed ${createdCredentials.status === 'warning' ? 'text-amber-800 dark:text-amber-200' : 'text-emerald-800 dark:text-emerald-200'}`}>
+            <div className={`p-3 rounded-xl border ${createdCredentials.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/25 border-amber-200 dark:border-amber-800/40' : createdCredentials.status === 'pending' ? 'bg-blue-50 dark:bg-blue-950/25 border-blue-200 dark:border-blue-800/40' : 'bg-emerald-50 dark:bg-emerald-950/25 border-emerald-200 dark:border-emerald-800/40'}`}>
+              <p className={`text-xs leading-relaxed ${createdCredentials.status === 'warning' ? 'text-amber-800 dark:text-amber-200' : createdCredentials.status === 'pending' ? 'text-blue-800 dark:text-blue-200' : 'text-emerald-800 dark:text-emerald-200'}`}>
                 {createdCredentials.status === 'warning'
                   ? 'Alerte email: l\'utilisateur n\'a pas reçu automatiquement son lien de connexion. Partagez ces identifiants de façon sécurisée et demandez-lui d\'utiliser la procédure de première connexion.'
-                  : 'Un lien de connexion a été envoyé par email à cette adresse. Vous pouvez également copier les accès ci-dessous en cas de besoin.'}
+                  : createdCredentials.status === 'pending'
+                    ? 'Les informations sont déjà affichées et restent copiables. Envoi de l\'email à l\'employé en cours...'
+                    : 'Un lien de connexion a été envoyé par email à cette adresse. Vous pouvez également copier les accès ci-dessous en cas de besoin.'}
               </p>
             </div>
 

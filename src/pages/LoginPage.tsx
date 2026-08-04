@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Toast } from '../components/ui/Toast'
+import { API_BASE_URL } from '../config/api'
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -23,11 +24,7 @@ export const LoginPage = () => {
   const { login } = useAuth()
 
   // Résolution et nettoyage dynamique de l'URL de l'API
-  const API_URL = useMemo(() => {
-    const rawUrl = import.meta.env.VITE_API_BASE_URL || 'https://rhmanager-877l.onrender.com';
-    const cleanRaw = rawUrl.replace(/\/+$/, '');
-    return cleanRaw.toLowerCase().endsWith('/api') ? cleanRaw : `${cleanRaw}/api`;
-  }, [])
+  const API_URL = useMemo(() => API_BASE_URL, [])
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('registered') === '1') {
