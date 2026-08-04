@@ -140,22 +140,18 @@ export const OffreDetailPage = () => {
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{offre.description}</p>
             </div>
 
-            {offre.experience_requise && offre.competences_requises && <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Profil recherché</h2>
-              <ul className="space-y-3">
-                {[offre.experience_requise, offre.competences_requises].map((item: string, i: number) => (
-                  <li key={i} className="flex items-start space-x-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-600 dark:text-slate-300">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>}
+              <div className="space-y-5">
+                <div><h3 className="font-semibold text-slate-800 dark:text-white mb-2">Expérience requise</h3><p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{offre.experience_requise || 'Non précisée'}</p></div>
+                <div><h3 className="font-semibold text-slate-800 dark:text-white mb-2">Compétences attendues</h3><p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{offre.competences_requises || 'Non précisées'}</p></div>
+              </div>
+            </div>
 
-            {offre.avantages && <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">Avantages</h2>
-              <p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{offre.avantages}</p>
-            </div>}
+              <p className="text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{offre.avantages || 'Aucun avantage précisé.'}</p>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -190,6 +186,16 @@ export const OffreDetailPage = () => {
               >
                 Postuler maintenant
               </button>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Informations essentielles</h3>
+              <dl className="space-y-4 text-sm">
+                <div><dt className="text-slate-500 dark:text-slate-400">Type de contrat</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.type_contrat || 'Non précisé'}</dd></div>
+                <div><dt className="text-slate-500 dark:text-slate-400">Lieu de travail</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.localisation || 'Non précisé'}</dd></div>
+                <div><dt className="text-slate-500 dark:text-slate-400">Rémunération</dt><dd className="mt-1 font-semibold text-emerald-700 dark:text-emerald-300">{offre.salaire_base !== null && offre.salaire_base !== undefined ? `$${Number(offre.salaire_base).toLocaleString('en-US')}` : 'À négocier'}</dd></div>
+                <div><dt className="text-slate-500 dark:text-slate-400">Date limite de candidature</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.date_limite || 'Non précisée'}</dd></div>
+              </dl>
             </div>
 
             <div className="bg-warm-50 dark:bg-warm-900/20 border border-warm-200 dark:border-warm-800 rounded-2xl p-6">
