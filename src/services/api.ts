@@ -184,13 +184,30 @@ export interface Candidat {
 }
 
 export interface FichePaie {
-  id: number;
+  id_paie: number;
   matricule: string;
   mois_paiement: string;
   annee_paiement: string;
   montant: number;
   statut: string;
+  salaire_base?: number;
+  avance_deduite?: number;
+  validee_at?: string | null;
+  employe?: Pick<Employe, 'matricule' | 'nom' | 'prenom'>;
   id_entreprise?: number;
+}
+
+export interface DemandeAvancePaie {
+  id: number;
+  matricule: string;
+  montant: number;
+  motif: string;
+  mois_paiement: number;
+  annee_paiement: number;
+  statut: 'En attente' | 'Approuvée' | 'Refusée';
+  commentaire_rh?: string | null;
+  created_at: string;
+  employe?: Pick<Employe, 'matricule' | 'nom' | 'prenom'>;
 }
 
 export interface Avantage {
@@ -697,21 +714,10 @@ export const offreAPI = {
 
   postuler: async (offreId: number, candidatureData: FormData | Record<string, any>) => {
     if (candidatureData instanceof FormData) {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildUrl(`/offres/${offreId}/postuler`), {
+      return await requestJson(`/offres/${offreId}/postuler`, {
         method: 'POST',
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          Accept: 'application/json',
-        },
         body: candidatureData,
       });
-
-      if (!response.ok) {
-        throw await normalizeResponseError(response);
-      }
-
-      return await response.json();
     }
 
     return await apiRequest(`/offres/${offreId}/postuler`, {
@@ -780,27 +786,40 @@ export const fichesPaieAPI = {
     return await apiRequest('/rh/fiches_paies');
   },
 
-  getById: async (id: number) => {
-    return await apiRequest(`/rh/fiches_paies/${id}`);
-  },
-
-  create: async (data: Partial<FichePaie>) => {
-    return await apiRequest('/rh/fiches_paies', {
+  generate: async (mois: number, annee: number) => {
+    return await apiRequest('/rh/fiches_paies/generer', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ mois, annee }),
     });
   },
 
-  update: async (id: number, data: Partial<FichePaie>) => {
-    return await apiRequest(`/rh/fiches_paies/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
+  validate: async (id: number) => {
+    return await apiRequest(`/rh/fiches_paies/valider/${id}`, {
+      method: 'POST',
     });
   },
 
-  delete: async (id: number) => {
-    return await apiRequest(`/rh/fiches_paies/${id}`, {
-      method: 'DELETE',
+  getMine: async () => {
+    return await apiRequest('/mon-espace/mes-paies');
+  },
+};
+
+export const avancesPaieAPI = {
+  getAll: async () => {
+    return await apiRequest('/rh/avances-paie');
+  },
+
+  request: async (montant: number, motif: string) => {
+    return await apiRequest('/mon-espace/avances-paie', {
+      method: 'POST',
+      body: JSON.stringify({ montant, motif }),
+    });
+  },
+
+  process: async (id: number, statut: 'Approuvée' | 'Refusée', commentaire_rh?: string) => {
+    return await apiRequest(`/rh/avances-paie/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ statut, commentaire_rh }),
     });
   },
 };

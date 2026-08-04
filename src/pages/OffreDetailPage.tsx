@@ -21,6 +21,7 @@ export const OffreDetailPage = () => {
   const [offre, setOffre] = useState<any>(null)
   const [entreprise, setEntreprise] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [applicationFeedback, setApplicationFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   useEffect(() => {
     const load = async () => {
@@ -71,12 +72,15 @@ export const OffreDetailPage = () => {
         candidatureData.append('cv', formData.cv)
       }
 
-      await offreAPI.postuler(Number(id), candidatureData)
-      alert('Votre postulation a été envoyée avec succès ! Vous serez contacté pour un entretien.')
+      const response = await offreAPI.postuler(Number(id), candidatureData)
+      setApplicationFeedback({ type: 'success', message: response.message || 'Votre candidature a été enregistrée. L’entreprise examinera votre dossier.' })
       setShowPostulationModal(false)
-      navigate('/offres')
-    } catch {
-      alert('Impossible de soumettre la candidature pour le moment.')
+      setFormData({ nom: '', post_nom: '', prenom: '', email: '', telephone: '', cv: null, lettre_motivation: '' })
+    } catch (error) {
+      setApplicationFeedback({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'La candidature n’a pas pu être envoyée. Vérifiez les informations saisies et réessayez.',
+      })
     }
   }
 
@@ -133,6 +137,10 @@ export const OffreDetailPage = () => {
 
       {/* Contenu */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {applicationFeedback && <div className={`mb-6 flex items-start justify-between gap-4 rounded-lg border p-4 ${applicationFeedback.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100' : 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100'}`} role="status">
+          <div><p className="font-semibold">{applicationFeedback.type === 'success' ? 'Candidature enregistrée' : 'Envoi impossible'}</p><p className="mt-1 text-sm">{applicationFeedback.message}</p></div>
+          <button type="button" onClick={() => setApplicationFeedback(null)} className="shrink-0 rounded-lg p-1 hover:bg-black/5" aria-label="Fermer le message"><X className="w-5 h-5" /></button>
+        </div>}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
