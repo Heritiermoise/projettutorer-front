@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Briefcase, Search, Plus, Eye, User, Mail, Phone, Calendar, FileText, X } from 'lucide-react'
-import { candidatAPI, postulationAPI, offreAPI } from '../../services/api'
+import { Briefcase, Search, Plus, Eye, User, FileText, Check, X } from 'lucide-react'
+import { candidatAPI, postulationAPI, offreAPI, posteAPI } from '../../services/api'
 
 export const RHRecrutementPage = () => {
   const [activeTab, setActiveTab] = useState<'offres' | 'candidats' | 'postulations'>('offres')
@@ -8,26 +8,66 @@ export const RHRecrutementPage = () => {
   const [offres, setOffres] = useState<any[]>([])
   const [candidats, setCandidats] = useState<any[]>([])
   const [postulations, setPostulations] = useState<any[]>([])
+  const [postes, setPostes] = useState<any[]>([])
+  const [selectedPostes, setSelectedPostes] = useState<Record<number, string>>({})
+  const [feedback, setFeedback] = useState<string | null>(null)
+
+  const loadRecruitment = async () => {
+    try {
+      const [offresResponse, candidatsResponse, postulationsResponse, postesResponse] = await Promise.all([
+        offreAPI.getForCompany(),
+        candidatAPI.getAll(),
+        postulationAPI.getAll(),
+        posteAPI.getAll(),
+      ])
+      setOffres(offresResponse.offres || [])
+      setCandidats(candidatsResponse.candidats || [])
+      setPostulations(postulationsResponse.postulations || [])
+      setPostes((postesResponse.postes || []).filter((poste: any) => poste.statut === 'Vacant'))
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de charger le recrutement.')
+      setOffres([])
+      setCandidats([])
+      setPostulations([])
+      setPostes([])
+    }
+  }
 
   useEffect(() => {
-    Promise.all([offreAPI.getAll(), candidatAPI.getAll(), postulationAPI.getAll()])
-      .then(([offresResponse, candidatsResponse, postulationsResponse]) => {
-        setOffres(offresResponse.offres || offresResponse || [])
-        setCandidats(candidatsResponse.candidats || candidatsResponse || [])
-        setPostulations(postulationsResponse.postulations || postulationsResponse || [])
-      })
-      .catch(() => {
-        setOffres([])
-        setCandidats([])
-        setPostulations([])
-      })
+    void loadRecruitment()
   }, [])
+
+  const handleRecruit = async (postulationId: number) => {
+    const posteId = Number(selectedPostes[postulationId])
+    if (!posteId) {
+      setFeedback('Sélectionnez un poste vacant avant de recruter le candidat.')
+      return
+    }
+
+    try {
+      const response = await postulationAPI.recruit(postulationId, posteId)
+      setFeedback(`Candidat recruté. Matricule attribué : ${response.matricule}`)
+      await loadRecruitment()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de recruter ce candidat.')
+    }
+  }
+
+  const handleReject = async (postulationId: number) => {
+    try {
+      await postulationAPI.reject(postulationId)
+      setFeedback('Candidature refusée.')
+      await loadRecruitment()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de refuser cette candidature.')
+    }
+  }
 
   const filteredOffres = offres.filter(o => o.titre.toLowerCase().includes(searchTerm.toLowerCase()))
   const filteredCandidats = candidats.filter(c => c.nom.toLowerCase().includes(searchTerm.toLowerCase()) || c.prenom.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const stats = {
-    offresActives: offres.filter(o => o.statut === 'Publiee').length,
+    offresActives: offres.filter(o => o.statut === 'Publiée').length,
     totalCandidats: candidats.length,
     postulations: postulations.length,
   }
@@ -44,6 +84,8 @@ export const RHRecrutementPage = () => {
           <span className="hidden sm:inline">Nouvelle offre</span>
         </button>
       </div>
+
+      {feedback && <p className="text-sm text-slate-600 dark:text-slate-300">{feedback}</p>}
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {[
@@ -134,14 +176,32 @@ export const RHRecrutementPage = () => {
                 return (
                   <div key={post.id_postulation} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold text-slate-800 dark:text-white">{candidat?.prenom} {candidat?.nom}</p>
+                      <p className="font-semibold text-slate-800 dark:text-white">{post.candidat?.prenom ?? candidat?.prenom} {post.candidat?.nom ?? candidat?.nom}</p>
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         post.statut === 'Soumise' ? 'bg-blue-100 text-blue-700' :
                         post.statut === 'En cours' ? 'bg-amber-100 text-amber-700' :
                         'bg-green-100 text-green-700'
                       }`}>{post.statut}</span>
                     </div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Postule pour: <span className="font-semibold">{offre?.titre}</span></p>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">Postule pour: <span className="font-semibold">{post.offre?.titre ?? offre?.titre}</span></p>
+                    {post.statut === 'Soumise' && (
+                      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                        <select
+                          value={selectedPostes[post.id_postulation] || ''}
+                          onChange={(event) => setSelectedPostes({ ...selectedPostes, [post.id_postulation]: event.target.value })}
+                          className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
+                        >
+                          <option value="">Choisir un poste vacant</option>
+                          {postes.map((poste) => <option key={poste.id_poste} value={poste.id_poste}>{poste.titre_poste}</option>)}
+                        </select>
+                        <button onClick={() => void handleRecruit(post.id_postulation)} className="inline-flex items-center justify-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white hover:bg-green-700">
+                          <Check className="h-4 w-4" /> Recruter
+                        </button>
+                        <button onClick={() => void handleReject(post.id_postulation)} className="inline-flex items-center justify-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700">
+                          <X className="h-4 w-4" /> Refuser
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               })}

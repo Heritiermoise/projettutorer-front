@@ -1,23 +1,66 @@
-import { useState } from 'react'
-import { Briefcase, Plus, Search, Edit, Trash2, Eye, Send, Pause, Play, TrendingUp, Users, Calendar, MapPin, DollarSign, X, CheckCircle2, AlertCircle } from 'lucide-react'
-import { mockOffresPublication } from '../../data/advancedData'
+import { useEffect, useState } from 'react'
+import { Briefcase, Plus, Search, Edit, Eye, Send, Pause, TrendingUp, Users, Calendar, MapPin, DollarSign, X, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { OffrePublication } from '../../data/advancedData'
+import { offreAPI } from '../../services/api'
+
+type OfferDisplay = Omit<OffrePublication, 'remote' | 'nombre_vues'> & { remote: string; nombre_vues: null }
 
 export const DirecteurOffresPage = () => {
-  const [offres, setOffres] = useState<OffrePublication[]>(mockOffresPublication)
+  const [offres, setOffres] = useState<OfferDisplay[]>([])
+  const [loading, setLoading] = useState(true)
+  const [feedback, setFeedback] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDetailModal, setShowDetailModal] = useState(false)
-  const [selectedOffre, setSelectedOffre] = useState<OffrePublication | null>(null)
+  const [selectedOffre, setSelectedOffre] = useState<OfferDisplay | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'draft' | 'expired'>('all')
 
   const [formData, setFormData] = useState({
-    titre: '', description: '', type_contrat: 'CDI', niveau: 'Junior',
-    departement: '', salaire_min: '', salaire_max: '', localisation: '',
-    date_expiration: '', experience_requise: '', niveau_etude: '', remote: 'Presentiel',
-    exigences: '', avantages: '', competences: ''
+    titre: '', description: '', salaire_base: '', date_expiration: ''
   })
+
+  const toDisplayOffer = (offre: any): OfferDisplay => ({
+    id: offre.id_offre,
+    poste_id: 0,
+    titre: offre.titre,
+    description: offre.description,
+    type_contrat: 'Non renseigné',
+    niveau: 'Non renseigné',
+    departement: 'Non renseigné',
+    salaire_min: Number(offre.salaire_base),
+    salaire_max: Number(offre.salaire_base),
+    localisation: 'Non renseignée',
+    remote: 'Non renseigné',
+    experience_requise: 'Non renseignée',
+    niveau_etude: 'Non renseigné',
+    date_publication: offre.created_at,
+    date_expiration: offre.date_limite,
+    statut: new Date(offre.date_limite) < new Date() ? 'Expiree' : offre.statut === 'Publiée' ? 'Publiee' : offre.statut === 'Archivée' ? 'Suspendue' : 'Brouillon',
+    nombre_vues: null,
+    nombre_candidatures: Number(offre.postulations_count ?? 0),
+    exigences: [],
+    avantages: [],
+    competences_requises: [],
+    langues: [],
+  })
+
+  const loadOffres = async () => {
+    setLoading(true)
+    try {
+      const response = await offreAPI.getForCompany()
+      setOffres((response.offres || []).map(toDisplayOffer))
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de charger les offres réelles.')
+      setOffres([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadOffres()
+  }, [])
 
   const filteredOffres = offres.filter(o => {
     const matchesSearch = o.titre.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,44 +78,44 @@ export const DirecteurOffresPage = () => {
     publiees: offres.filter(o => o.statut === 'Publiee').length,
     brouillons: offres.filter(o => o.statut === 'Brouillon').length,
     expirees: offres.filter(o => o.statut === 'Expiree').length,
-    totalVues: offres.reduce((sum, o) => sum + o.nombre_vues, 0),
     totalCandidatures: offres.reduce((sum, o) => sum + o.nombre_candidatures, 0)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newOffre: OffrePublication = {
-      id: Date.now(),
-      poste_id: 0,
-      ...formData,
-      remote: formData.remote as OffrePublication['remote'],
-      salaire_min: parseInt(formData.salaire_min),
-      salaire_max: parseInt(formData.salaire_max),
-      date_publication: new Date().toISOString().split('T')[0],
-      statut: 'Brouillon',
-      nombre_vues: 0,
-      nombre_candidatures: 0,
-      exigences: formData.exigences.split(',').map(e => e.trim()),
-      avantages: formData.avantages.split(',').map(a => a.trim()),
-      competences_requises: formData.competences.split(',').map(c => c.trim()),
-      langues: ['Francais']
+    try {
+      await offreAPI.createForCompany({
+        titre: formData.titre,
+        description: formData.description,
+        date_limite: formData.date_expiration,
+        salaire_base: Number(formData.salaire_base),
+        statut: 'Brouillon',
+      })
+      await loadOffres()
+      setFeedback('Offre créée en brouillon. Publiez-la lorsqu’elle est prête.')
+      setShowCreateModal(false)
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de créer l’offre.')
     }
-    setOffres([...offres, newOffre])
-    setShowCreateModal(false)
-    setFormData({ titre: '', description: '', type_contrat: 'CDI', niveau: 'Junior', departement: '', salaire_min: '', salaire_max: '', localisation: '', date_expiration: '', experience_requise: '', niveau_etude: '', remote: 'Presentiel', exigences: '', avantages: '', competences: '' })
   }
 
-  const handlePublish = (id: number) => {
-    setOffres(offres.map(o => o.id === id ? { ...o, statut: 'Publiee' as const, date_publication: new Date().toISOString().split('T')[0] } : o))
+  const handlePublish = async (id: number) => {
+    try {
+      await offreAPI.updateCompanyStatus(id, 'Publiée')
+      await loadOffres()
+      setFeedback('Offre publiée. Elle est maintenant visible dans l’espace public.')
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de publier l’offre.')
+    }
   }
 
-  const handleUnpublish = (id: number) => {
-    setOffres(offres.map(o => o.id === id ? { ...o, statut: 'Suspendue' as const } : o))
-  }
-
-  const handleDelete = (id: number) => {
-    if (window.confirm('Supprimer cette offre ?')) {
-      setOffres(offres.filter(o => o.id !== id))
+  const handleUnpublish = async (id: number) => {
+    try {
+      await offreAPI.updateCompanyStatus(id, 'Archivée')
+      await loadOffres()
+      setFeedback('Offre archivée: elle n’est plus accessible publiquement.')
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible d’archiver l’offre.')
     }
   }
 
@@ -106,13 +149,14 @@ export const DirecteurOffresPage = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+      {feedback && <p className="text-sm text-slate-600 dark:text-slate-300">{feedback}</p>}
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
           { label: 'Total', value: stats.total, icon: Briefcase, color: 'from-amber-500 to-orange-600' },
           { label: 'Publiees', value: stats.publiees, icon: Send, color: 'from-green-500 to-emerald-600' },
           { label: 'Brouillons', value: stats.brouillons, icon: Edit, color: 'from-slate-500 to-slate-600' },
           { label: 'Expirees', value: stats.expirees, icon: AlertCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'Vues', value: stats.totalVues, icon: Eye, color: 'from-blue-500 to-cyan-600' },
           { label: 'Candidatures', value: stats.totalCandidatures, icon: Users, color: 'from-purple-500 to-pink-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -158,7 +202,7 @@ export const DirecteurOffresPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredOffres.map(offre => (
+            {loading ? <p className="text-sm text-slate-600 dark:text-slate-400">Chargement des offres...</p> : filteredOffres.map(offre => (
               <div key={offre.id} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -199,10 +243,6 @@ export const DirecteurOffresPage = () => {
                 <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-600">
                   <div className="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
                     <span className="flex items-center space-x-1">
-                      <Eye className="w-3 h-3" />
-                      <span>{offre.nombre_vues} vues</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
                       <TrendingUp className="w-3 h-3" />
                       <span>{offre.remote}</span>
                     </span>
@@ -220,9 +260,6 @@ export const DirecteurOffresPage = () => {
                     )}
                     <button onClick={() => { setSelectedOffre(offre); setShowDetailModal(true) }} className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200">
                       <Eye className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(offre.id)} className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200">
-                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -250,79 +287,15 @@ export const DirecteurOffresPage = () => {
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description *</label>
                 <textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} rows={4} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl resize-none" required />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Type de contrat</label>
-                  <select value={formData.type_contrat} onChange={(e) => setFormData({...formData, type_contrat: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                    <option value="CDI">CDI</option>
-                    <option value="CDD">CDD</option>
-                    <option value="Stage">Stage</option>
-                    <option value="Freelance">Freelance</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Niveau</label>
-                  <select value={formData.niveau} onChange={(e) => setFormData({...formData, niveau: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                    <option value="Junior">Junior</option>
-                    <option value="Mid">Mid-Level</option>
-                    <option value="Senior">Senior</option>
-                    <option value="Manager">Manager</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mode de travail</label>
-                  <select value={formData.remote} onChange={(e) => setFormData({...formData, remote: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
-                    <option value="Presentiel">Presentiel</option>
-                    <option value="Hybride">Hybride</option>
-                    <option value="Remote">Remote</option>
-                  </select>
-                </div>
-              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Departement</label>
-                  <input type="text" value={formData.departement} onChange={(e) => setFormData({...formData, departement: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Localisation</label>
-                  <input type="text" value={formData.localisation} onChange={(e) => setFormData({...formData, localisation: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Salaire min ($)</label>
-                  <input type="number" value={formData.salaire_min} onChange={(e) => setFormData({...formData, salaire_min: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Salaire max ($)</label>
-                  <input type="number" value={formData.salaire_max} onChange={(e) => setFormData({...formData, salaire_max: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Salaire de base ($)</label>
+                  <input type="number" min="0" value={formData.salaire_base} onChange={(e) => setFormData({...formData, salaire_base: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Date expiration</label>
                   <input type="date" value={formData.date_expiration} onChange={(e) => setFormData({...formData, date_expiration: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" required />
                 </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Experience requise</label>
-                  <input type="text" value={formData.experience_requise} onChange={(e) => setFormData({...formData, experience_requise: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" placeholder="Ex: 3-5 ans" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Niveau d'etude</label>
-                  <input type="text" value={formData.niveau_etude} onChange={(e) => setFormData({...formData, niveau_etude: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" placeholder="Ex: Bac+5" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Exigences (separees par virgules)</label>
-                <input type="text" value={formData.exigences} onChange={(e) => setFormData({...formData, exigences: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" placeholder="Ex: 5 ans d'experience, Maitrise React" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Avantages (separees par virgules)</label>
-                <input type="text" value={formData.avantages} onChange={(e) => setFormData({...formData, avantages: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" placeholder="Ex: Teletravail, Mutuelle" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Competences requises (separees par virgules)</label>
-                <input type="text" value={formData.competences} onChange={(e) => setFormData({...formData, competences: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" placeholder="Ex: React, Node.js, TypeScript" />
               </div>
               <div className="flex space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-slate-800 pb-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
@@ -403,11 +376,7 @@ export const DirecteurOffresPage = () => {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedOffre.nombre_vues}</p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">Vues</p>
-                </div>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedOffre.nombre_candidatures}</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">Candidatures</p>

@@ -691,6 +691,24 @@ export const offreAPI = {
       body: JSON.stringify(candidatureData),
     });
   },
+
+  getForCompany: async () => {
+    return await apiRequest('/rh/recrutement/offres');
+  },
+
+  createForCompany: async (data: Record<string, unknown>) => {
+    return await apiRequest('/rh/recrutement/offres/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateCompanyStatus: async (id: number, statut: 'Brouillon' | 'Publiée' | 'Archivée') => {
+    return await apiRequest(`/rh/recrutement/offres/${id}/statut`, {
+      method: 'PATCH',
+      body: JSON.stringify({ statut }),
+    });
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -698,7 +716,7 @@ export const offreAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const candidatAPI = {
   getAll: async () => {
-    return await apiRequest('/candidats');
+    return await apiRequest('/rh/candidats');
   },
 
   getById: async (id: number) => {
@@ -904,7 +922,7 @@ export const presenceAPI = {
 // ═══════════════════════════════════════════════════════════════
 export const postulationAPI = {
   getAll: async () => {
-    return await apiRequest('/postulations');
+    return await apiRequest('/rh/postulations');
   },
 
   getById: async (id: number) => {
@@ -928,6 +946,19 @@ export const postulationAPI = {
   delete: async (id: number) => {
     return await apiRequest(`/postulations/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  recruit: async (id: number, idPoste: number) => {
+    return await apiRequest(`/rh/recrutement/decider/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ id_poste: idPoste }),
+    });
+  },
+
+  reject: async (id: number) => {
+    return await apiRequest(`/rh/candidat/${id}/refuser`, {
+      method: 'POST',
     });
   },
 };
