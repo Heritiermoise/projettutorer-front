@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar, Download, Fingerprint, X, RefreshCw } from 'lucide-react'
+import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar, Download, Fingerprint, X, RefreshCw, LoaderCircle } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import * as XLSX from 'xlsx'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
 
@@ -28,7 +29,9 @@ export const RHPresencesPage = () => {
   
   const [existingPresenceToday, setExistingPresenceToday] = useState<any>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -188,7 +191,9 @@ export const RHPresencesPage = () => {
         justification: ''
       })
       setExistingPresenceToday(null)
-      loadData()
+      setSuccessMsg('Pointage enregistré avec succès.')
+      window.setTimeout(() => setSuccessMsg(''), 4500)
+      await loadData()
     } catch (err: any) {
       setErrorMsg(err.message || "Erreur lors de l'enregistrement du pointage.")
     } finally {
@@ -206,6 +211,64 @@ export const RHPresencesPage = () => {
     return 'Valider l\'arrivée'
   }
 
+  const exportPresences = () => {
+    if (rawPresences.length === 0) {
+      setErrorMsg('Aucune présence réelle n’est disponible pour l’export.')
+      return
+    }
+
+    setExporting(true)
+    try {
+      const rows = [...rawPresences]
+        .sort((first: any, second: any) => String(second.date_presence).localeCompare(String(first.date_presence)))
+        .map((presence: any, index: number) => {
+          const employee = getEmployeDetails(presence.matricule)
+          return {
+            'N°': index + 1,
+            Date: presence.date_presence || '',
+            Matricule: presence.matricule || '',
+            Employé: employee ? `${employee.prenom || ''} ${employee.nom || ''}`.trim() : 'Employé non résolu',
+            Statut: presence.statut || 'Non renseigné',
+            'Heure arrivée': presence.heure_arrivee ? String(presence.heure_arrivee).slice(0, 5) : '',
+            'Heure départ': presence.heure_depart ? String(presence.heure_depart).slice(0, 5) : '',
+            Justification: presence.justification || '',
+          }
+        })
+      const summary = [
+        ['RAPPORT DE PRÉSENCE RH'],
+        ['Données vérifiables de l’entreprise'],
+        [],
+        ['Généré le', new Date().toLocaleString('fr-FR')],
+        ['Total des pointages', stats.total],
+        ['Présents', stats.presents],
+        ['Retards', stats.retards],
+        ['Absents', stats.absents],
+        [],
+        ['Contrôle', 'Valeur'],
+        ['Période couverte', `${rows.at(-1)?.Date || '—'} au ${rows.at(0)?.Date || '—'}`],
+        ['Source', 'API RH / présences de votre entreprise'],
+      ]
+      const workbook = XLSX.utils.book_new()
+      const summarySheet = XLSX.utils.aoa_to_sheet(summary)
+      summarySheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } }]
+      summarySheet['!cols'] = [{ wch: 28 }, { wch: 34 }, { wch: 18 }]
+      const detailSheet = XLSX.utils.json_to_sheet(rows)
+      detailSheet['!freeze'] = { xSplit: 0, ySplit: 1 }
+      detailSheet['!autofilter'] = { ref: `A1:H${rows.length + 1}` }
+      detailSheet['!cols'] = [{ wch: 7 }, { wch: 14 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 46 }]
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Synthèse')
+      XLSX.utils.book_append_sheet(workbook, detailSheet, 'Présences détaillées')
+      XLSX.writeFile(workbook, `presences-rh-${new Date().toISOString().slice(0, 10)}.xlsx`)
+      setSuccessMsg(`${rows.length} pointage(s) réel(s) ont été exportés dans Excel.`)
+      window.setTimeout(() => setSuccessMsg(''), 4500)
+    } catch (error) {
+      console.error('Erreur export Excel :', error)
+      setErrorMsg('L’export Excel n’a pas pu être généré.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="space-y-6 pb-12 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -221,9 +284,9 @@ export const RHPresencesPage = () => {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
-          <button className="flex items-center space-x-2 px-3.5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-all shadow-sm">
-            <Download className="w-4 h-4 text-slate-400" />
-            <span className="hidden sm:inline">Exporter</span>
+          <button onClick={exportPresences} disabled={exporting || loading} className="flex items-center space-x-2 px-3.5 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
+            {exporting ? <LoaderCircle className="w-4 h-4 animate-spin text-indigo-500" /> : <Download className="w-4 h-4 text-slate-400" />}
+            <span className="hidden sm:inline">{exporting ? 'Export...' : 'Exporter Excel'}</span>
           </button>
           <button 
             onClick={() => {
@@ -248,6 +311,8 @@ export const RHPresencesPage = () => {
           </button>
         </div>
       </div>
+
+      {successMsg && <div className="fixed right-5 top-5 z-[70] max-w-sm rounded-2xl border border-white/40 bg-emerald-500/20 px-4 py-3 text-sm font-medium text-emerald-950 shadow-xl shadow-emerald-950/20 backdrop-blur-xl dark:border-emerald-300/20 dark:bg-emerald-400/15 dark:text-emerald-100"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 shrink-0" />{successMsg}</div></div>}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -459,7 +524,7 @@ export const RHPresencesPage = () => {
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors">Annuler</button>
                 <button type="submit" disabled={submitting || !formData.matricule} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/25 transition-all disabled:opacity-50 flex items-center space-x-2">
-                  <Fingerprint className="w-4 h-4" />
+                  {submitting ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
                   <span>{getSubmitButtonLabel()}</span>
                 </button>
               </div>

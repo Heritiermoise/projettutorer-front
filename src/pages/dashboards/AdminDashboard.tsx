@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, Building2, Users, Shield, Server, Settings,
   LogOut, Menu, X, Moon, Sun, Search, Bell, Eye
 } from 'lucide-react'
 import { NotificationBell } from '../../components/NotificationBell'
-import { adminNotifications } from '../../data/notifications'
+import { notificationAPI } from '../../services/api'
 import { AdminEntreprisesPage } from './AdminEntreprisesPage'
 import { AdminUsersPage } from './AdminUsersPage'
 import { AdminSecurityPage } from './AdminSecurityPage'
@@ -16,7 +16,7 @@ import { AdminNotificationsPage } from './AdminNotificationsPage'
 export const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
-  const [notifications, setNotifications] = useState(adminNotifications)
+  const [notifications, setNotifications] = useState<any[]>([])
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -25,16 +25,38 @@ export const AdminDashboard = () => {
     document.documentElement.classList.toggle('dark')
   }
 
+  const loadNotifications = useCallback(async () => {
+    try {
+      const response = await notificationAPI.getAll()
+      setNotifications((response.notifications || []).map((notification: any) => ({
+        id: notification.id,
+        title: notification.titre,
+        message: notification.message,
+        type: notification.type,
+        date: new Date(notification.created_at).toLocaleString('fr-FR'),
+        read: Boolean(notification.lu),
+      })))
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications administrateur :', error)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadNotifications()
+    const intervalId = window.setInterval(() => void loadNotifications(), 10000)
+    return () => window.clearInterval(intervalId)
+  }, [loadNotifications])
+
   const handleMarkAsRead = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n))
+    void notificationAPI.markRead(id).then(loadNotifications).catch(console.error)
   }
 
   const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })))
+    void notificationAPI.markAllRead().then(loadNotifications).catch(console.error)
   }
 
   const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id))
+    void notificationAPI.delete(id).then(loadNotifications).catch(console.error)
   }
 
   // Super Admin = DEVELOPPEUR, supervise seulement
