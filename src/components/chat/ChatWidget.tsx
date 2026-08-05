@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Check, Mic, MicOff, PauseCircle, RefreshCcw, Send, ShieldCheck, Sparkles, Volume2, VolumeX, X } from 'lucide-react'
+import { Check, Mic, MicOff, PauseCircle, RefreshCcw, Send, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { AssistantMark } from './AssistantMark'
@@ -252,22 +252,14 @@ export const ChatWidget: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-lg shadow-2xl transition-transform duration-200 hover:scale-105 ${isOpen ? 'bg-slate-900 text-white' : 'bg-transparent'}`}
+        className={`fixed bottom-4 right-4 z-50 grid h-12 w-12 place-items-center rounded-lg shadow-xl transition-transform duration-200 hover:scale-105 sm:bottom-5 sm:right-5 ${isOpen ? 'bg-slate-900 text-white' : 'bg-transparent'}`}
         aria-label={isOpen ? 'Fermer NOVA RH' : 'Ouvrir NOVA RH'}
       >
-        {isOpen ? <X className="h-7 w-7" /> : <AssistantMark />}
+        {isOpen ? <X className="h-5 w-5" /> : <AssistantMark />}
       </button>
 
-      {!isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white shadow-lg">
-          <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-          <span>NOVA RH</span>
-          <span className="text-slate-400">{session.authenticated ? 'Connecté' : 'Visiteur'}</span>
-        </div>
-      )}
-
       {isOpen && (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[min(78vh,720px)] w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:right-6 sm:w-[440px]">
+        <div className="fixed bottom-20 right-3 z-50 flex h-[min(68vh,620px)] w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:bottom-20 sm:right-5 sm:w-[380px]">
           <div className="flex items-center justify-between bg-slate-950 p-4 text-white shadow-md">
             <div className="flex items-center gap-3">
               <AssistantMark compact />

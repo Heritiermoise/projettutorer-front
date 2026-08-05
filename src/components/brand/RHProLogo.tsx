@@ -14,7 +14,6 @@ export const RHProLogo = ({ compact = false, className = '' }: RHProLogoProps) =
     {!compact && (
       <div className="min-w-0 leading-tight">
         <p className="text-xl font-extrabold tracking-normal text-cyan-400">RH Pro</p>
-        <p className="text-xs font-medium text-slate-400">Humain. Sûr. Connecté.</p>
       </div>
     )}
   </div>

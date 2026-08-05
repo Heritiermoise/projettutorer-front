@@ -3,12 +3,13 @@ import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar, Download, 
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import * as XLSX from 'xlsx'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
-import { apiRequest } from '../../services/api'
+import { apiRequest, entrepriseParametresAPI } from '../../services/api'
 
 export const RHPresencesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [dashboardData, setDashboardData] = useState<any>(null)
+  const [workRules, setWorkRules] = useState({ heure_arrivee: '08:00', heure_depart: '17:00', tolerance_retard_minutes: 15 })
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
 
@@ -49,6 +50,12 @@ export const RHPresencesPage = () => {
     loadData()
   }, [loadData])
 
+  useEffect(() => {
+    void entrepriseParametresAPI.get()
+      .then((response) => setWorkRules((current) => ({ ...current, ...(response.parametres || {}) })))
+      .catch((error) => console.error('Impossible de charger les règles de présence :', error))
+  }, [])
+
   const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
   const rawPresences = useMemo(() => dashboardData?.presences || [], [dashboardData])
 
@@ -75,14 +82,15 @@ export const RHPresencesPage = () => {
     const [hours, minutes] = timeStr.split(':').map(Number)
     const totalMinutes = hours * 60 + minutes
 
-    if (totalMinutes <= 510) { // 8h30 (8 * 60 + 30)
+    const [startHours, startMinutes] = workRules.heure_arrivee.split(':').map(Number)
+    const lateThreshold = startHours * 60 + startMinutes + workRules.tolerance_retard_minutes
+
+    if (totalMinutes <= lateThreshold) {
       return 'Present'
-    } else if (totalMinutes <= 1020) { // 17h00 (17 * 60)
-      return 'Retard'
     } else {
-      return 'Absent'
+      return 'Retard'
     }
-  }, [])
+  }, [workRules])
 
   // Gestion dynamique lorsqu'on change d'employé dans le modal
   const handleEmployeChange = useCallback((matricule: string) => {
@@ -274,7 +282,7 @@ export const RHPresencesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Gestion des Présences</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Suivi et pointages quotidiens automatisés</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Arrivée {workRules.heure_arrivee} · fermeture {workRules.heure_depart} · tolérance {workRules.tolerance_retard_minutes} min</p>
         </div>
         <div className="flex items-center space-x-3">
           <button 
