@@ -1,111 +1,75 @@
-import { useEffect, useState } from 'react'
-import { Clock, Search, CheckCircle2, XCircle, AlertCircle, Calendar } from 'lucide-react'
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
-import { loadDashboardContext } from '../../services/dashboardData'
+import { useEffect, useMemo, useState } from 'react'
+import { AlertCircle, CheckCircle2, Clock, LogIn, LogOut, RefreshCw, XCircle } from 'lucide-react'
+import { presenceAPI, type Presence } from '../../services/api'
+
+const isPresent = (status: string) => ['present', 'présent', 'retard'].includes(status.toLowerCase())
 
 export const EmployePresencesPage = () => {
-  const [filterMois, setFilterMois] = useState('all')
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [presences, setPresences] = useState<Presence[]>([])
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [pointing, setPointing] = useState(false)
 
-  useEffect(() => {
-    loadDashboardContext().then(setDashboardData).catch(() => setDashboardData(null))
-  }, [])
-
-  const user = dashboardData?.user || { matricule: 'EMP-J1K2L3' }
-  const userPresences = (dashboardData?.presences || []).filter((p: any) => p.matricule === user.matricule)
-
-  const stats = {
-    total: userPresences.length || 22,
-    presents: userPresences.filter((p: any) => p.statut === 'Present').length || 20,
-    retards: userPresences.filter((p: any) => p.statut === 'Retard').length || 2,
-    absents: userPresences.filter((p: any) => p.statut === 'Absent').length || 0,
+  const load = async () => {
+    setLoading(true)
+    try {
+      const response = await presenceAPI.getMine()
+      setPresences(response.presences ?? [])
+    } catch (error) {
+      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Impossible de charger vos pointages.' })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const presenceData = [
-    { name: 'Presents', value: stats.presents, color: '#10b981' },
-    { name: 'Retards', value: stats.retards, color: '#f59e0b' },
-    { name: 'Absences', value: stats.absents, color: '#ef4444' },
-  ]
+  useEffect(() => { void load() }, [])
 
-  const joursData = Array.from({ length: 15 }, (_, i) => ({
-    jour: (i + 1).toString(),
-    statut: i % 7 === 0 ? 'Retard' : i % 5 === 0 ? 'Absent' : 'Present',
-    heure: i % 7 === 0 ? '08:30' : '08:00',
-  }))
+  const point = async () => {
+    setPointing(true)
+    setFeedback(null)
+    try {
+      const response = await presenceAPI.pointerMine()
+      setFeedback({ type: 'success', text: response.message })
+      await load()
+    } catch (error) {
+      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Impossible d’enregistrer votre pointage.' })
+    } finally {
+      setPointing(false)
+    }
+  }
+
+  const stats = useMemo(() => ({
+    total: presences.length,
+    presents: presences.filter(item => item.statut.toLowerCase() === 'present').length,
+    retards: presences.filter(item => item.statut.toLowerCase() === 'retard').length,
+    absents: presences.filter(item => item.statut.toLowerCase() === 'absent').length,
+  }), [presences])
+
+  const today = new Date().toISOString().slice(0, 10)
+  const todayPresence = presences.find(item => item.date_presence.slice(0, 10) === today)
+  const hasArrived = Boolean(todayPresence?.heure_arrivee)
+  const hasDeparted = Boolean(todayPresence?.heure_depart)
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Mes Presences</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Suivi de mes pointages</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div><h1 className="text-2xl font-bold text-slate-800 dark:text-white">Mes présences</h1><p className="text-sm text-slate-600 dark:text-slate-400">Suivi réel de vos arrivées et départs.</p></div>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => void load()} disabled={loading || pointing} title="Actualiser" className="rounded-lg border border-slate-300 p-2.5 text-slate-700 dark:border-slate-600 dark:text-slate-200"><RefreshCw className="h-5 w-5" /></button>
+          <button type="button" onClick={() => void point()} disabled={pointing || hasDeparted} className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{hasArrived ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}{hasDeparted ? 'Pointage terminé' : hasArrived ? 'Pointer mon départ' : 'Pointer mon arrivée'}</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-        {[
-          { label: 'Jours travailles', value: stats.total, color: 'from-primary-500 to-purple-600', icon: Clock },
-          { label: 'Presents', value: stats.presents, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'Retards', value: stats.retards, color: 'from-amber-500 to-orange-600', icon: AlertCircle },
-          { label: 'Absences', value: stats.absents, color: 'from-red-500 to-rose-600', icon: XCircle },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
-              <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{stat.label}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
-          </div>
-        ))}
-      </div>
+      {feedback && <div className={`flex items-start gap-3 rounded-lg border p-4 ${feedback.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200' : 'border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200'}`}>{feedback.type === 'success' ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" /> : <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />}<p className="text-sm font-medium">{feedback.text}</p></div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 lg:col-span-2">
-          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Historique des pointages</h3>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {joursData.map((jour, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    jour.statut === 'Present' ? 'bg-green-100 dark:bg-green-900/30' :
-                    jour.statut === 'Retard' ? 'bg-amber-100 dark:bg-amber-900/30' :
-                    'bg-red-100 dark:bg-red-900/30'
-                  }`}>
-                    {jour.statut === 'Present' ? <CheckCircle2 className="w-5 h-5 text-green-600" /> :
-                     jour.statut === 'Retard' ? <AlertCircle className="w-5 h-5 text-amber-600" /> :
-                     <XCircle className="w-5 h-5 text-red-600" />}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Jour {jour.jour}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{jour.heure}</p>
-                  </div>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  jour.statut === 'Present' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                  jour.statut === 'Retard' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' :
-                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                }`}>{jour.statut}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">{[
+        { label: 'Jours pointés', value: stats.total, icon: Clock, tone: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30' },
+        { label: 'Présences', value: stats.presents, icon: CheckCircle2, tone: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' },
+        { label: 'Retards', value: stats.retards, icon: AlertCircle, tone: 'text-amber-600 bg-amber-50 dark:bg-amber-950/30' },
+        { label: 'Absences', value: stats.absents, icon: XCircle, tone: 'text-red-600 bg-red-50 dark:bg-red-950/30' },
+      ].map(stat => <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800"><div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${stat.tone}`}><stat.icon className="h-5 w-5" /></div><p className="text-sm text-slate-500">{stat.label}</p><p className="text-2xl font-bold text-slate-800 dark:text-white">{stat.value}</p></div>)}</div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-          <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4">Repartition</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie data={presenceData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} dataKey="value" label={({ name, percent }) => name + ' ' + ((percent ?? 0) * 100).toFixed(0) + '%'}>
-                {presenceData.map((entry, index) => (<Cell key={'cell-' + index} fill={entry.color} />))}
-              </Pie>
-              <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="mt-4 p-4 bg-secondary-50 dark:bg-secondary-900/20 rounded-xl">
-            <p className="text-sm text-secondary-700 dark:text-secondary-300 font-semibold">Taux de presence</p>
-            <p className="text-3xl font-bold text-secondary-600 dark:text-secondary-400">{((stats.presents / stats.total) * 100).toFixed(1)}%</p>
-          </div>
-        </div>
-      </div>
+      <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"><div className="border-b border-slate-200 p-5 dark:border-slate-700"><h2 className="font-bold text-slate-800 dark:text-white">Historique des pointages</h2></div>{loading ? <p className="p-5 text-sm text-slate-500">Chargement…</p> : presences.length === 0 ? <p className="p-5 text-sm text-slate-500">Aucun pointage enregistré.</p> : <div className="divide-y divide-slate-200 dark:divide-slate-700">{presences.map(presence => <div key={presence.id ?? `${presence.matricule}-${presence.date_presence}`} className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold text-slate-800 dark:text-white">{new Date(`${presence.date_presence.slice(0, 10)}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p><p className="text-sm text-slate-500">Arrivée: {presence.heure_arrivee?.slice(0, 5) ?? '—'} · Départ: {presence.heure_depart?.slice(0, 5) ?? '—'}</p></div><span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${isPresent(presence.statut) ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : presence.statut.toLowerCase() === 'retard' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>{presence.statut}</span></div>)}</div>}</section>
     </div>
   )
 }

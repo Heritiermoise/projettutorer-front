@@ -5,7 +5,8 @@ import { internalMessagingAPI } from '../../services/api'
 type Contact = { id: number; nom: string; prenom: string; email: string }
 type Conversation = { id: number; contact_id: number; contact_nom: string; contact_prenom: string; dernier_message: string | null; date_dernier_message: string | null; non_lus: number }
 type Message = { id: number; sender_id: number; body: string; read_at: string | null; created_at: string }
-type CallSignal = { conversation_id: number; sender_id: number; type: 'offer' | 'answer' | 'ice-candidate' | 'hangup'; payload: string | Record<string, unknown> | null }
+type CallSignal = { conversation_id: number; sender_id: number; type: 'offer' | 'answer' | 'ice-candidate' | 'hangup' | 'reject'; payload: string | Record<string, unknown> | null }
+type IncomingCall = { conversationId: number; mode: 'audio' | 'video'; payload: RTCSessionDescriptionInit }
 
 const initials = (firstName: string, lastName: string) => `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase()
 const time = (value: string | null) => value ? new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : ''
@@ -17,9 +18,10 @@ export const DirecteurMessageriePage = () => {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [feedback, setFeedback] = useState('Partagez votre position pour communiquer avec les collaborateurs proches.')
+  const [feedback, setFeedback] = useState('Les messages et appels sont réservés aux collègues de votre entreprise.')
   const [sharingLocation, setSharingLocation] = useState(false)
   const [callMode, setCallMode] = useState<'audio' | 'video' | null>(null)
+  const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -77,7 +79,7 @@ export const DirecteurMessageriePage = () => {
       async (position) => {
         try {
           await internalMessagingAPI.updateLocation(position.coords.latitude, position.coords.longitude)
-          setFeedback('Position partagée pendant cinq minutes. Les collaborateurs à moins de 200 m peuvent communiquer avec vous.')
+          setFeedback('Position partagée avec succès.')
         } catch (error) {
           setFeedback(error instanceof Error ? error.message : 'Impossible d’enregistrer votre position.')
         } finally {
@@ -143,11 +145,44 @@ export const DirecteurMessageriePage = () => {
       const offer = await peerConnection.createOffer()
       await peerConnection.setLocalDescription(offer)
       await internalMessagingAPI.sendSignal(selectedConversation.id, 'offer', { sdp: offer.sdp, type: offer.type, mode })
-      setFeedback(`Appel ${mode === 'video' ? 'vidéo' : 'audio'} lancé. Le destinataire doit accepter la caméra ou le microphone.`)
+      setFeedback(`Appel ${mode === 'video' ? 'vidéo' : 'audio'} lancé. En attente de la réponse du destinataire.`)
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Impossible de démarrer l’appel. Vérifiez vos autorisations et la proximité.')
       endCall(false)
     }
+  }
+
+  const acceptIncomingCall = async () => {
+    if (!incomingCall) return
+
+    const { conversationId, mode, payload } = incomingCall
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mode === 'video' })
+      localStreamRef.current = stream
+      setCallMode(mode)
+      const peerConnection = createPeerConnection(conversationId)
+      stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream))
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(payload))
+      const answer = await peerConnection.createAnswer()
+      await peerConnection.setLocalDescription(answer)
+      await internalMessagingAPI.sendSignal(conversationId, 'answer', { sdp: answer.sdp, type: answer.type })
+      setIncomingCall(null)
+      setFeedback(`Appel ${mode === 'video' ? 'vidéo' : 'audio'} accepté.`)
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible d’accepter l’appel. Vérifiez les autorisations du microphone ou de la caméra.')
+      endCall(false)
+    }
+  }
+
+  const rejectIncomingCall = async () => {
+    if (!incomingCall) return
+    try {
+      await internalMessagingAPI.sendSignal(incomingCall.conversationId, 'reject')
+    } catch {
+      // The caller will stop on its next signaling refresh if the network is temporarily unavailable.
+    }
+    setIncomingCall(null)
+    setFeedback('Appel refusé.')
   }
 
   const receiveSignals = async () => {
@@ -157,20 +192,16 @@ export const DirecteurMessageriePage = () => {
         const payload = typeof signal.payload === 'string' ? JSON.parse(signal.payload) : signal.payload || {}
         if (signal.type === 'offer') {
           const mode = payload.mode === 'video' ? 'video' : 'audio'
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mode === 'video' })
-          localStreamRef.current = stream
-          setCallMode(mode)
-          const peerConnection = createPeerConnection(signal.conversation_id)
-          stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream))
-          await peerConnection.setRemoteDescription(new RTCSessionDescription(payload as RTCSessionDescriptionInit))
-          const answer = await peerConnection.createAnswer()
-          await peerConnection.setLocalDescription(answer)
-          await internalMessagingAPI.sendSignal(signal.conversation_id, 'answer', { sdp: answer.sdp, type: answer.type })
-          setFeedback(`Appel ${mode === 'video' ? 'vidéo' : 'audio'} accepté.`)
+          setIncomingCall({ conversationId: signal.conversation_id, mode, payload: payload as RTCSessionDescriptionInit })
+          setFeedback(`Appel ${mode === 'video' ? 'vidéo' : 'audio'} entrant.`)
         }
         if (signal.type === 'answer' && peerConnectionRef.current) await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(payload as RTCSessionDescriptionInit))
         if (signal.type === 'ice-candidate' && peerConnectionRef.current) await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(payload as RTCIceCandidateInit))
         if (signal.type === 'hangup') endCall(false)
+        if (signal.type === 'reject') {
+          endCall(false)
+          setFeedback('Le destinataire a refusé l’appel.')
+        }
       }
     } catch {
       // The polling loop retries after a temporary network or permission failure.
@@ -195,7 +226,7 @@ export const DirecteurMessageriePage = () => {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Messagerie interne</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Échanges et appels entre collègues de la même entreprise, à moins de 200 m.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Échanges et appels entre collègues de la même entreprise.</p>
         </div>
         <button onClick={shareLocation} disabled={sharingLocation} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-60">
           <MapPin className="w-4 h-4" />
@@ -239,7 +270,7 @@ export const DirecteurMessageriePage = () => {
                 <div className="flex items-center gap-3">
                   <button onClick={() => setSelectedConversation(null)} className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Retour"><ArrowLeft className="w-5 h-5" /></button>
                   <span className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">{initials(selectedConversation.contact_prenom, selectedConversation.contact_nom)}</span>
-                  <div><p className="font-semibold text-slate-800 dark:text-white">{selectedConversation.contact_prenom} {selectedConversation.contact_nom}</p><p className="text-xs text-slate-500">Proximité requise: 200 m</p></div>
+                  <div><p className="font-semibold text-slate-800 dark:text-white">{selectedConversation.contact_prenom} {selectedConversation.contact_nom}</p><p className="text-xs text-slate-500">Collègue de votre entreprise</p></div>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => void startCall('audio')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Appel audio"><Phone className="w-5 h-5" /></button>
@@ -271,6 +302,7 @@ export const DirecteurMessageriePage = () => {
           </main>
         </div>
       </div>
+      {incomingCall && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4"><div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-2xl dark:bg-slate-800"><p className="text-sm text-slate-500">Appel entrant</p><h2 className="mt-1 text-xl font-bold text-slate-800 dark:text-white">Appel {incomingCall.mode === 'video' ? 'vidéo' : 'audio'}</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Acceptez pour activer votre microphone{incomingCall.mode === 'video' ? ' et votre caméra' : ''}.</p><div className="mt-6 flex gap-3"><button type="button" onClick={() => void rejectIncomingCall()} className="flex-1 rounded-lg border border-red-300 px-4 py-2.5 font-semibold text-red-700">Refuser</button><button type="button" onClick={() => void acceptIncomingCall()} className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 font-semibold text-white">Accepter</button></div></div></div>}
     </div>
   )
 }

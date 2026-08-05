@@ -664,7 +664,7 @@ export const internalMessagingAPI = {
     method: 'POST',
     body: JSON.stringify({ body }),
   }),
-  sendSignal: async (conversationId: number, type: 'offer' | 'answer' | 'ice-candidate' | 'hangup', payload?: unknown) => await apiRequest(`/internal-messaging/conversations/${conversationId}/signals`, {
+  sendSignal: async (conversationId: number, type: 'offer' | 'answer' | 'ice-candidate' | 'hangup' | 'reject', payload?: unknown) => await apiRequest(`/internal-messaging/conversations/${conversationId}/signals`, {
     method: 'POST',
     body: JSON.stringify({ type, payload }),
   }),
@@ -960,6 +960,16 @@ export const presenceAPI = {
     return await apiRequest('/rh/presences/pointer', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  getMine: async () => {
+    return await apiRequest('/mon-espace/mes-presences');
+  },
+
+  pointerMine: async () => {
+    return await apiRequest('/mon-espace/mes-presences/pointer', {
+      method: 'POST',
     });
   },
 };
