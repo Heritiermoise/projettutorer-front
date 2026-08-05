@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Briefcase, Search, Plus, Eye, User, FileText, Check, X } from 'lucide-react'
+import { Briefcase, Search, Plus, Eye, User, FileText, Check, X, Send, Pause } from 'lucide-react'
 import { candidatAPI, postulationAPI, offreAPI, posteAPI } from '../../services/api'
 
 export const RHRecrutementPage = () => {
@@ -73,6 +73,18 @@ export const RHRecrutementPage = () => {
       await loadRecruitment()
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Impossible de refuser cette candidature.')
+    }
+  }
+
+  const handleOfferStatus = async (offreId: number, statut: 'Publiée' | 'Archivée') => {
+    try {
+      await offreAPI.updateCompanyStatus(offreId, statut)
+      setFeedback(statut === 'Publiée'
+        ? 'Offre publiée. Elle est désormais visible dans l’espace public.'
+        : 'Offre archivée. Elle n’est plus visible dans l’espace public.')
+      await loadRecruitment()
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : 'Impossible de modifier le statut de cette offre.')
     }
   }
 
@@ -206,11 +218,23 @@ export const RHRecrutementPage = () => {
                       <h3 className="font-bold text-slate-800 dark:text-white">{offre.titre}</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{offre.description}</p>
                     </div>
-                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold">{offre.statut}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${offre.statut === 'Publiée' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200'}`}>{offre.statut}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600 dark:text-slate-400">Salaire: <span className="font-bold text-primary-600">${offre.salaire_base}</span></span>
                     <span className="text-slate-500 dark:text-slate-400">Limite: {offre.date_limite}</span>
+                  </div>
+                  <div className="mt-3 flex justify-end gap-2 border-t border-slate-200 pt-3 dark:border-slate-600">
+                    {offre.statut === 'Brouillon' && (
+                      <button onClick={() => void handleOfferStatus(offre.id_offre, 'Publiée')} className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white hover:bg-green-700">
+                        <Send className="h-3.5 w-3.5" /> Publier
+                      </button>
+                    )}
+                    {offre.statut === 'Publiée' && (
+                      <button onClick={() => void handleOfferStatus(offre.id_offre, 'Archivée')} className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
+                        <Pause className="h-3.5 w-3.5" /> Archiver
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

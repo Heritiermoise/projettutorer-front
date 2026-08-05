@@ -808,6 +808,27 @@ export const fichesPaieAPI = {
   },
 };
 
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATIONS PERSONNELLES
+// ═══════════════════════════════════════════════════════════════
+export const notificationAPI = {
+  getAll: async () => {
+    return await apiRequest('/notifications');
+  },
+
+  markRead: async (id: number) => {
+    return await apiRequest(`/notifications/${id}/read`, { method: 'PATCH' });
+  },
+
+  markAllRead: async () => {
+    return await apiRequest('/notifications/read-all', { method: 'PATCH' });
+  },
+
+  delete: async (id: number) => {
+    return await apiRequest(`/notifications/${id}`, { method: 'DELETE' });
+  },
+};
+
 export const avancesPaieAPI = {
   getAll: async () => {
     return await apiRequest('/rh/avances-paie');

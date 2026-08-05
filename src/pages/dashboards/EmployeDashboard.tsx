@@ -10,7 +10,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
-import { employeNotifications } from '../../data/notifications'
+import { RHProLogo } from '../../components/brand/RHProLogo'
+import { notificationAPI } from '../../services/api'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { EmployeCongesPage } from './EmployeCongesPage'
 import { EmployeDocumentsPage } from './EmployeDocumentsPage'
@@ -23,7 +24,7 @@ import { EmployeAvantagesPage } from './EmployeAvantagesPage'
 export const EmployeDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
-  const [notifications, setNotifications] = useState(employeNotifications)
+  const [notifications, setNotifications] = useState<any[]>([])
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -53,6 +54,28 @@ export const EmployeDashboard = () => {
     }
   }, [])
 
+  const loadNotifications = async () => {
+    try {
+      const response = await notificationAPI.getAll()
+      setNotifications((response.notifications || []).map((notification: any) => ({
+        id: notification.id,
+        title: notification.titre,
+        message: notification.message,
+        type: notification.type,
+        date: new Date(notification.created_at).toLocaleString('fr-FR'),
+        read: Boolean(notification.lu),
+      })))
+    } catch (error) {
+      console.error('Erreur lors du chargement des notifications employé :', error)
+    }
+  }
+
+  useEffect(() => {
+    void loadNotifications()
+    const intervalId = window.setInterval(() => void loadNotifications(), 10000)
+    return () => window.clearInterval(intervalId)
+  }, [])
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Chargement de votre espace personnel...</div>
   }
@@ -78,15 +101,15 @@ export const EmployeDashboard = () => {
   }
 
   const handleMarkAsRead = (id: number) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n))
+    void notificationAPI.markRead(id).then(loadNotifications).catch(console.error)
   }
 
   const handleMarkAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })))
+    void notificationAPI.markAllRead().then(loadNotifications).catch(console.error)
   }
 
   const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id))
+    void notificationAPI.delete(id).then(loadNotifications).catch(console.error)
   }
 
   const menuItems = [
@@ -332,15 +355,7 @@ export const EmployeDashboard = () => {
       <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-secondary-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-secondary-600 to-orange-600 bg-clip-text text-transparent">RH Pro</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Employe</p>
-              </div>
-            </div>
+            <RHProLogo />
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden"><X className="w-6 h-6" /></button>
           </div>
 

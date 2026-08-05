@@ -135,8 +135,8 @@ export const chatAPI = {
       return {
         success: false,
         message: error?.message || 'Erreur de connexion',
-        source: 'local-fallback',
-        warning: 'Mode secours activé',
+        source: 'unavailable',
+        warning: 'Le service IA est temporairement indisponible.',
       };
     }
   },

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { AlertTriangle, Check, Mic, MicOff, PauseCircle, RefreshCcw, Send, ShieldCheck, Sparkles, Volume2, VolumeX, X } from 'lucide-react'
+import { Check, Mic, MicOff, PauseCircle, RefreshCcw, Send, ShieldCheck, Sparkles, Volume2, VolumeX, X } from 'lucide-react'
 import { MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 import { AssistantMark } from './AssistantMark'
@@ -61,7 +61,6 @@ export const ChatWidget: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(() => chatAPI.getConversationId())
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
   const [debugMeta, setDebugMeta] = useState<{ source?: string; warning?: string } | null>(null)
-  const [isFallbackMode, setIsFallbackMode] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [speechEnabled, setSpeechEnabled] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -96,7 +95,6 @@ export const ChatWidget: React.FC = () => {
     setConversationId(chatAPI.getConversationId())
     setSuggestedQuestions(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
     setDebugMeta(null)
-    setIsFallbackMode(false)
   }, [session.authenticated, session.role])
 
   useEffect(() => {
@@ -188,7 +186,6 @@ export const ChatWidget: React.FC = () => {
 
     setIsTyping(false)
     setDebugMeta({ source, warning })
-    setIsFallbackMode(source === 'local-fallback')
     if (response.conversationId) setConversationId(response.conversationId)
     if (response.suggestions?.length) setSuggestedQuestions(response.suggestions)
 
@@ -211,8 +208,8 @@ export const ChatWidget: React.FC = () => {
       ...prev,
       {
         id: `error_${Date.now()}`,
-        text: source === 'local-fallback'
-          ? 'Le moteur IA est indisponible. Aucune nouvelle réponse fiable n’a pu être générée pour le moment.'
+        text: source === 'unavailable'
+          ? 'Le service IA est temporairement indisponible. Réessayez dans quelques instants.'
           : 'Désolé, une erreur est survenue. Veuillez réessayer.',
         sender: 'assistant',
         timestamp: new Date(),
@@ -228,7 +225,6 @@ export const ChatWidget: React.FC = () => {
     chatAPI.clearHistory()
     setMessages([{ ...WELCOME_MESSAGE, text: buildIntroMessage(conversationMode), timestamp: new Date() }])
     setDebugMeta(null)
-    setIsFallbackMode(false)
     setConversationId(null)
     setSuggestedQuestions(session.authenticated ? PRIVATE_QUESTIONS : PUBLIC_QUESTIONS)
   }
@@ -295,13 +291,6 @@ export const ChatWidget: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {isFallbackMode && (
-            <div className="mx-4 mt-4 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>Réponse de secours locale. Le moteur IA externe est indisponible; les données restent limitées à votre périmètre autorisé.</p>
-            </div>
-          )}
 
           <div className="flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-900/80">
             {messages.map((message) => (
@@ -371,7 +360,7 @@ export const ChatWidget: React.FC = () => {
                 {speechEnabled ? <Volume2 className="h-4 w-4 text-emerald-600" /> : <VolumeX className="h-4 w-4" />}
               </button>
             </div>
-            {debugMeta?.warning && !isFallbackMode && (
+            {debugMeta?.warning && (
               <div className="mt-2">
                 <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
                   <ShieldCheck className="h-3 w-3" />
