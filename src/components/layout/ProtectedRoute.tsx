@@ -3,9 +3,17 @@ import { useAuth } from '../../hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles: string[];
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const dashboardPathForRole = (role: string) => {
+  if (role === 'admin' || role === 'it') return '/dashboard/admin';
+  if (role === 'directeur' || role === 'manager') return '/dashboard/directeur';
+  if (role === 'rh') return '/dashboard/rh';
+  return '/dashboard/employe';
+};
+
+export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -21,6 +29,10 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role.toLowerCase())) {
+    return <Navigate to={dashboardPathForRole(user.role.toLowerCase())} replace />;
   }
 
   return <>{children}</>;

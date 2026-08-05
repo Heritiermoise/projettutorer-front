@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
@@ -14,15 +13,9 @@ import { RHDashboard } from './pages/dashboards/RHDashboard'
 import { EmployeDashboard } from './pages/dashboards/EmployeDashboard'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ChatWidget } from './components/chat/ChatWidget'
-import { loadDashboardContext } from './services/dashboardData'
+import { ProtectedRoute } from './components/layout/ProtectedRoute'
 
 function App() {
-  useEffect(() => {
-    if (localStorage.getItem('auth_token') || localStorage.getItem('token')) {
-      void loadDashboardContext()
-    }
-  }, [])
-
   return (
     <BrowserRouter>
       <Routes>
@@ -34,10 +27,10 @@ function App() {
         <Route path="/offres" element={<OffresEmploiPage />} />
         <Route path="/offres/:id" element={<OffreDetailPage />} />
         <Route path="/dashboard-connecte" element={<DashboardConnecte />} />
-        <Route path="/dashboard/admin/*" element={<AdminDashboard />} />
-        <Route path="/dashboard/directeur/*" element={<DirecteurDashboard />} />
-        <Route path="/dashboard/rh/*" element={<RHDashboard />} />
-        <Route path="/dashboard/employe/*" element={<EmployeDashboard />} />
+        <Route path="/dashboard/admin/*" element={<ProtectedRoute allowedRoles={['admin', 'it']}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/directeur/*" element={<ProtectedRoute allowedRoles={['directeur', 'manager']}><DirecteurDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/rh/*" element={<ProtectedRoute allowedRoles={['rh']}><RHDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/employe/*" element={<ProtectedRoute allowedRoles={['employe']}><EmployeDashboard /></ProtectedRoute>} />
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

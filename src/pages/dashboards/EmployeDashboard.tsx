@@ -26,15 +26,21 @@ export const EmployeDashboard = () => {
   const [notifications, setNotifications] = useState(employeNotifications)
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
 
   useEffect(() => {
     let mounted = true
-    loadDashboardContext()
+    loadDashboardContext(true)
       .then((context) => {
         if (mounted) {
           setDashboardData(context)
+        }
+      })
+      .catch((error) => {
+        if (mounted) {
+          setLoadError(error instanceof Error ? error.message : 'Impossible de charger votre espace personnel.')
         }
       })
       .finally(() => {
@@ -47,12 +53,24 @@ export const EmployeDashboard = () => {
     }
   }, [])
 
-  const user = dashboardData?.user || { prenom: 'Utilisateur', nom: 'RH', matricule: 'N/A', role: 'employe' }
-  const userPaies = (dashboardData?.fichesPaie || []).filter((p: any) => p.matricule === user.matricule)
-  const userConges = (dashboardData?.conges || []).filter((c: any) => c.matricule === user.matricule)
-  const userPresences = (dashboardData?.presences || []).filter((p: any) => p.matricule === user.matricule)
-  const userDocuments = (dashboardData?.documents || []).filter((d: any) => d.matricule === user.matricule)
-  const userAvantages = (dashboardData?.avantages || []).filter((a: any) => a.matricule === user.matricule)
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-600">Chargement de votre espace personnel...</div>
+  }
+
+  if (loadError || !dashboardData?.user) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 text-center text-red-700">{loadError || 'Votre identité employé n’a pas pu être vérifiée.'}</div>
+  }
+
+  const user = dashboardData.user
+  const userPaies = [...(dashboardData.fichesPaie || [])].sort((first: any, second: any) => {
+    const firstPeriod = Number(first.annee_paiement) * 100 + Number(first.mois_paiement)
+    const secondPeriod = Number(second.annee_paiement) * 100 + Number(second.mois_paiement)
+    return secondPeriod - firstPeriod || Number(second.id_paie) - Number(first.id_paie)
+  })
+  const userConges = dashboardData.conges || []
+  const userPresences = dashboardData.presences || []
+  const userDocuments = dashboardData.documents || []
+  const userAvantages = dashboardData.avantages || []
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -96,15 +114,27 @@ export const EmployeDashboard = () => {
 
   const activeSection = getCurrentSection()
 
+  const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth() + 1
+  const normalizeStatus = (status: string | undefined) => (status || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  const currentMonthPresences = userPresences.filter((presence: any) => {
+    const date = new Date(`${presence.date_presence}T00:00:00`)
+    return date.getFullYear() === currentYear && date.getMonth() + 1 === currentMonth
+  })
   const stats = {
-    soldeConges: 20,
-    congesPris: 10,
-    dernierSalaire: userPaies[userPaies.length - 1]?.montant || 1200,
-    cumulAnnuel: userPaies.reduce((sum, p) => sum + p.montant, 0),
-    joursPresence: userPresences.filter(p => p.statut === 'Present').length || 22,
-    joursRetard: userPresences.filter(p => p.statut === 'Retard').length || 2,
-    joursAbsence: userPresences.filter(p => p.statut === 'Absent').length || 1,
+    dernierSalaire: Number(userPaies[0]?.montant || 0),
+    cumulAnnuel: userPaies
+      .filter((paie: any) => Number(paie.annee_paiement) === currentYear)
+      .reduce((sum: number, paie: any) => sum + Number(paie.montant || 0), 0),
+    joursPresence: currentMonthPresences.filter((presence: any) => normalizeStatus(presence.statut) === 'present').length,
+    joursRetard: currentMonthPresences.filter((presence: any) => normalizeStatus(presence.statut) === 'retard').length,
+    joursAbsence: currentMonthPresences.filter((presence: any) => normalizeStatus(presence.statut) === 'absent').length,
   }
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 2,
+  }).format(amount)
 
   const presenceData = [
     { name: 'Presents', value: stats.joursPresence, color: '#10b981' },
@@ -113,10 +143,10 @@ export const EmployeDashboard = () => {
   ]
 
   const kpiCards = [
-    { icon: DollarSign, label: 'Dernier Salaire', value: '$' + stats.dernierSalaire, color: 'from-primary-500 to-purple-600' },
-    { icon: Briefcase, label: 'Cumul Annuel', value: '$' + stats.cumulAnnuel, color: 'from-accent-500 to-emerald-600' },
-    { icon: Calendar, label: 'Solde Conges', value: stats.soldeConges + ' jours', color: 'from-amber-500 to-orange-600' },
-    { icon: Clock, label: 'Jours Presence', value: stats.joursPresence, color: 'from-pink-500 to-rose-600' },
+    { icon: DollarSign, label: 'Dernière paie', value: formatCurrency(stats.dernierSalaire), color: 'from-primary-500 to-purple-600' },
+    { icon: Briefcase, label: 'Cumul annuel', value: formatCurrency(stats.cumulAnnuel), color: 'from-accent-500 to-emerald-600' },
+    { icon: FileText, label: 'Documents', value: userDocuments.length, color: 'from-amber-500 to-orange-600' },
+    { icon: Clock, label: 'Présences ce mois', value: stats.joursPresence, color: 'from-pink-500 to-rose-600' },
   ]
 
   const renderContent = () => {
@@ -168,7 +198,7 @@ export const EmployeDashboard = () => {
                   <p className="text-slate-500 dark:text-slate-400 text-center py-8">Aucune fiche de paie disponible</p>
                 ) : (
                   <div className="space-y-3">
-                    {userPaies.slice(-3).reverse().map((paie) => (
+                    {userPaies.slice(0, 3).map((paie) => (
                       <div key={paie.id_paie} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
@@ -180,7 +210,7 @@ export const EmployeDashboard = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-slate-800 dark:text-white">${paie.montant}</p>
+                          <p className="font-bold text-slate-800 dark:text-white">{formatCurrency(Number(paie.montant || 0))}</p>
                           <span className={`text-xs px-2 py-1 rounded-full ${paie.statut === 'Payee' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'}`}>
                             {paie.statut}
                           </span>
@@ -254,7 +284,7 @@ export const EmployeDashboard = () => {
                             <p className="text-xs text-slate-500 dark:text-slate-400">{avantage.type_avantage}</p>
                           </div>
                         </div>
-                        <span className="font-bold text-amber-600 dark:text-amber-300">${avantage.valeur}</span>
+                        <span className="font-bold text-amber-600 dark:text-amber-300">{formatCurrency(Number(avantage.valeur || 0))}</span>
                       </div>
                     ))}
                   </div>
@@ -299,9 +329,6 @@ export const EmployeDashboard = () => {
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      {loading ? (
-        <div className="min-h-screen flex items-center justify-center">Chargement des données réelles...</div>
-      ) : null}
       <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">

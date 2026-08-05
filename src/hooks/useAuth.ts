@@ -25,25 +25,50 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-        if (!token) {
-          localStorage.setItem('token', 'local-session-token');
-        }
-      } catch (e) {
+    let active = true;
+
+    const restoreSession = async () => {
+      const token = localStorage.getItem('auth_token');
+
+      if (!token) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        clearDashboardContextCache();
+        if (active) setLoading(false);
+        return;
       }
-    }
-    setLoading(false);
+
+      try {
+        const response = await authAPI.getUser();
+        const authenticatedUser = response?.user ?? response;
+
+        if (!authenticatedUser?.id || !authenticatedUser?.role) {
+          throw new Error('Identité de session invalide');
+        }
+
+        localStorage.setItem('user', JSON.stringify(authenticatedUser));
+        localStorage.setItem('token', token);
+        if (active) setUser(authenticatedUser);
+      } catch {
+        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        clearDashboardContextCache();
+        if (active) setUser(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void restoreSession();
 
     testBackendConnection()
       .then((result) => setBackendOk(Boolean(result?.success)))
       .catch(() => setBackendOk(false));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const checkBackendStatus = async () => {
@@ -62,6 +87,7 @@ export const useAuth = () => {
     try {
       const data = await authAPI.login(email, password);
       if (data.token && data.user) {
+        clearDashboardContextCache();
         localStorage.setItem('token', data.token);
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -78,6 +104,7 @@ export const useAuth = () => {
     try {
       const result = await authAPI.register({ ...data });
       if (result.token && result.user) {
+        clearDashboardContextCache();
         localStorage.setItem('token', result.token);
         localStorage.setItem('auth_token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
@@ -101,6 +128,7 @@ export const useAuth = () => {
       
       // Si l'API renvoie directement l'utilisateur unifié et son token
       if (result.user) {
+        clearDashboardContextCache();
         if (result.token) {
           localStorage.setItem('token', result.token);
           localStorage.setItem('auth_token', result.token);

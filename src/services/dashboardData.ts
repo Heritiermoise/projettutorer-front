@@ -31,38 +31,71 @@ const extractArray = (response: any, key: string) => {
 
 let dashboardContextCache: DashboardContext | null = null
 let dashboardContextPromise: Promise<DashboardContext> | null = null
+let dashboardContextSessionKey: string | null = null
 
 export const clearDashboardContextCache = () => {
   dashboardContextCache = null
   dashboardContextPromise = null
+  dashboardContextSessionKey = null
 }
 
 export const loadDashboardContext = async (forceRefresh = false): Promise<DashboardContext> => {
-  if (!forceRefresh && dashboardContextCache) {
+  const token = localStorage.getItem('auth_token')
+
+  if (!token) {
+    clearDashboardContextCache()
+    throw new Error('Session introuvable')
+  }
+
+  if (!forceRefresh && dashboardContextCache && dashboardContextSessionKey === token) {
     return dashboardContextCache
   }
 
-  if (!forceRefresh && dashboardContextPromise) {
+  if (!forceRefresh && dashboardContextPromise && dashboardContextSessionKey === token) {
     return dashboardContextPromise
   }
 
+  dashboardContextSessionKey = token
   dashboardContextPromise = (async () => {
-    const localUser = (() => {
-      try {
-        return JSON.parse(localStorage.getItem('user') || 'null')
-      } catch {
-        return null
-      }
-    })()
+    const currentUserResponse = await authAPI.getUser()
+    const currentUser = currentUserResponse?.user ?? currentUserResponse
 
-    const currentUserResponse = await authAPI.getUser().catch(() => null)
-    const currentUser = currentUserResponse?.user ?? currentUserResponse ?? localUser
+    if (!currentUser?.id || !currentUser?.role) {
+      throw new Error('Identité de session invalide')
+    }
 
-    // Extraction sécurisée du rôle pour éviter les erreurs 403 (Forbidden)
     const userRole = currentUser?.role?.toLowerCase() || ''
     const isAdmin = userRole === 'admin'
     const isRH = userRole === 'rh'
     const isDirecteur = userRole === 'directeur'
+
+    if (userRole === 'employe') {
+      const [presencesResponse, fichesPaieResponse, documentsResponse] = await Promise.all([
+        presenceAPI.getMine(),
+        fichesPaieAPI.getMine(),
+        documentAPI.getAll('personnel'),
+      ])
+
+      const context: DashboardContext = {
+        user: currentUser,
+        entreprise: null,
+        entreprises: [],
+        users: [],
+        employes: [],
+        postes: [],
+        services: [],
+        contrats: [],
+        conges: [],
+        presences: extractArray(presencesResponse, 'presences'),
+        fichesPaie: extractArray(fichesPaieResponse, 'fiches_paies'),
+        avantages: [],
+        documents: extractArray(documentsResponse, 'documents'),
+        offres: [],
+      }
+
+      dashboardContextCache = context
+      return context
+    }
 
     const [
       usersResponse, 
@@ -165,7 +198,7 @@ export const loadDashboardContext = async (forceRefresh = false): Promise<Dashbo
     const contrats = filterByEntreprise(extractArray(contratsResponse, 'rh/contrats'))
     const conges = filterByEntreprise(extractArray(congesResponse, 'rh/conges'))
     const presences = filterByEntreprise(extractArray(presencesResponse, 'rh/presences'))
-    const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'rh/fichesPaies'))
+    const fichesPaie = filterByEntreprise(extractArray(fichesPaieResponse, 'fiches_paies'))
     const avantages = filterByEntreprise(extractArray(avantagesResponse, 'rh/avantages'))
     const documents = filterByEntreprise(extractArray(documentsResponse, 'rh/documents'))
     const offres = filterByEntreprise(extractArray(offresResponse, 'rh/offres'))
