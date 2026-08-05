@@ -4,6 +4,8 @@ import { authAPI, entrepriseAPI, testBackendConnection } from '../services/api';
 import { clearDashboardContextCache } from '../services/dashboardData';
 import { API_BASE_URL } from '../config/api';
 
+const notifyAuthChange = () => window.dispatchEvent(new Event('rh-auth-changed'));
+
 export interface User {
   id: number;
   nom?: string;
@@ -48,12 +50,14 @@ export const useAuth = () => {
 
         localStorage.setItem('user', JSON.stringify(authenticatedUser));
         localStorage.setItem('token', token);
+        notifyAuthChange();
         if (active) setUser(authenticatedUser);
       } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         clearDashboardContextCache();
+        notifyAuthChange();
         if (active) setUser(null);
       } finally {
         if (active) setLoading(false);
@@ -91,6 +95,7 @@ export const useAuth = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        notifyAuthChange();
         setUser(data.user);
         return { success: true, user: data.user };
       }
@@ -108,6 +113,7 @@ export const useAuth = () => {
         localStorage.setItem('token', result.token);
         localStorage.setItem('auth_token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
+        notifyAuthChange();
         setUser(result.user);
         return {
           success: true,
@@ -134,6 +140,7 @@ export const useAuth = () => {
           localStorage.setItem('auth_token', result.token);
         }
         localStorage.setItem('user', JSON.stringify(result.user));
+        notifyAuthChange();
         setUser(result.user);
         return { success: true, user: result.user, message: result.message || 'Entreprise creee avec succes' };
       }
@@ -143,6 +150,7 @@ export const useAuth = () => {
         const potentialUser = result.data?.user || result.entreprise?.user || result.user;
         if (potentialUser) {
           localStorage.setItem('user', JSON.stringify(potentialUser));
+          notifyAuthChange();
           setUser(potentialUser);
           return { success: true, user: potentialUser, message: result.message || 'Entreprise creee' };
         }
@@ -165,6 +173,7 @@ export const useAuth = () => {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
       clearDashboardContextCache();
+      notifyAuthChange();
       setUser(null);
       navigate('/login');
     }

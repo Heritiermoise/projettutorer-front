@@ -39,6 +39,7 @@ type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
 
 export const ChatWidget: React.FC = () => {
   const location = useLocation()
+  const [sessionRevision, setSessionRevision] = useState(0)
   const session = useMemo(() => {
     const authenticated = Boolean(localStorage.getItem('auth_token') || localStorage.getItem('token'))
     try {
@@ -47,7 +48,7 @@ export const ChatWidget: React.FC = () => {
     } catch {
       return { authenticated, role: 'utilisateur' }
     }
-  }, [location.pathname])
+  }, [location.pathname, sessionRevision])
 
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
@@ -75,6 +76,12 @@ export const ChatWidget: React.FC = () => {
   useEffect(() => {
     chatAPI.saveHistory(messages)
   }, [messages])
+
+  useEffect(() => {
+    const refreshSession = () => setSessionRevision((revision) => revision + 1)
+    window.addEventListener('rh-auth-changed', refreshSession)
+    return () => window.removeEventListener('rh-auth-changed', refreshSession)
+  }, [])
 
   useEffect(() => {
     const scopedHistory = chatAPI.getHistoryFromStorage()
@@ -205,7 +212,7 @@ export const ChatWidget: React.FC = () => {
       {
         id: `error_${Date.now()}`,
         text: source === 'local-fallback'
-          ? 'Mode secours actif. Je n’ai pas pu joindre le backend RH pour le moment.'
+          ? 'Le moteur IA est indisponible. Aucune nouvelle réponse fiable n’a pu être générée pour le moment.'
           : 'Désolé, une erreur est survenue. Veuillez réessayer.',
         sender: 'assistant',
         timestamp: new Date(),
@@ -292,7 +299,7 @@ export const ChatWidget: React.FC = () => {
           {isFallbackMode && (
             <div className="mx-4 mt-4 flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>Mode secours activé. Le backend RH n’a pas répondu correctement, les réponses peuvent être limitées.</p>
+              <p>Réponse de secours locale. Le moteur IA externe est indisponible; les données restent limitées à votre périmètre autorisé.</p>
             </div>
           )}
 

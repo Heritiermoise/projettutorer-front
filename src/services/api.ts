@@ -601,6 +601,10 @@ export const posteAPI = {
     return await apiRequest('/direction/postes');
   },
 
+  getForRH: async () => {
+    return await apiRequest('/rh/postes');
+  },
+
   create: async (data: Record<string, any>) => {
     return await apiRequest('/direction/postes', {
       method: 'POST',
