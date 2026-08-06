@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Briefcase, User, Bell, Settings, LogOut, 
-  Menu, X, Moon, Sun, Search, FileText, CheckCircle2, Clock, XCircle
+  Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle
 } from 'lucide-react'
 import { mockCandidatures } from '../../data/phase5Data'
 import { BrandMark } from '../../components/BrandMark'

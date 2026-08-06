@@ -52,11 +52,18 @@ export const OffresEmploiPage = () => {
           entrepriseAPI.getAll(),
         ])
 
-        const offresResponse = offresResult.status === 'fulfilled' ? offresResult.value : {}
-        const entreprisesResponse = entreprisesResult.status === 'fulfilled' ? entreprisesResult.value : {}
+        const offresResponse = offresResult.status === 'fulfilled' ? offresResult.value : null
+        const entreprisesResponse = entreprisesResult.status === 'fulfilled' ? entreprisesResult.value : null
 
-        const rawOffres = offresResponse.offres || offresResponse.data || offresResponse || []
-        const rawEntreprises = entreprisesResponse.entreprises || entreprisesResponse.data || entreprisesResponse || []
+        const toArray = (response: any, key: string) => {
+          if (Array.isArray(response)) return response
+          if (Array.isArray(response?.[key])) return response[key]
+          if (Array.isArray(response?.data)) return response.data
+          return []
+        }
+
+        const rawOffres = toArray(offresResponse, 'offres')
+        const rawEntreprises = toArray(entreprisesResponse, 'entreprises')
         
         setOffres(rawOffres)
         setEntreprises(rawEntreprises)
