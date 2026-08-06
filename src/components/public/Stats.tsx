@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { TrendingUp, Users, Building2, Award } from 'lucide-react';
 
@@ -7,8 +7,8 @@ export const Stats = () => {
 
   const stats = [
     { icon: Users, value: "10,000+", label: "Utilisateurs actifs", color: "from-primary-500 to-primary-700" },
-    { icon: Building2, value: "500+", label: "Entreprises", color: "from-accent-500 to-accent-700" },
-    { icon: TrendingUp, value: "99%", label: "Satisfaction client", color: "from-warm-400 to-warm-600" },
+    { icon: Building2, value: "500+", label: "Entreprises", color: "from-primary-500 to-primary-700" },
+    { icon: TrendingUp, value: "99%", label: "Satisfaction client", color: "from-primary-400 to-primary-600" },
     { icon: Award, value: "24/7", label: "Support technique", color: "from-slate-500 to-slate-700" }
   ];
 
@@ -16,7 +16,7 @@ export const Stats = () => {
     <section className="py-20 bg-gradient-to-br from-slate-950 via-primary-950 to-slate-900 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary-500/20 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative" ref={ref}>
@@ -27,7 +27,7 @@ export const Stats = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            Ils nous font <span className="bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">confiance</span>
+            Ils nous font <span className="bg-gradient-to-r from-primary-400 to-primary-400 bg-clip-text text-transparent">confiance</span>
           </h2>
         </motion.div>
 

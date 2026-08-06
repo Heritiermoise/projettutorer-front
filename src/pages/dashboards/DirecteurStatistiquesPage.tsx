@@ -51,10 +51,10 @@ export const DirecteurStatistiquesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { icon: Users, label: 'Total employes', value: stats.totalEmployes, change: '+12%', color: 'from-amber-500 to-orange-600' },
-          { icon: DollarSign, label: 'Masse salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-green-500 to-emerald-600' },
-          { icon: Briefcase, label: 'Postes occupes', value: stats.postesOccupes, change: '+3', color: 'from-primary-500 to-purple-600' },
-          { icon: Calendar, label: 'Conges approuves', value: stats.congesApprouves, change: '+5', color: 'from-pink-500 to-rose-600' },
+          { icon: Users, label: 'Total employes', value: stats.totalEmployes, change: '+12%', color: 'from-primary-500 to-primary-600' },
+          { icon: DollarSign, label: 'Masse salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-primary-500 to-primary-600' },
+          { icon: Briefcase, label: 'Postes occupes', value: stats.postesOccupes, change: '+3', color: 'from-primary-500 to-primary-600' },
+          { icon: Calendar, label: 'Conges approuves', value: stats.congesApprouves, change: '+5', color: 'from-primary-500 to-primary-600' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -154,7 +154,7 @@ export const DirecteurStatistiquesPage = () => {
                   <span className="text-xs text-slate-500 dark:text-slate-400">{count} employes</span>
                 </div>
                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full" style={{ width: percentage + '%' }}></div>
+                  <div className="bg-gradient-to-r from-primary-500 to-primary-500 h-2 rounded-full" style={{ width: percentage + '%' }}></div>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{percentage}%</p>
               </div>

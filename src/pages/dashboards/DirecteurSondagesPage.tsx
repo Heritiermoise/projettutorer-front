@@ -37,7 +37,7 @@ export const DirecteurSondagesPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Sondages & Enquetes</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Collectez les avis de vos employes</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouveau sondage</span>
         </button>
@@ -45,11 +45,11 @@ export const DirecteurSondagesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileText, color: 'from-amber-500 to-orange-600' },
-          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Termines', value: stats.termines, icon: BarChart3, color: 'from-blue-500 to-cyan-600' },
+          { label: 'Total', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Termines', value: stats.termines, icon: BarChart3, color: 'from-primary-500 to-cyan-600' },
           { label: 'Brouillons', value: stats.brouillons, icon: FileText, color: 'from-slate-500 to-slate-600' },
-          { label: 'Reponses totales', value: stats.totalReponses, icon: Users, color: 'from-purple-500 to-pink-600' }
+          { label: 'Reponses totales', value: stats.totalReponses, icon: Users, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -90,7 +90,7 @@ export const DirecteurSondagesPage = () => {
                   <div key={sondage.id} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                           <BarChart3 className="w-6 h-6 text-white" />
                         </div>
                         <div>

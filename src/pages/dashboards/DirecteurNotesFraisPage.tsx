@@ -43,7 +43,7 @@ export const DirecteurNotesFraisPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Notes de Frais</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gestion des remboursements</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle note de frais</span>
         </button>
@@ -51,12 +51,12 @@ export const DirecteurNotesFraisPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileText, color: 'from-amber-500 to-orange-600' },
-          { label: 'Soumises', value: stats.soumises, icon: FileText, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Approuvees', value: stats.approuvees, icon: DollarSign, color: 'from-green-500 to-emerald-600' },
-          { label: 'Refusees', value: stats.refusees, icon: DollarSign, color: 'from-red-500 to-rose-600' },
-          { label: 'Payees', value: stats.payees, icon: DollarSign, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Montant total', value: '$' + stats.montantTotal, icon: DollarSign, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'Soumises', value: stats.soumises, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'Approuvees', value: stats.approuvees, icon: DollarSign, color: 'from-primary-500 to-primary-600' },
+          { label: 'Refusees', value: stats.refusees, icon: DollarSign, color: 'from-red-500 to-primary-600' },
+          { label: 'Payees', value: stats.payees, icon: DollarSign, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Montant total', value: '$' + stats.montantTotal, icon: DollarSign, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>

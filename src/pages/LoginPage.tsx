@@ -67,6 +67,8 @@ export const LoginPage = () => {
           ? '/dashboard/directeur'
           : result.user.role === 'rh'
             ? '/dashboard/rh'
+                : result.user.role === 'utilisateur'
+                  ? '/dashboard/utilisateur'
             : '/dashboard/employe'
 
       setTimeout(() => navigate(dashboardPath), 700)
@@ -81,7 +83,7 @@ export const LoginPage = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 transition-colors duration-300 relative overflow-hidden">
       {/* Éléments d'ambiance en arrière-plan */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[8000ms]"></div>
-      <div className="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-accent-500/5 dark:bg-accent-500/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
+      <div className="absolute bottom-10 right-1/4 w-[600px] h-[600px] bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[10000ms]"></div>
 
       <PublicNavbar />
       
@@ -92,7 +94,7 @@ export const LoginPage = () => {
           <div className="lg:col-span-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-800/80 p-8 flex flex-col justify-between transition-all hover:border-slate-300/50 dark:hover:border-slate-700/80">
             <div>
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/20 relative group overflow-hidden">
+                <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 via-primary-500 to-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-500/20 relative group overflow-hidden">
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <Building2 className="w-8 h-8 text-white transform group-hover:scale-110 transition-transform duration-300" />
                 </div>
@@ -143,7 +145,7 @@ export const LoginPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-500 text-white font-bold rounded-2xl hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-primary-500 text-white font-bold rounded-2xl hover:shadow-lg hover:shadow-primary-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
                   <span>{loading ? 'Connexion en cours...' : 'Se connecter'}</span>
@@ -164,7 +166,7 @@ export const LoginPage = () => {
             
             {/* Effets lumineux internes réactifs */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent-500/5 dark:bg-accent-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
             {/* En-tête réactive */}
             <div className="relative z-10 flex items-center justify-between">
@@ -211,7 +213,7 @@ export const LoginPage = () => {
 
                 {/* Points lumineux réactifs */}
                 <span className="absolute w-3.5 h-3.5 bg-primary-500 rounded-full border-2 border-white dark:border-slate-900 shadow-md" style={{ left: '44%', bottom: '37%' }}></span>
-                <span className="absolute w-3.5 h-3.5 bg-accent-500 dark:bg-accent-400 rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-pulse" style={{ left: '98%', bottom: '77%' }}></span>
+                <span className="absolute w-3.5 h-3.5 bg-primary-500 dark:bg-primary-400 rounded-full border-2 border-white dark:border-slate-900 shadow-md animate-pulse" style={{ left: '98%', bottom: '77%' }}></span>
               </div>
             </div>
 
@@ -245,7 +247,7 @@ export const LoginPage = () => {
                   )}
                 </div>
                 <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-accent-500/80" /> Entreprises
+                  <Building2 className="w-3.5 h-3.5 text-primary-500/80" /> Entreprises
                 </div>
               </div>
 

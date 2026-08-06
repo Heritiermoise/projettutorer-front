@@ -49,7 +49,7 @@ export const DirecteurEquipementsPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Equipements</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Inventaire et attribution</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvel equipement</span>
         </button>
@@ -57,11 +57,11 @@ export const DirecteurEquipementsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Monitor, color: 'from-amber-500 to-orange-600' },
-          { label: 'Disponibles', value: stats.disponibles, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Attribues', value: stats.attribues, icon: Monitor, color: 'from-blue-500 to-cyan-600' },
-          { label: 'En reparation', value: stats.enReparation, icon: Wrench, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Valeur totale', value: '$' + stats.valeurTotale, icon: Monitor, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: Monitor, color: 'from-primary-500 to-primary-600' },
+          { label: 'Disponibles', value: stats.disponibles, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Attribues', value: stats.attribues, icon: Monitor, color: 'from-primary-500 to-cyan-600' },
+          { label: 'En reparation', value: stats.enReparation, icon: Wrench, color: 'from-primary-500 to-primary-600' },
+          { label: 'Valeur totale', value: '$' + stats.valeurTotale, icon: Monitor, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -105,7 +105,7 @@ export const DirecteurEquipementsPage = () => {
                 equipement.type === 'Ordinateur' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' :
                 equipement.type === 'Telephone' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' :
                 equipement.type === 'Mobilier' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600' :
-                'bg-purple-100 dark:bg-purple-900/30 text-purple-600'
+                'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
               }`}>
                 {getTypeIcon(equipement.type)}
               </div>

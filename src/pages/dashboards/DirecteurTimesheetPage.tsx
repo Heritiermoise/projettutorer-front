@@ -41,7 +41,7 @@ export const DirecteurTimesheetPage = () => {
             <Download className="w-5 h-5" />
             <span>Exporter</span>
           </button>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+          <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
             <Plus className="w-5 h-5" />
             <span>Nouvelle timesheet</span>
           </button>
@@ -50,12 +50,12 @@ export const DirecteurTimesheetPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Clock, color: 'from-amber-500 to-orange-600' },
+          { label: 'Total', value: stats.total, icon: Clock, color: 'from-primary-500 to-primary-600' },
           { label: 'Brouillons', value: stats.brouillons, icon: Clock, color: 'from-slate-500 to-slate-600' },
-          { label: 'Soumises', value: stats.soumises, icon: AlertCircle, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Approuvees', value: stats.approuvees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Rejetees', value: stats.rejetees, icon: XCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'Heures totales', value: stats.totalHeures + 'h', icon: Clock, color: 'from-purple-500 to-pink-600' }
+          { label: 'Soumises', value: stats.soumises, icon: AlertCircle, color: 'from-primary-500 to-primary-600' },
+          { label: 'Approuvees', value: stats.approuvees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Rejetees', value: stats.rejetees, icon: XCircle, color: 'from-red-500 to-primary-600' },
+          { label: 'Heures totales', value: stats.totalHeures + 'h', icon: Clock, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -82,7 +82,7 @@ export const DirecteurTimesheetPage = () => {
           <div key={timesheet.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                   <Clock className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -157,11 +157,11 @@ export const DirecteurTimesheetPage = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Semaine</p>
                   <p className="font-bold text-slate-800 dark:text-white">{selectedTimesheet.semaine}</p>
                 </div>
-                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl">
+                <div className="p-4 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total heures</p>
                   <p className="text-2xl font-bold text-amber-600">{selectedTimesheet.total_heures}h</p>
                 </div>

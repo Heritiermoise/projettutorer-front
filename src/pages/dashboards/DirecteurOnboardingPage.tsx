@@ -19,7 +19,7 @@ export const DirecteurOnboardingPage = () => {
   const getCategorieColor = (categorie: string) => {
     const colors: Record<string, string> = {
       'Administratif': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-      'Technique': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+      'Technique': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
       'Formation': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
       'Integration': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
     }
@@ -45,7 +45,7 @@ export const DirecteurOnboardingPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Onboarding</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Integration des nouveaux employes</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvel employe</span>
         </button>
@@ -53,11 +53,11 @@ export const DirecteurOnboardingPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'En integration', value: stats.total, icon: Users, color: 'from-amber-500 to-orange-600' },
-          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Terminees', value: stats.termines, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Total taches', value: stats.tachesTotal, icon: Target, color: 'from-purple-500 to-pink-600' },
-          { label: 'Taches faites', value: `${stats.tachesTerminees}/${stats.tachesTotal}`, icon: CheckCircle2, color: 'from-emerald-500 to-teal-600' }
+          { label: 'En integration', value: stats.total, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Terminees', value: stats.termines, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Total taches', value: stats.tachesTotal, icon: Target, color: 'from-primary-500 to-primary-600' },
+          { label: 'Taches faites', value: `${stats.tachesTerminees}/${stats.tachesTotal}`, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -74,7 +74,7 @@ export const DirecteurOnboardingPage = () => {
           <div key={onboarding.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-xl">{onboarding.prenom[0]}</span>
                 </div>
                 <div>
@@ -97,7 +97,7 @@ export const DirecteurOnboardingPage = () => {
                 <span className="font-bold text-amber-600">{onboarding.progression}%</span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-3 rounded-full transition-all" style={{ width: `${onboarding.progression}%` }}></div>
+                <div className="bg-gradient-to-r from-primary-500 to-primary-500 h-3 rounded-full transition-all" style={{ width: `${onboarding.progression}%` }}></div>
               </div>
             </div>
 
@@ -128,7 +128,7 @@ export const DirecteurOnboardingPage = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="flex items-center space-x-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-3xl">{selectedOnboarding.prenom[0]}</span>
                 </div>
                 <div>
@@ -140,7 +140,7 @@ export const DirecteurOnboardingPage = () => {
                       <span className="font-bold text-amber-600">{selectedOnboarding.progression}%</span>
                     </div>
                     <div className="w-64 bg-slate-200 dark:bg-slate-700 rounded-full h-3">
-                      <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-3 rounded-full" style={{ width: `${selectedOnboarding.progression}%` }}></div>
+                      <div className="bg-gradient-to-r from-primary-500 to-primary-500 h-3 rounded-full" style={{ width: `${selectedOnboarding.progression}%` }}></div>
                     </div>
                   </div>
                 </div>

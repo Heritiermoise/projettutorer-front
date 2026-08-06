@@ -104,7 +104,7 @@ export const DashboardLayout = ({ children, userRole, userName, onLogout }: Dash
                   className={`
                     flex items-center space-x-3 px-4 py-3 rounded-xl transition-all
                     ${isActive 
-                      ? 'bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-lg shadow-primary-500/20' 
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/20' 
                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}
                   `}
                 >

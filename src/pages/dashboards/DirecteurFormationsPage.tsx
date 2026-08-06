@@ -101,7 +101,7 @@ export const DirecteurFormationsPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Formations & Developpement</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gerez le catalogue de formations</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle formation</span>
         </button>
@@ -109,13 +109,13 @@ export const DirecteurFormationsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: BookOpen, color: 'from-amber-500 to-orange-600' },
-          { label: 'Planifiees', value: stats.planifiees, icon: Calendar, color: 'from-blue-500 to-cyan-600' },
-          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Terminees', value: stats.terminees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Participants', value: stats.totalParticipants, icon: Users, color: 'from-purple-500 to-pink-600' },
-          { label: 'Budget', value: '$' + (stats.budgetTotal / 1000).toFixed(0) + 'K', icon: DollarSign, color: 'from-emerald-500 to-teal-600' },
-          { label: 'Certif.', value: stats.tauxCertification.toFixed(0) + '%', icon: Award, color: 'from-pink-500 to-rose-600' }
+          { label: 'Total', value: stats.total, icon: BookOpen, color: 'from-primary-500 to-primary-600' },
+          { label: 'Planifiees', value: stats.planifiees, icon: Calendar, color: 'from-primary-500 to-cyan-600' },
+          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Terminees', value: stats.terminees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Participants', value: stats.totalParticipants, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'Budget', value: '$' + (stats.budgetTotal / 1000).toFixed(0) + 'K', icon: DollarSign, color: 'from-primary-500 to-primary-600' },
+          { label: 'Certif.', value: stats.tauxCertification.toFixed(0) + '%', icon: Award, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -292,21 +292,21 @@ export const DirecteurFormationsPage = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+                <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Taux de completion</p>
                   <p className="text-3xl font-bold text-amber-600">85%</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">des formations terminees</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl border border-green-200 dark:border-green-800">
+                <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl border border-green-200 dark:border-green-800">
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Satisfaction moyenne</p>
                   <p className="text-3xl font-bold text-green-600 flex items-center">
                     4.6 <Star className="w-6 h-6 text-green-600 fill-green-600 ml-2" />
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">sur 5.0</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border border-purple-200 dark:border-purple-800">
+                <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl border border-primary-200 dark:border-primary-800">
                   <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">ROI Formation</p>
-                  <p className="text-3xl font-bold text-purple-600">+23%</p>
+                  <p className="text-3xl font-bold text-primary-600">+23%</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">productivite</p>
                 </div>
               </div>
@@ -381,7 +381,7 @@ export const DirecteurFormationsPage = () => {
               </div>
               <div className="flex space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-slate-800 pb-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Creer</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Creer</button>
               </div>
             </form>
           </div>
@@ -442,7 +442,7 @@ export const DirecteurFormationsPage = () => {
               </div>
 
               {selectedFormation.evaluation_moyenne > 0 && (
-                <div className="p-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                <div className="p-4 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-400">Evaluation moyenne</p>

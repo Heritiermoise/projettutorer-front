@@ -94,7 +94,7 @@ export const DirecteurEvaluationsPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Evaluations & Performance</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gerez les evaluations des employes</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle evaluation</span>
         </button>
@@ -102,11 +102,11 @@ export const DirecteurEvaluationsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Target, color: 'from-amber-500 to-orange-600' },
-          { label: 'Planifiees', value: stats.planifiees, icon: Calendar, color: 'from-blue-500 to-cyan-600' },
-          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Terminees', value: stats.terminees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Moyenne', value: stats.moyenneGenerale.toFixed(1), icon: Star, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: Target, color: 'from-primary-500 to-primary-600' },
+          { label: 'Planifiees', value: stats.planifiees, icon: Calendar, color: 'from-primary-500 to-cyan-600' },
+          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Terminees', value: stats.terminees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Moyenne', value: stats.moyenneGenerale.toFixed(1), icon: Star, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -170,7 +170,7 @@ export const DirecteurEvaluationsPage = () => {
               <div key={eval_.id} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all cursor-pointer" onClick={() => { setSelectedEval(eval_); setShowDetailModal(true) }}>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                       <Award className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -253,7 +253,7 @@ export const DirecteurEvaluationsPage = () => {
               </div>
               <div className="flex space-x-3 pt-4 sticky bottom-0 bg-white dark:bg-slate-800 pb-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Creer</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Creer</button>
               </div>
             </form>
           </div>
@@ -278,7 +278,7 @@ export const DirecteurEvaluationsPage = () => {
               </div>
 
               {selectedEval.note_globale > 0 && (
-                <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+                <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Note globale</p>

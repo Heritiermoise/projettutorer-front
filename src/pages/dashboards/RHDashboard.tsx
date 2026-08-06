@@ -156,8 +156,8 @@ export const RHDashboard = () => {
 
   const kpiCards = useMemo(() => [
     { icon: Users, label: 'Total Employés', value: stats.totalEmployes, change: '+12', color: 'from-primary-500 to-primary-700' },
-    { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-accent-500 to-accent-700' },
-    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-warm-500 to-warm-600' },
+    { icon: FileText, label: 'Contrats Actifs', value: stats.contratsActifs, change: '+3', color: 'from-primary-500 to-primary-700' },
+    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: '+8%', color: 'from-primary-500 to-primary-600' },
     { icon: Calendar, label: 'Congés en attente', value: stats.congesEnAttente, change: '', color: 'from-slate-500 to-slate-700' },
   ], [stats])
 
@@ -272,8 +272,8 @@ export const RHDashboard = () => {
                   {employes.slice(0, 5).map((emp: any) => (
                     <div key={emp.matricule || emp.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-primary-100 dark:bg-primary-900/30' : 'bg-accent-100 dark:bg-accent-900/30'}`}>
-                          <span className={`font-bold ${emp.sexe === 'M' ? 'text-primary-600 dark:text-primary-300' : 'text-accent-600 dark:text-accent-300'}`}>{emp.prenom?.[0] || 'E'}</span>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-primary-100 dark:bg-primary-900/30' : 'bg-primary-100 dark:bg-primary-900/30'}`}>
+                          <span className={`font-bold ${emp.sexe === 'M' ? 'text-primary-600 dark:text-primary-300' : 'text-primary-600 dark:text-primary-300'}`}>{emp.prenom?.[0] || 'E'}</span>
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp.prenom} {emp.nom}</p>
@@ -342,7 +342,7 @@ export const RHDashboard = () => {
                 onClick={() => { navigate(item.path); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
-                    ? 'bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-lg' 
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg' 
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -383,7 +383,7 @@ export const RHDashboard = () => {
                   {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
                 </button>
                 <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">{dashboardData?.user?.prenom?.[0] || 'RH'}</span>
                   </div>
                   <div className="hidden sm:block">

@@ -11,6 +11,7 @@ import { AdminDashboard } from './pages/dashboards/AdminDashboard'
 import { DirecteurDashboard } from './pages/dashboards/DirecteurDashboard'
 import { RHDashboard } from './pages/dashboards/RHDashboard'
 import { EmployeDashboard } from './pages/dashboards/EmployeDashboard'
+import { UtilisateurDashboard } from './pages/dashboards/UtilisateurDashboard'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ChatWidget } from './components/chat/ChatWidget'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
@@ -31,6 +32,7 @@ function App() {
         <Route path="/dashboard/directeur/*" element={<ProtectedRoute allowedRoles={['directeur', 'manager']}><DirecteurDashboard /></ProtectedRoute>} />
         <Route path="/dashboard/rh/*" element={<ProtectedRoute allowedRoles={['rh']}><RHDashboard /></ProtectedRoute>} />
         <Route path="/dashboard/employe/*" element={<ProtectedRoute allowedRoles={['employe']}><EmployeDashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/utilisateur/*" element={<ProtectedRoute allowedRoles={['utilisateur']}><UtilisateurDashboard /></ProtectedRoute>} />
         <Route path="/dashboard" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

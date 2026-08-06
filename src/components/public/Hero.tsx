@@ -1,11 +1,11 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Play, Sparkles, Users, Building, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Hero = () => {
   return (
     <section id="accueil" className="relative min-h-screen flex items-center overflow-hidden pt-20">
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary-50/30 to-accent-50/30"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-50/30"></div>
       
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -16,7 +16,7 @@ export const Hero = () => {
         <motion.div
           animate={{ x: [0, -100, 0], y: [0, 50, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-20 right-10 w-96 h-96 bg-accent-200/30 rounded-full blur-3xl"
+          className="absolute bottom-20 right-10 w-96 h-96 bg-primary-200/30 rounded-full blur-3xl"
         />
       </div>
 
@@ -48,7 +48,7 @@ export const Hero = () => {
             >
               <span className="text-slate-800">Gerez votre</span>
               <br />
-                <span className="bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent bg-300% animate-gradient">
+                <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent bg-300% animate-gradient">
                 entreprise
               </span>
               <br />
@@ -80,7 +80,7 @@ export const Hero = () => {
               </Link>
 
               <button className="group inline-flex items-center justify-center px-8 py-4 bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 font-bold rounded-full shadow-lg hover:shadow-xl border border-slate-200 transition-all duration-300">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
                   <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
                 </div>
                 <span>Voir la demo</span>
@@ -123,7 +123,7 @@ export const Hero = () => {
                   <div className="flex items-center space-x-3">
                     <div className="w-3 h-3 rounded-full bg-warm-400"></div>
                     <div className="w-3 h-3 rounded-full bg-primary-400"></div>
-                    <div className="w-3 h-3 rounded-full bg-accent-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-primary-400"></div>
                   </div>
                   <div className="text-xs text-slate-400">Dashboard RH Pro</div>
                 </div>
@@ -141,7 +141,7 @@ export const Hero = () => {
                         initial={{ height: 0 }}
                         animate={{ height: `${height}%` }}
                         transition={{ delay: 0.8 + i * 0.1, duration: 0.5 }}
-                        className="flex-1 bg-gradient-to-t from-primary-500 to-accent-400 rounded-t-lg opacity-80 hover:opacity-100 transition-opacity"
+                        className="flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg opacity-80 hover:opacity-100 transition-opacity"
                       />
                     ))}
                   </div>
@@ -151,9 +151,9 @@ export const Hero = () => {
                       <div className="text-xs text-primary-600 font-medium">Contrats actifs</div>
                       <div className="text-xl font-bold text-primary-700">142</div>
                     </div>
-                    <div className="bg-gradient-to-br from-accent-50 to-accent-100/50 p-3 rounded-xl">
-                      <div className="text-xs text-accent-600 font-medium">Conges en cours</div>
-                      <div className="text-xl font-bold text-accent-700">8</div>
+                    <div className="bg-gradient-to-br from-primary-50 to-primary-100/50 p-3 rounded-xl">
+                      <div className="text-xs text-primary-600 font-medium">Conges en cours</div>
+                      <div className="text-xl font-bold text-primary-700">8</div>
                     </div>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export const Hero = () => {
                 className="absolute -top-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border border-slate-100"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-accent-400 to-accent-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>

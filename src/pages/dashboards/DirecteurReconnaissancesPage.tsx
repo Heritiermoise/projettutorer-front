@@ -14,7 +14,7 @@ export const DirecteurReconnaissancesPage = () => {
       'Felicitation': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
       'Remerciement': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
       'Encouragement': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
-      'Succes': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+      'Succes': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
     }
     return colors[type] || colors['Felicitation']
   }
@@ -26,7 +26,7 @@ export const DirecteurReconnaissancesPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Reconnaissances & Badges</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Valorisez vos employes</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle reconnaissance</span>
         </button>
@@ -51,7 +51,7 @@ export const DirecteurReconnaissancesPage = () => {
                 <div key={rec.id} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-lg">{rec.de[0]}</span>
                       </div>
                       <div>

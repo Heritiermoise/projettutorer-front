@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Building2, LogIn, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -47,7 +47,7 @@ export const Navbar = () => {
                 className="text-slate-600 hover:text-primary-600 font-medium transition-colors duration-200 relative group"
               >
                 {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-accent-500 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-primary-500 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
           </div>

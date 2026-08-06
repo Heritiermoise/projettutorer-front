@@ -92,10 +92,10 @@ export const AdminValidationUsersPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total inscriptions', value: stats.total, color: 'from-primary-500 to-purple-600', icon: Users },
-          { label: 'En attente', value: stats.enAttente, color: 'from-amber-500 to-orange-600', icon: Clock },
-          { label: 'Validés', value: stats.valides, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'Refusés', value: stats.refuses, color: 'from-red-500 to-rose-600', icon: XCircle },
+          { label: 'Total inscriptions', value: stats.total, color: 'from-primary-500 to-primary-600', icon: Users },
+          { label: 'En attente', value: stats.enAttente, color: 'from-primary-500 to-primary-600', icon: Clock },
+          { label: 'Validés', value: stats.valides, color: 'from-primary-500 to-primary-600', icon: CheckCircle2 },
+          { label: 'Refusés', value: stats.refuses, color: 'from-red-500 to-primary-600', icon: XCircle },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -127,7 +127,7 @@ export const AdminValidationUsersPage = () => {
           <div key={user.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">{user.prenom[0]}</span>
                 </div>
                 <div>

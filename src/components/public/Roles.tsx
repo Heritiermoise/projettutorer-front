@@ -18,8 +18,8 @@ export const Roles = () => {
         "Vue d'ensemble de l'entreprise",
         "Statistiques avancees"
       ],
-      color: "from-warm-400 to-warm-600",
-      bgColor: "bg-gradient-to-br from-warm-50 to-white",
+      color: "from-primary-400 to-primary-600",
+      bgColor: "bg-gradient-to-br from-primary-50 to-white",
       borderColor: "border-warm-100",
       textColor: "text-warm-700"
     },
@@ -51,10 +51,10 @@ export const Roles = () => {
         "Gestion d'equipe",
         "Evaluations performance"
       ],
-      color: "from-accent-500 to-accent-700",
-      bgColor: "bg-gradient-to-br from-accent-50 to-white",
-      borderColor: "border-accent-200",
-      textColor: "text-accent-700"
+      color: "from-primary-500 to-primary-700",
+      bgColor: "bg-gradient-to-br from-primary-50 to-white",
+      borderColor: "border-primary-200",
+      textColor: "text-primary-700"
     },
     {
       icon: User,
@@ -90,7 +90,7 @@ export const Roles = () => {
           <h2 className="text-4xl sm:text-5xl font-bold text-slate-800 mb-4">
             Une interface adaptee
             <br />
-            <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary-600 to-primary-600 bg-clip-text text-transparent">
               a chaque utilisateur
             </span>
           </h2>
@@ -110,7 +110,7 @@ export const Roles = () => {
             >
               {role.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-gradient-to-r from-primary-500 to-accent-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                  <div className="bg-gradient-to-r from-primary-500 to-primary-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
                     LE PLUS UTILISE
                   </div>
                 </div>

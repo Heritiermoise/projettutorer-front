@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { offreAPI, entrepriseAPI } from '../services/api'
+import { BrandMark } from '../components/BrandMark'
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
@@ -46,11 +47,14 @@ export const OffresEmploiPage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const [offresResponse, entreprisesResponse] = await Promise.all([
+        const [offresResult, entreprisesResult] = await Promise.allSettled([
           offreAPI.getPubliees(),
           entrepriseAPI.getAll(),
         ])
-        
+
+        const offresResponse = offresResult.status === 'fulfilled' ? offresResult.value : {}
+        const entreprisesResponse = entreprisesResult.status === 'fulfilled' ? entreprisesResult.value : {}
+
         const rawOffres = offresResponse.offres || offresResponse.data || offresResponse || []
         const rawEntreprises = entreprisesResponse.entreprises || entreprisesResponse.data || entreprisesResponse || []
         
@@ -76,6 +80,12 @@ export const OffresEmploiPage = () => {
         console.error("Erreur de chargement", error)
         setOffres([])
         setEntreprises([])
+        setStatsOffres({
+          totalActives: 0,
+          entreprisesPartenaires: 0,
+          salaireMoyen: 0,
+          postulationsRapides: 98,
+        })
       } finally {
         setLoading(false)
       }
@@ -99,22 +109,14 @@ export const OffresEmploiPage = () => {
   const typesContrats = ['all', ...Array.from(new Set(offres.map(o => o.type_contrat).filter(Boolean)))]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900/40 dark:to-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-primary-50/20 dark:from-slate-950 dark:via-slate-900/40 dark:to-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300">
       
       {/* --- HEADER --- */}
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
-                  RH Pro
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Recrutement & Carrière</p>
-              </div>
+            <Link to="/" className="group">
+              <BrandMark subtitle="Recrutement & Carrière" />
             </Link>
 
             {/* Navigation Desktop */}
@@ -213,7 +215,7 @@ export const OffresEmploiPage = () => {
       </header>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-100/30 via-white to-transparent dark:from-indigo-950/20 dark:via-slate-950 dark:to-transparent py-16">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-100/30 via-white to-transparent dark:from-primary-950/20 dark:via-slate-950 dark:to-transparent py-16">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-blue-500/10 dark:bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
         
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
@@ -223,7 +225,7 @@ export const OffresEmploiPage = () => {
           </div>
 
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white mb-6">
-            Trouvez votre <span className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">emploi de rêve</span>
+            Trouvez votre <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">emploi de rêve</span>
           </h2>
           
           <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto">
@@ -248,7 +250,7 @@ export const OffresEmploiPage = () => {
           <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 p-2">
             {[
               { label: "Offres Actives", val: loading ? "..." : statsOffres.totalActives, icon: Briefcase, color: "text-blue-500 bg-blue-500/10" },
-              { label: "Partenaires", val: loading ? "..." : `${statsOffres.entreprisesPartenaires}+`, icon: Building2, color: "text-indigo-500 bg-indigo-500/10" },
+              { label: "Partenaires", val: loading ? "..." : `${statsOffres.entreprisesPartenaires}+`, icon: Building2, color: "text-primary-500 bg-primary-500/10" },
               { label: "Moyenne Salaires", val: loading ? "..." : money.format(statsOffres.salaireMoyen), icon: TrendingUp, color: "text-primary-600 bg-primary-500/10" },
               { label: "Candidatures simples", val: `${statsOffres.postulationsRapides}%`, icon: CheckCircle2, color: "text-amber-500 bg-amber-500/10" }
             ].map((stat, idx) => (
@@ -347,7 +349,7 @@ export const OffresEmploiPage = () => {
                     <div>
                       {/* En-tête de carte */}
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-11 h-11 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center font-bold shadow-inner">
+                        <div className="w-11 h-11 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-slate-800 dark:to-slate-800 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center font-bold shadow-inner">
                           {entreprise?.nom ? (
                             <span className="text-lg">{entreprise.nom.charAt(0).toUpperCase()}</span>
                           ) : (

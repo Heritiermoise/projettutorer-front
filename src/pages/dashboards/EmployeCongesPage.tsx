@@ -48,10 +48,10 @@ export const EmployeCongesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total demandes', value: stats.total, color: 'from-primary-500 to-purple-600', icon: Calendar },
-          { label: 'Approuves', value: stats.approuves, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'En attente', value: stats.enAttente, color: 'from-amber-500 to-orange-600', icon: Clock },
-          { label: 'Refuses', value: stats.refuses, color: 'from-red-500 to-rose-600', icon: XCircle },
+          { label: 'Total demandes', value: stats.total, color: 'from-primary-500 to-primary-600', icon: Calendar },
+          { label: 'Approuves', value: stats.approuves, color: 'from-primary-500 to-primary-600', icon: CheckCircle2 },
+          { label: 'En attente', value: stats.enAttente, color: 'from-primary-500 to-primary-600', icon: Clock },
+          { label: 'Refuses', value: stats.refuses, color: 'from-red-500 to-primary-600', icon: XCircle },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -74,9 +74,9 @@ export const EmployeCongesPage = () => {
             <p className="text-sm text-blue-600 dark:text-blue-400">Pris cette annee</p>
             <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">10 jours</p>
           </div>
-          <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-            <p className="text-sm text-purple-600 dark:text-purple-400">Total annuel</p>
-            <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">30 jours</p>
+          <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800">
+            <p className="text-sm text-primary-600 dark:text-primary-400">Total annuel</p>
+            <p className="text-3xl font-bold text-primary-700 dark:text-primary-300">30 jours</p>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ export const EmployeCongesPage = () => {
               <div key={conge.id_conge} className="p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                       <Calendar className="w-6 h-6 text-white" />
                     </div>
                     <div>

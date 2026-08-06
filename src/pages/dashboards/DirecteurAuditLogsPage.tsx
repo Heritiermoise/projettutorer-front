@@ -30,13 +30,13 @@ export const DirecteurAuditLogsPage = () => {
       'Info': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
       'Warning': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
       'Error': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
-      'Critical': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+      'Critical': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
     }
     return colors[severity] || colors['Info']
   }
 
   const getSeverityIcon = (severity: string) => {
-    if (severity === 'Critical') return <XCircle className="w-5 h-5 text-purple-600" />
+    if (severity === 'Critical') return <XCircle className="w-5 h-5 text-primary-600" />
     if (severity === 'Error') return <AlertCircle className="w-5 h-5 text-red-600" />
     if (severity === 'Warning') return <AlertTriangle className="w-5 h-5 text-amber-600" />
     return <Info className="w-5 h-5 text-blue-600" />
@@ -49,13 +49,13 @@ export const DirecteurAuditLogsPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Journal d'Audit</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Traçabilité complète des actions</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Shield className="w-5 h-5" />
           <span>Exporter logs</span>
         </button>
       </div>
 
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Shield className="w-6 h-6" />
@@ -69,11 +69,11 @@ export const DirecteurAuditLogsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Shield, color: 'from-purple-500 to-pink-600' },
-          { label: 'Info', value: stats.info, icon: Info, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Warning', value: stats.warning, icon: AlertTriangle, color: 'from-amber-500 to-orange-600' },
-          { label: 'Error', value: stats.error, icon: AlertCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'Critical', value: stats.critical, icon: XCircle, color: 'from-purple-500 to-purple-700' }
+          { label: 'Total', value: stats.total, icon: Shield, color: 'from-primary-500 to-primary-600' },
+          { label: 'Info', value: stats.info, icon: Info, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Warning', value: stats.warning, icon: AlertTriangle, color: 'from-primary-500 to-primary-600' },
+          { label: 'Error', value: stats.error, icon: AlertCircle, color: 'from-red-500 to-primary-600' },
+          { label: 'Critical', value: stats.critical, icon: XCircle, color: 'from-primary-500 to-primary-700' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -116,7 +116,7 @@ export const DirecteurAuditLogsPage = () => {
             <div key={log.id} className="p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
               <div className="flex items-start space-x-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  log.severity === 'Critical' ? 'bg-purple-100 dark:bg-purple-900/30' :
+                  log.severity === 'Critical' ? 'bg-primary-100 dark:bg-primary-900/30' :
                   log.severity === 'Error' ? 'bg-red-100 dark:bg-red-900/30' :
                   log.severity === 'Warning' ? 'bg-amber-100 dark:bg-amber-900/30' :
                   'bg-blue-100 dark:bg-blue-900/30'

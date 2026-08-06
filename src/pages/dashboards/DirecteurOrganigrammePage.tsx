@@ -64,9 +64,9 @@ export const DirecteurOrganigrammePage = () => {
           onClick={() => { setSelectedNode(node); setShowDetailModal(true) }}
         >
           <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-            node.niveau === 0 ? 'bg-gradient-to-br from-red-500 to-pink-600' :
-            node.niveau === 1 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-            'bg-gradient-to-br from-primary-500 to-purple-600'
+            node.niveau === 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+            node.niveau === 1 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+            'bg-gradient-to-br from-primary-500 to-primary-600'
           }`}>
             <span className="text-white font-bold text-lg">{node.prenom[0]}</span>
           </div>
@@ -116,10 +116,10 @@ export const DirecteurOrganigrammePage = () => {
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Structure hierarchique de l'entreprise</p>
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={() => setViewMode('tree')} className={`px-4 py-2 rounded-xl ${viewMode === 'tree' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
+          <button onClick={() => setViewMode('tree')} className={`px-4 py-2 rounded-xl ${viewMode === 'tree' ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
             Arborescence
           </button>
-          <button onClick={() => setViewMode('grid')} className={`px-4 py-2 rounded-xl ${viewMode === 'grid' ? 'bg-amber-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
+          <button onClick={() => setViewMode('grid')} className={`px-4 py-2 rounded-xl ${viewMode === 'grid' ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>
             Grille
           </button>
         </div>
@@ -127,10 +127,10 @@ export const DirecteurOrganigrammePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Total employes', value: stats.total, icon: Users, color: 'from-amber-500 to-orange-600' },
-          { label: 'Departements', value: stats.departements, icon: Building2, color: 'from-primary-500 to-purple-600' },
-          { label: 'Actifs', value: stats.actifs, icon: Users, color: 'from-green-500 to-emerald-600' },
-          { label: 'En conge', value: stats.enConge, icon: Calendar, color: 'from-amber-500 to-yellow-600' }
+          { label: 'Total employes', value: stats.total, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'Departements', value: stats.departements, icon: Building2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Actifs', value: stats.actifs, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'En conge', value: stats.enConge, icon: Calendar, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -170,9 +170,9 @@ export const DirecteurOrganigrammePage = () => {
               >
                 <div className="flex items-center space-x-3 mb-4">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    node.niveau === 0 ? 'bg-gradient-to-br from-red-500 to-pink-600' :
-                    node.niveau === 1 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                    'bg-gradient-to-br from-primary-500 to-purple-600'
+                    node.niveau === 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+                    node.niveau === 1 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+                    'bg-gradient-to-br from-primary-500 to-primary-600'
                   }`}>
                     <span className="text-white font-bold text-2xl">{node.prenom[0]}</span>
                   </div>
@@ -225,9 +225,9 @@ export const DirecteurOrganigrammePage = () => {
             <div className="p-6 space-y-6">
               <div className="flex items-center space-x-4">
                 <div className={`w-20 h-20 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  selectedNode.niveau === 0 ? 'bg-gradient-to-br from-red-500 to-pink-600' :
-                  selectedNode.niveau === 1 ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                  'bg-gradient-to-br from-primary-500 to-purple-600'
+                  selectedNode.niveau === 0 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+                  selectedNode.niveau === 1 ? 'bg-gradient-to-br from-primary-500 to-primary-600' :
+                  'bg-gradient-to-br from-primary-500 to-primary-600'
                 }`}>
                   <span className="text-white font-bold text-3xl">{selectedNode.prenom[0]}</span>
                 </div>
@@ -269,7 +269,7 @@ export const DirecteurOrganigrammePage = () => {
                   <div className="space-y-2">
                     {selectedNode.enfants.map(enfant => (
                       <div key={enfant.id} className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">{enfant.prenom[0]}</span>
                         </div>
                         <div>

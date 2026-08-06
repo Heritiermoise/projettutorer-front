@@ -13,10 +13,10 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-600 bg-clip-text text-transparent">
                 RH Pro
               </span>
             </div>
@@ -46,10 +46,10 @@ export const HomePage = () => {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-20 bg-gradient-to-br from-slate-50 via-primary-50/30 to-accent-50/30">
+      <section className="relative min-h-screen flex items-center overflow-hidden pt-20 bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-50/30">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary-200/30 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary-200/30 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -65,7 +65,7 @@ export const HomePage = () => {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-6">
                 <span className="text-slate-800">Gerez votre</span>
                 <br />
-                <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-primary-500 bg-clip-text text-transparent">
                   entreprise
                 </span>
                 <br />
@@ -126,7 +126,7 @@ export const HomePage = () => {
                       <div
                         key={i}
                         style={{ height: height + '%' }}
-                        className="flex-1 bg-gradient-to-t from-primary-500 to-accent-400 rounded-t-lg opacity-80"
+                        className="flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg opacity-80"
                       />
                     ))}
                   </div>
@@ -136,9 +136,9 @@ export const HomePage = () => {
                       <div className="text-xs text-primary-600 font-medium">Contrats actifs</div>
                       <div className="text-xl font-bold text-primary-700">142</div>
                     </div>
-                    <div className="bg-gradient-to-br from-accent-50 to-accent-100/50 p-3 rounded-xl">
-                      <div className="text-xs text-accent-600 font-medium">Conges en cours</div>
-                      <div className="text-xl font-bold text-accent-700">8</div>
+                    <div className="bg-gradient-to-br from-primary-50 to-primary-100/50 p-3 rounded-xl">
+                      <div className="text-xs text-primary-600 font-medium">Conges en cours</div>
+                      <div className="text-xl font-bold text-primary-700">8</div>
                     </div>
                   </div>
                 </div>
@@ -165,14 +165,14 @@ export const HomePage = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Briefcase, title: "Recrutement", desc: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-primary-700" },
-              { icon: FileText, title: "Contrats", desc: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-accent-500 to-accent-700" },
-              { icon: DollarSign, title: "Paie", desc: "Calculez les salaires, gerez les primes. Bulletins generes automatiquement.", color: "from-warm-500 to-warm-600" },
+              { icon: FileText, title: "Contrats", desc: "Creez, signez et archivez tous vos contrats. Renouvellements automatiques.", color: "from-primary-500 to-primary-700" },
+              { icon: DollarSign, title: "Paie", desc: "Calculez les salaires, gerez les primes. Bulletins generes automatiquement.", color: "from-primary-500 to-primary-600" },
               { icon: Calendar, title: "Conges", desc: "Demandes en ligne, validation en un clic, calendrier partage.", color: "from-slate-500 to-slate-700" },
-              { icon: Users, title: "Employes", desc: "Gestion complete des employes, services et postes de votre entreprise.", color: "from-primary-500 to-accent-500" },
-              { icon: BarChart3, title: "Rapports", desc: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-accent-500 to-primary-600" },
+              { icon: Users, title: "Employes", desc: "Gestion complete des employes, services et postes de votre entreprise.", color: "from-primary-500 to-primary-500" },
+              { icon: BarChart3, title: "Rapports", desc: "Tableaux de bord personnalises, KPIs, export PDF/Excel.", color: "from-primary-500 to-primary-600" },
               { icon: Shield, title: "Securite", desc: "Chiffrement de bout en bout, sauvegardes automatiques, RGPD.", color: "from-slate-600 to-slate-800" },
-              { icon: Bell, title: "Notifications", desc: "Alertes personnalisees pour les echeances et evenements importants.", color: "from-primary-600 to-accent-600" },
-              { icon: TrendingUp, title: "Statistiques", desc: "Analyses avancees, evolution des effectifs, masse salariale.", color: "from-warm-400 to-warm-600" },
+              { icon: Bell, title: "Notifications", desc: "Alertes personnalisees pour les echeances et evenements importants.", color: "from-primary-600 to-primary-600" },
+              { icon: TrendingUp, title: "Statistiques", desc: "Analyses avancees, evolution des effectifs, masse salariale.", color: "from-primary-400 to-primary-600" },
             ].map((feature, i) => (
               <div key={i} className="group bg-white rounded-2xl p-8 border border-slate-100 hover:border-primary-200 shadow-sm hover:shadow-xl transition-all">
                 <div className={
@@ -239,9 +239,9 @@ export const HomePage = () => {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Users, title: "Directeur", desc: "Vision strategique et KPIs", color: "from-warm-500 to-warm-600" },
+              { icon: Users, title: "Directeur", desc: "Vision strategique et KPIs", color: "from-primary-500 to-primary-600" },
               { icon: Briefcase, title: "RH", desc: "Gestion quotidienne complete", color: "from-primary-500 to-primary-700" },
-              { icon: Building2, title: "Manager", desc: "Management d'equipe", color: "from-accent-500 to-accent-700" },
+              { icon: Building2, title: "Manager", desc: "Management d'equipe", color: "from-primary-500 to-primary-700" },
               { icon: FileText, title: "Employe", desc: "Espace personnel complet", color: "from-slate-500 to-slate-700" },
             ].map((role, i) => (
               <div key={i} className="bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 border border-slate-200 hover:shadow-xl transition-all">
@@ -266,7 +266,7 @@ export const HomePage = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-gradient-to-br from-primary-600 via-primary-700 to-accent-700">
+      <section className="py-24 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-700">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Pret a transformer votre gestion RH ?
@@ -289,7 +289,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-white">RH Pro</span>

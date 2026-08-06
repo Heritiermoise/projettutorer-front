@@ -89,7 +89,7 @@ export const PublicNavbar = () => {
               <LogIn className="w-4 h-4" />
               <span>Connexion</span>
             </Link>
-            <Link to="/register" className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 hover:from-primary-700 hover:via-purple-700 hover:to-accent-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+            <Link to="/register" className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 hover:from-primary-700 hover:via-purple-700 hover:to-primary-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
               <UserPlus className="w-4 h-4" />
               <span>S'inscrire</span>
             </Link>
@@ -141,7 +141,7 @@ export const PublicNavbar = () => {
                 <LogIn className="w-4 h-4" />
                 <span>Connexion</span>
               </Link>
-              <Link to="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center space-x-2 w-full px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-full font-semibold shadow-lg">
+              <Link to="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center space-x-2 w-full px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-full font-semibold shadow-lg">
                 <UserPlus className="w-4 h-4" />
                 <span>S'inscrire</span>
               </Link>

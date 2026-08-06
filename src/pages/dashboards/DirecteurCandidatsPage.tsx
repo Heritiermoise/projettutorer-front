@@ -115,11 +115,11 @@ export const DirecteurCandidatsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Users, color: 'from-amber-500 to-orange-600' },
-          { label: 'À examiner', value: stats.pending, icon: Clock, color: 'from-violet-500 to-indigo-600' },
-          { label: 'Entretiens', value: stats.interviews, icon: Calendar, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Recrutées', value: stats.accepted, icon: CheckCircle2, color: 'from-emerald-500 to-green-600' },
-          { label: 'Refusées', value: stats.rejected, icon: XCircle, color: 'from-red-500 to-rose-600' },
+          { label: 'Total', value: stats.total, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'À examiner', value: stats.pending, icon: Clock, color: 'from-violet-500 to-primary-600' },
+          { label: 'Entretiens', value: stats.interviews, icon: Calendar, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Recrutées', value: stats.accepted, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Refusées', value: stats.rejected, icon: XCircle, color: 'from-red-500 to-primary-600' },
         ].map((stat) => <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-lg grid place-items-center mb-3`}><stat.icon className="w-5 h-5 text-white" /></div>
           <p className="text-xs text-slate-600 dark:text-slate-400">{stat.label}</p><p className="text-2xl font-bold text-slate-800 dark:text-white">{stat.value}</p>

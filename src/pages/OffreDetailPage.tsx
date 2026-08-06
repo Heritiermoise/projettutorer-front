@@ -108,7 +108,7 @@ export const OffreDetailPage = () => {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-r from-primary-600 to-accent-600 py-12">
+      <section className="bg-gradient-to-r from-primary-600 to-primary-600 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start space-x-6">
             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -168,7 +168,7 @@ export const OffreDetailPage = () => {
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">À propos de l'entreprise</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -191,7 +191,7 @@ export const OffreDetailPage = () => {
               </div>
               <button
                 onClick={() => setShowPostulationModal(true)}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                className="w-full mt-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
               >
                 Postuler maintenant
               </button>

@@ -75,7 +75,7 @@ export const DirecteurIntegrationsPage = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Plug className="w-6 h-6" />
@@ -95,11 +95,11 @@ export const DirecteurIntegrationsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Plug, color: 'from-purple-500 to-pink-600' },
-          { label: 'Connectees', value: stats.connectees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Deconnectees', value: stats.deconnectees, icon: XCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'A configurer', value: stats.configuration, icon: Settings, color: 'from-amber-500 to-orange-600' },
-          { label: 'Sync total', value: stats.totalSync.toLocaleString(), icon: RefreshCw, color: 'from-blue-500 to-cyan-600' }
+          { label: 'Total', value: stats.total, icon: Plug, color: 'from-primary-500 to-primary-600' },
+          { label: 'Connectees', value: stats.connectees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Deconnectees', value: stats.deconnectees, icon: XCircle, color: 'from-red-500 to-primary-600' },
+          { label: 'A configurer', value: stats.configuration, icon: Settings, color: 'from-primary-500 to-primary-600' },
+          { label: 'Sync total', value: stats.totalSync.toLocaleString(), icon: RefreshCw, color: 'from-primary-500 to-cyan-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>

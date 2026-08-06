@@ -156,10 +156,10 @@ export const mockReconnaissances: Reconnaissance[] = [
 ]
 
 export const mockBadges: Badge[] = [
-  { id: 1, nom: 'Star Performer', description: 'Attribue pour performance exceptionnelle', icone: '⭐', couleur: 'from-amber-500 to-yellow-500', condition: '5 reconnaissances en un mois', nombre_attribues: 12 },
-  { id: 2, nom: 'Team Player', description: 'Excellent esprit d\'equipe', icone: '🤝', couleur: 'from-blue-500 to-cyan-500', condition: '10 collaborations', nombre_attribues: 28 },
-  { id: 3, nom: 'Innovation', description: 'Idees innovantes implementees', icone: '💡', couleur: 'from-purple-500 to-pink-500', condition: '3 innovations acceptees', nombre_attribues: 8 },
-  { id: 4, nom: 'Client Success', description: 'Satisfaction client exceptionnelle', icone: '🏆', couleur: 'from-green-500 to-emerald-500', condition: '5 clients satisfaits', nombre_attribues: 15 },
-  { id: 5, nom: 'Communication', description: 'Excellentes competences en communication', icone: '📢', couleur: 'from-red-500 to-orange-500', condition: 'Presentations reussies', nombre_attribues: 20 },
-  { id: 6, nom: 'Support', description: 'Toujours la pour aider', icone: '', couleur: 'from-indigo-500 to-purple-500', condition: '20 actes de soutien', nombre_attribues: 35 }
+  { id: 1, nom: 'Star Performer', description: 'Attribue pour performance exceptionnelle', icone: '⭐', couleur: 'from-primary-500 to-primary-500', condition: '5 reconnaissances en un mois', nombre_attribues: 12 },
+  { id: 2, nom: 'Team Player', description: 'Excellent esprit d\'equipe', icone: '🤝', couleur: 'from-primary-500 to-cyan-500', condition: '10 collaborations', nombre_attribues: 28 },
+  { id: 3, nom: 'Innovation', description: 'Idees innovantes implementees', icone: '💡', couleur: 'from-primary-500 to-primary-500', condition: '3 innovations acceptees', nombre_attribues: 8 },
+  { id: 4, nom: 'Client Success', description: 'Satisfaction client exceptionnelle', icone: '🏆', couleur: 'from-primary-500 to-primary-500', condition: '5 clients satisfaits', nombre_attribues: 15 },
+  { id: 5, nom: 'Communication', description: 'Excellentes competences en communication', icone: '📢', couleur: 'from-red-500 to-primary-500', condition: 'Presentations reussies', nombre_attribues: 20 },
+  { id: 6, nom: 'Support', description: 'Toujours la pour aider', icone: '', couleur: 'from-primary-500 to-primary-500', condition: '20 actes de soutien', nombre_attribues: 35 }
 ]

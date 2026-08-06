@@ -293,7 +293,7 @@ export const RHPresencesPage = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button onClick={exportPresences} disabled={exporting || loading} className="flex items-center space-x-2 px-3.5 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-60">
-            {exporting ? <LoaderCircle className="w-4 h-4 animate-spin text-indigo-500" /> : <Download className="w-4 h-4 text-slate-400" />}
+            {exporting ? <LoaderCircle className="w-4 h-4 animate-spin text-primary-500" /> : <Download className="w-4 h-4 text-slate-400" />}
             <span className="hidden sm:inline">{exporting ? 'Export...' : 'Exporter Excel'}</span>
           </button>
           <button 
@@ -312,7 +312,7 @@ export const RHPresencesPage = () => {
               setExistingPresenceToday(null)
               setShowAddModal(true)
             }} 
-            className="flex items-center space-x-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all active:scale-95"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary-600/20 transition-all active:scale-95"
           >
             <Fingerprint className="w-4 h-4 animate-pulse" />
             <span>Pointage</span>
@@ -324,7 +324,7 @@ export const RHPresencesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Pointages', value: stats.total, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-950/50', icon: Clock },
+          { label: 'Total Pointages', value: stats.total, color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-primary-950/50', icon: Clock },
           { label: 'Présents', value: stats.presents, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/50', icon: CheckCircle2 },
           { label: 'Retards', value: stats.retards, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/50', icon: AlertCircle },
           { label: 'Absents', value: stats.absents, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/50', icon: XCircle },
@@ -378,9 +378,9 @@ export const RHPresencesPage = () => {
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-72">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input type="text" placeholder="Rechercher un employé..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white" />
+              <input type="text" placeholder="Rechercher un employé..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white" />
             </div>
-            <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white">
+            <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white">
               <option value="all">Tous les statuts</option>
               <option value="Present">Présent</option>
               <option value="Retard">Retard</option>
@@ -391,7 +391,7 @@ export const RHPresencesPage = () => {
 
         {loading ? (
           <div className="flex items-center justify-center h-48">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
           </div>
         ) : filteredPresences.length === 0 ? (
           <div className="text-center py-16">
@@ -411,7 +411,7 @@ export const RHPresencesPage = () => {
               return (
                 <div key={presence.id_presence || presence.id} className="flex items-center justify-between p-4 hover:bg-slate-50/80 dark:hover:bg-slate-700/20 transition-colors">
                   <div className="flex items-center space-x-3.5">
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm ${sexe === 'M' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' : 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300'}`}>
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm ${sexe === 'M' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' : 'bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300'}`}>
                       {initial}
                     </div>
                     <div>
@@ -452,9 +452,9 @@ export const RHPresencesPage = () => {
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-indigo-500/10 to-purple-500/10">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-primary-500/10 to-primary-500/10">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white shadow-md shadow-primary-600/30">
                   <Fingerprint className="w-5 h-5" />
                 </div>
                 <div>
@@ -476,7 +476,7 @@ export const RHPresencesPage = () => {
                   required 
                   value={formData.matricule} 
                   onChange={(e) => handleEmployeChange(e.target.value)} 
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
                 >
                   <option value="">Sélectionner un employé...</option>
                   {employes.map((emp: any) => (
@@ -525,13 +525,13 @@ export const RHPresencesPage = () => {
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                     Motif {formData.statut === 'Absent' ? "de l'absence" : "du retard"} <span className="text-rose-500">*</span>
                   </label>
-                  <textarea rows={3} required value={formData.justification} onChange={(e) => setFormData({...formData, justification: e.target.value})} placeholder="Précisez le motif..." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none dark:text-white"></textarea>
+                  <textarea rows={3} required value={formData.justification} onChange={(e) => setFormData({...formData, justification: e.target.value})} placeholder="Précisez le motif..." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none dark:text-white"></textarea>
                 </div>
               )}
 
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors">Annuler</button>
-                <button type="submit" disabled={submitting || !formData.matricule} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/25 transition-all disabled:opacity-50 flex items-center space-x-2">
+                <button type="submit" disabled={submitting || !formData.matricule} className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary-600/25 transition-all disabled:opacity-50 flex items-center space-x-2">
                   {submitting ? <LoaderCircle className="w-4 h-4 animate-spin" /> : <Fingerprint className="w-4 h-4" />}
                   <span>{getSubmitButtonLabel()}</span>
                 </button>

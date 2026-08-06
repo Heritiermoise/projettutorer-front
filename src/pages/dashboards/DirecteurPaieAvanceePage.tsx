@@ -42,7 +42,7 @@ export const DirecteurPaieAvanceePage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Paie Avancee</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gestion detaillee des bulletins de paie</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Download className="w-5 h-5" />
           <span>Exporter Excel</span>
         </button>
@@ -50,13 +50,13 @@ export const DirecteurPaieAvanceePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileText, color: 'from-amber-500 to-orange-600' },
-          { label: 'Payes', value: stats.payes, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-blue-500 to-cyan-600' },
-          { label: 'A generer', value: stats.aGenerer, icon: AlertCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'Masse sal.', value: '$' + (stats.masseSalariale/1000).toFixed(1) + 'K', icon: DollarSign, color: 'from-purple-500 to-pink-600' },
-          { label: 'Primes', value: '$' + stats.totalPrimes, icon: TrendingUp, color: 'from-emerald-500 to-teal-600' },
-          { label: 'Heures sup', value: '$' + stats.totalHeuresSup, icon: Clock, color: 'from-pink-500 to-rose-600' }
+          { label: 'Total', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'Payes', value: stats.payes, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-primary-500 to-cyan-600' },
+          { label: 'A generer', value: stats.aGenerer, icon: AlertCircle, color: 'from-red-500 to-primary-600' },
+          { label: 'Masse sal.', value: '$' + (stats.masseSalariale/1000).toFixed(1) + 'K', icon: DollarSign, color: 'from-primary-500 to-primary-600' },
+          { label: 'Primes', value: '$' + stats.totalPrimes, icon: TrendingUp, color: 'from-primary-500 to-primary-600' },
+          { label: 'Heures sup', value: '$' + stats.totalHeuresSup, icon: Clock, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -103,7 +103,7 @@ export const DirecteurPaieAvanceePage = () => {
                 <tr key={bulletin.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold">{bulletin.employe_nom[0]}</span>
                       </div>
                       <div>
@@ -189,7 +189,7 @@ export const DirecteurPaieAvanceePage = () => {
                 </div>
               </div>
 
-              <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+              <div className="p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Salaire Net a Payer</p>

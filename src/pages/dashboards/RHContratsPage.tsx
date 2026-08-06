@@ -144,10 +144,10 @@ export const RHContratsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total contrats', value: stats.total, color: 'from-primary-500 to-purple-600', icon: FileText },
-          { label: 'Contrats actifs', value: stats.actifs, color: 'from-green-500 to-emerald-600', icon: FileText },
-          { label: 'CDI', value: stats.cdi, color: 'from-blue-500 to-blue-600', icon: FileText },
-          { label: 'CDD', value: stats.cdd, color: 'from-amber-500 to-orange-600', icon: FileText },
+          { label: 'Total contrats', value: stats.total, color: 'from-primary-500 to-primary-600', icon: FileText },
+          { label: 'Contrats actifs', value: stats.actifs, color: 'from-primary-500 to-primary-600', icon: FileText },
+          { label: 'CDI', value: stats.cdi, color: 'from-primary-500 to-primary-600', icon: FileText },
+          { label: 'CDD', value: stats.cdd, color: 'from-primary-500 to-primary-600', icon: FileText },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -218,7 +218,7 @@ export const RHContratsPage = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       contrat.type_contrat === 'CDI' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
                       contrat.type_contrat === 'CDD' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' :
-                      'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                      'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                     }`}>{contrat.type_contrat}</span>
                   </td>
                   <td className="py-3 px-4 text-sm font-semibold text-slate-800 dark:text-white hidden lg:table-cell">${contrat.salaire_base || 0}</td>
@@ -255,7 +255,7 @@ export const RHContratsPage = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
                   <FileText className="w-8 h-8 text-white" />
                 </div>
                 <div>

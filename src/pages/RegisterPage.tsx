@@ -104,13 +104,13 @@ export const RegisterPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-slate-50 to-accent-50 dark:from-slate-900 dark:via-primary-900/10 dark:to-accent-900/10">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-slate-50 to-primary-50 dark:from-slate-900 dark:via-primary-900/10 dark:to-primary-900/10">
       <PublicNavbar />
       
       <div className="pt-24 pb-12 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl shadow-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-500 rounded-2xl shadow-2xl mb-4">
               <UserPlus className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-800 dark:text-white mb-2">Créer un compte</h1>
@@ -140,9 +140,9 @@ export const RegisterPage = () => {
             )}
 
             {success && (
-              <div className="mb-6 p-4 bg-accent-50 dark:bg-accent-900/30 border border-accent-200 dark:border-accent-800 rounded-xl flex items-start space-x-3">
-                <CheckCircle2 className="w-5 h-5 text-accent-600 dark:text-accent-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-accent-700 dark:text-accent-300">{success}</p>
+              <div className="mb-6 p-4 bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 rounded-xl flex items-start space-x-3">
+                <CheckCircle2 className="w-5 h-5 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-primary-700 dark:text-primary-300">{success}</p>
               </div>
             )}
 
@@ -263,7 +263,7 @@ export const RegisterPage = () => {
               </div>
 
               {/* Bouton de soumission */}
-              <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed">
+              <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed">
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <UserPlus className="w-5 h-5" />}
                 <span>{loading ? 'Inscription en cours...' : (formData.role === 'directeur' ? "Continuer vers la création d'entreprise" : 'Créer mon compte')}</span>
               </button>

@@ -99,7 +99,7 @@ export const AssistantPublic = () => {
         className={`fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 ${
           isOpen 
             ? 'bg-slate-700 dark:bg-slate-600 rotate-90' 
-            : 'bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 animate-pulse'
+            : 'bg-gradient-to-br from-primary-500 via-orange-500 to-red-500 animate-pulse'
         }`}
       >
         {isOpen ? <X className="w-7 h-7 text-white" /> : <MessageCircle className="w-7 h-7 text-white" />}
@@ -112,7 +112,7 @@ export const AssistantPublic = () => {
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-2rem)] h-[600px] max-h-[calc(100vh-8rem)] bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
           {/* Header */}
-          <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 p-6 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-500 via-orange-500 to-red-500 p-6 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12" />
             <div className="relative flex items-center space-x-3">
@@ -137,14 +137,14 @@ export const AssistantPublic = () => {
                   <div className={`flex items-end space-x-2 ${msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       msg.sender === 'user' 
-                        ? 'bg-gradient-to-br from-primary-500 to-purple-600' 
-                        : 'bg-gradient-to-br from-amber-500 to-orange-500'
+                        ? 'bg-gradient-to-br from-primary-500 to-primary-600' 
+                        : 'bg-gradient-to-br from-primary-500 to-primary-500'
                     }`}>
                       {msg.sender === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
                     </div>
                     <div className={`px-4 py-3 rounded-2xl ${
                       msg.sender === 'user'
-                        ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white rounded-br-sm'
+                        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-br-sm'
                         : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm rounded-bl-sm border border-slate-200 dark:border-slate-700'
                     }`}>
                       <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
@@ -176,7 +176,7 @@ export const AssistantPublic = () => {
             {isTyping && (
               <div className="flex justify-start">
                 <div className="flex items-end space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                   <div className="bg-white dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm shadow-sm border border-slate-200 dark:border-slate-700">
@@ -220,12 +220,12 @@ export const AssistantPublic = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Tapez votre message..."
-                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim()}
-                className="w-11 h-11 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-11 h-11 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center text-white hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
               </button>

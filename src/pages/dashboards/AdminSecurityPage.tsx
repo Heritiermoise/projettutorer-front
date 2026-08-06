@@ -92,7 +92,7 @@ export const AdminSecurityPage = () => {
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <AlertTriangle className="w-8 h-8 text-pink-600" />
+            <AlertTriangle className="w-8 h-8 text-primary-600" />
             <span className="text-3xl font-bold text-slate-800 dark:text-white">2</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Vulnerabilites ouvertes</p>
@@ -260,7 +260,7 @@ export const AdminSecurityPage = () => {
                   <h4 className="font-bold text-slate-800 dark:text-white mb-4">Methodes supportees</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"><div className="flex items-center space-x-3"><Fingerprint className="w-5 h-5 text-primary-600" /><span className="font-semibold">Application Authenticator</span></div><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"><div className="flex items-center space-x-3"><Key className="w-5 h-5 text-accent-600" /><span className="font-semibold">Cles de securite</span></div><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
+                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"><div className="flex items-center space-x-3"><Key className="w-5 h-5 text-primary-600" /><span className="font-semibold">Cles de securite</span></div><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
                     <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"><div className="flex items-center space-x-3"><Mail className="w-5 h-5 text-amber-600" /><span className="font-semibold">SMS</span></div><XCircle className="w-5 h-5 text-red-600" /></div>
                   </div>
                 </div>

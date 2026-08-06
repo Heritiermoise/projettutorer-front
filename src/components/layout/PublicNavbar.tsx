@@ -93,7 +93,7 @@ export const PublicNavbar = () => {
             </Link>
             <Link 
               to="/register"
-              className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-700 hover:to-accent-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-600 hover:from-primary-700 hover:to-primary-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               <UserPlus className="w-4 h-4" />
               <span>S'inscrire</span>
@@ -145,10 +145,10 @@ export const PublicNavbar = () => {
               <Link to="/login" className="block w-full text-center px-5 py-3 text-primary-600 border-2 border-primary-200 dark:border-primary-800 rounded-full font-semibold hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors">
                 Connexion
               </Link>
-              <Link to="/register" className="block w-full text-center px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-full font-semibold shadow-lg">
+              <Link to="/register" className="block w-full text-center px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-full font-semibold shadow-lg">
                 S'inscrire
               </Link>
-              <Link to="/create-entreprise" className="w-full px-5 py-3 bg-gradient-to-r from-warm-500 to-warm-600 text-white rounded-full font-semibold shadow-lg flex items-center justify-center space-x-2">
+              <Link to="/create-entreprise" className="w-full px-5 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full font-semibold shadow-lg flex items-center justify-center space-x-2">
                 <Briefcase className="w-4 h-4" />
                 <span>Creer mon entreprise</span>
               </Link>

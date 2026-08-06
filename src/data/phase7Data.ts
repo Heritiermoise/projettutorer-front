@@ -158,12 +158,12 @@ export const mockSondages: Sondage[] = [
 ]
 
 export const mockDefisBienEtre: DefiBienEtre[] = [
-  { id: 1, titre: '10 000 pas par jour', description: 'Marchez 10 000 pas chaque jour pendant 30 jours', categorie: 'Fitness', date_debut: '2026-06-01', date_fin: '2026-06-30', participants: 28, progression_moyenne: 75, icone: '🚶', couleur: 'from-green-500 to-emerald-500' },
-  { id: 2, titre: 'Zero sucre', description: 'Eliminez le sucre ajoute pendant 21 jours', categorie: 'Nutrition', date_debut: '2026-06-10', date_fin: '2026-06-30', participants: 15, progression_moyenne: 60, icone: '🥗', couleur: 'from-amber-500 to-orange-500' },
-  { id: 3, titre: 'Meditation quotidienne', description: '10 minutes de meditation par jour', categorie: 'Mental', date_debut: '2026-06-15', date_fin: '2026-07-15', participants: 22, progression_moyenne: 80, icone: '🧘', couleur: 'from-purple-500 to-pink-500' },
-  { id: 4, titre: '8h de sommeil', description: 'Dormir 8 heures chaque nuit', categorie: 'Sommeil', date_debut: '2026-06-20', date_fin: '2026-07-20', participants: 18, progression_moyenne: 55, icone: '😴', couleur: 'from-blue-500 to-indigo-500' },
-  { id: 5, titre: 'Dejeuner avec collegue', description: 'Un dejeuner avec un collegue different chaque semaine', categorie: 'Social', date_debut: '2026-06-01', date_fin: '2026-06-30', participants: 32, progression_moyenne: 85, icone: '👥', couleur: 'from-red-500 to-pink-500' },
-  { id: 6, titre: 'Boire 2L d\'eau', description: 'Hydratez-vous correctement', categorie: 'Nutrition', date_debut: '2026-06-15', date_fin: '2026-07-15', participants: 40, progression_moyenne: 70, icone: '💧', couleur: 'from-cyan-500 to-blue-500' }
+  { id: 1, titre: '10 000 pas par jour', description: 'Marchez 10 000 pas chaque jour pendant 30 jours', categorie: 'Fitness', date_debut: '2026-06-01', date_fin: '2026-06-30', participants: 28, progression_moyenne: 75, icone: '🚶', couleur: 'from-primary-500 to-primary-500' },
+  { id: 2, titre: 'Zero sucre', description: 'Eliminez le sucre ajoute pendant 21 jours', categorie: 'Nutrition', date_debut: '2026-06-10', date_fin: '2026-06-30', participants: 15, progression_moyenne: 60, icone: '🥗', couleur: 'from-primary-500 to-primary-500' },
+  { id: 3, titre: 'Meditation quotidienne', description: '10 minutes de meditation par jour', categorie: 'Mental', date_debut: '2026-06-15', date_fin: '2026-07-15', participants: 22, progression_moyenne: 80, icone: '🧘', couleur: 'from-primary-500 to-primary-500' },
+  { id: 4, titre: '8h de sommeil', description: 'Dormir 8 heures chaque nuit', categorie: 'Sommeil', date_debut: '2026-06-20', date_fin: '2026-07-20', participants: 18, progression_moyenne: 55, icone: '😴', couleur: 'from-primary-500 to-primary-500' },
+  { id: 5, titre: 'Dejeuner avec collegue', description: 'Un dejeuner avec un collegue different chaque semaine', categorie: 'Social', date_debut: '2026-06-01', date_fin: '2026-06-30', participants: 32, progression_moyenne: 85, icone: '👥', couleur: 'from-red-500 to-primary-500' },
+  { id: 6, titre: 'Boire 2L d\'eau', description: 'Hydratez-vous correctement', categorie: 'Nutrition', date_debut: '2026-06-15', date_fin: '2026-07-15', participants: 40, progression_moyenne: 70, icone: '💧', couleur: 'from-cyan-500 to-primary-500' }
 ]
 
 export const mockRessourcesBienEtre: RessourceBienEtre[] = [
@@ -185,12 +185,12 @@ export const mockArticlesKB: ArticleKnowledgeBase[] = [
 ]
 
 export const mockCategoriesKB: CategorieKB[] = [
-  { id: 1, nom: 'RH', icone: '👥', couleur: 'from-primary-500 to-purple-500', nombre_articles: 45, description: 'Ressources humaines et processus' },
-  { id: 2, nom: 'Technique', icone: '💻', couleur: 'from-blue-500 to-cyan-500', nombre_articles: 32, description: 'Documentation technique' },
-  { id: 3, nom: 'Finance', icone: '💰', couleur: 'from-green-500 to-emerald-500', nombre_articles: 18, description: 'Processus financiers' },
-  { id: 4, nom: 'Management', icone: '🎯', couleur: 'from-amber-500 to-orange-500', nombre_articles: 24, description: 'Management et leadership' },
-  { id: 5, nom: 'Bien-etre', icone: '💚', couleur: 'from-pink-500 to-rose-500', nombre_articles: 15, description: 'Bien-etre au travail' },
-  { id: 6, nom: 'Formation', icone: '📚', couleur: 'from-indigo-500 to-purple-500', nombre_articles: 28, description: 'Formations et certifications' }
+  { id: 1, nom: 'RH', icone: '👥', couleur: 'from-primary-500 to-primary-500', nombre_articles: 45, description: 'Ressources humaines et processus' },
+  { id: 2, nom: 'Technique', icone: '💻', couleur: 'from-primary-500 to-cyan-500', nombre_articles: 32, description: 'Documentation technique' },
+  { id: 3, nom: 'Finance', icone: '💰', couleur: 'from-primary-500 to-primary-500', nombre_articles: 18, description: 'Processus financiers' },
+  { id: 4, nom: 'Management', icone: '🎯', couleur: 'from-primary-500 to-primary-500', nombre_articles: 24, description: 'Management et leadership' },
+  { id: 5, nom: 'Bien-etre', icone: '💚', couleur: 'from-primary-500 to-primary-500', nombre_articles: 15, description: 'Bien-etre au travail' },
+  { id: 6, nom: 'Formation', icone: '📚', couleur: 'from-primary-500 to-primary-500', nombre_articles: 28, description: 'Formations et certifications' }
 ]
 
 export const mockBinomesMentorat: BinomeMentorat[] = [

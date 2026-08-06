@@ -72,7 +72,7 @@ export const DashboardConnecte = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center mb-4">
               <span className="text-white font-bold text-xl">E</span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400">Entreprises</p>
@@ -80,7 +80,7 @@ export const DashboardConnecte = () => {
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center mb-4">
               <span className="text-white font-bold text-xl">M</span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400">Membres</p>
@@ -88,7 +88,7 @@ export const DashboardConnecte = () => {
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center mb-4">
               <span className="text-white font-bold text-xl">O</span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400">Offres</p>

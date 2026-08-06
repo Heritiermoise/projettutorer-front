@@ -87,7 +87,7 @@ export const EntreprisePubliquePage = () => {
       </header>
 
       {/* Banniere entreprise */}
-      <section className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 relative overflow-hidden">
+      <section className="bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
@@ -163,9 +163,9 @@ export const EntreprisePubliquePage = () => {
                   <p className="text-2xl font-bold text-primary-700 dark:text-primary-300">{offresEntreprise.length}</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">Offres actives</p>
                 </div>
-                <div className="p-3 bg-accent-50 dark:bg-accent-900/20 rounded-xl text-center">
-                  <Users className="w-6 h-6 mx-auto mb-1 text-accent-600" />
-                  <p className="text-2xl font-bold text-accent-700 dark:text-accent-300">24</p>
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-xl text-center">
+                  <Users className="w-6 h-6 mx-auto mb-1 text-primary-600" />
+                  <p className="text-2xl font-bold text-primary-700 dark:text-primary-300">24</p>
                   <p className="text-xs text-slate-600 dark:text-slate-400">Employes</p>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export const EntreprisePubliquePage = () => {
             </div>
 
             {/* Processus de recrutement */}
-            <div className="bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-900/20 dark:to-accent-900/20 rounded-2xl p-6 mt-6 border border-primary-200 dark:border-primary-800">
+            <div className="bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl p-6 mt-6 border border-primary-200 dark:border-primary-800">
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">Comment postuler ?</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
@@ -256,7 +256,7 @@ export const EntreprisePubliquePage = () => {
                   { num: 4, title: 'Embauche', desc: 'Rejoignez l\'equipe' },
                 ].map((step, i) => (
                   <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center mb-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center mb-3">
                       <span className="text-white font-bold">{step.num}</span>
                     </div>
                     <p className="font-semibold text-slate-800 dark:text-white text-sm">{step.title}</p>

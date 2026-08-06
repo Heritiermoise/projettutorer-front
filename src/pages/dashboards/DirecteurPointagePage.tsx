@@ -49,7 +49,7 @@ export const DirecteurPointagePage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Pointage des Employes</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Suivi des arrivees et departs</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Download className="w-5 h-5" />
           <span>Exporter</span>
         </button>
@@ -57,12 +57,12 @@ export const DirecteurPointagePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Clock, color: 'from-amber-500 to-orange-600' },
-          { label: 'Presents', value: stats.presents, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Retards', value: stats.retards, icon: AlertCircle, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Absents', value: stats.absents, icon: XCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'En conge', value: stats.conges, icon: Calendar, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Moy. heures', value: stats.moyenneHeures + 'h', icon: Clock, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Presents', value: stats.presents, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Retards', value: stats.retards, icon: AlertCircle, color: 'from-primary-500 to-primary-600' },
+          { label: 'Absents', value: stats.absents, icon: XCircle, color: 'from-red-500 to-primary-600' },
+          { label: 'En conge', value: stats.conges, icon: Calendar, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Moy. heures', value: stats.moyenneHeures + 'h', icon: Clock, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -109,7 +109,7 @@ export const DirecteurPointagePage = () => {
                 <tr key={pointage.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold">{pointage.employe_nom[0]}</span>
                       </div>
                       <div>

@@ -46,7 +46,7 @@ export const DirecteurCommunicationPage = () => {
       'General': 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
       'RH': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
       'Technique': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-      'Evenement': 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300'
+      'Evenement': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
     }
     return colors[categorie] || colors['General']
   }
@@ -65,7 +65,7 @@ export const DirecteurCommunicationPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Communication Interne</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Annonces et actualites de l'entreprise</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle annonce</span>
         </button>
@@ -73,10 +73,10 @@ export const DirecteurCommunicationPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Annonces', value: stats.total, icon: MessageSquare, color: 'from-amber-500 to-orange-600' },
-          { label: 'Importantes', value: stats.importants, icon: Star, color: 'from-red-500 to-pink-600' },
-          { label: 'Reactions', value: stats.totalLikes, icon: Heart, color: 'from-pink-500 to-rose-600' },
-          { label: 'Commentaires', value: stats.totalCommentaires, icon: MessageCircle, color: 'from-blue-500 to-cyan-600' }
+          { label: 'Annonces', value: stats.total, icon: MessageSquare, color: 'from-primary-500 to-primary-600' },
+          { label: 'Importantes', value: stats.importants, icon: Star, color: 'from-red-500 to-primary-600' },
+          { label: 'Reactions', value: stats.totalLikes, icon: Heart, color: 'from-primary-500 to-primary-600' },
+          { label: 'Commentaires', value: stats.totalCommentaires, icon: MessageCircle, color: 'from-primary-500 to-cyan-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -105,7 +105,7 @@ export const DirecteurCommunicationPage = () => {
           <div key={annonce.id} className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border-2 transition-all ${annonce.important ? 'border-amber-300 dark:border-amber-700' : 'border-slate-200 dark:border-slate-700'}`}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-lg">{annonce.auteur[0]}</span>
                 </div>
                 <div>
@@ -174,7 +174,7 @@ export const DirecteurCommunicationPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Publier</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Publier</button>
               </div>
             </form>
           </div>

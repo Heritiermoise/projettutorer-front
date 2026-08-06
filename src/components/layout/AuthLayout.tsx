@@ -37,7 +37,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/30 to-accent-50/30 dark:from-slate-900 dark:via-primary-900/10 dark:to-accent-900/10">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-50/30 dark:from-slate-900 dark:via-primary-900/10 dark:to-primary-900/10">
         {/* NAVBAR FIXE */}
         <nav className={
           'fixed top-0 left-0 right-0 z-50 transition-all duration-300 ' +

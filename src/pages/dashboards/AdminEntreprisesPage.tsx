@@ -99,7 +99,7 @@ export const AdminEntreprisesPage = () => {
         </button>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          <div className="h-48 bg-gradient-to-r from-primary-500 via-purple-500 to-accent-500 relative">
+          <div className="h-48 bg-gradient-to-r from-primary-500 via-purple-500 to-primary-500 relative">
             <div className="absolute inset-0 bg-black/20"></div>
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="flex items-end space-x-6">
@@ -137,7 +137,7 @@ export const AdminEntreprisesPage = () => {
               </div>
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                 <div className="flex items-center space-x-3">
-                  <Users className="w-8 h-8 text-accent-600" />
+                  <Users className="w-8 h-8 text-primary-600" />
                   <div>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Employes</p>
                     <p className="text-2xl font-bold text-slate-800 dark:text-white">{stats.employes}</p>
@@ -155,7 +155,7 @@ export const AdminEntreprisesPage = () => {
               </div>
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                 <div className="flex items-center space-x-3">
-                  <Calendar className="w-8 h-8 text-pink-600" />
+                  <Calendar className="w-8 h-8 text-primary-600" />
                   <div>
                     <p className="text-sm text-slate-600 dark:text-slate-400">Cree le</p>
                     <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedEntreprise.created_at}</p>
@@ -203,7 +203,7 @@ export const AdminEntreprisesPage = () => {
                   {users.filter((u: any) => u.id_entreprise === selectedEntreprise.id_entreprise).map((user: any) => (
                     <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold">{user.prenom[0]}</span>
                         </div>
                         <div>
@@ -257,7 +257,7 @@ export const AdminEntreprisesPage = () => {
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <Users className="w-8 h-8 text-accent-600" />
+            <Users className="w-8 h-8 text-primary-600" />
             <span className="text-3xl font-bold text-slate-800 dark:text-white">{users.filter((u: any) => u.id_entreprise).length}</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Utilisateurs en entreprise</p>
@@ -352,7 +352,7 @@ export const AdminEntreprisesPage = () => {
               return (
                 <div key={entreprise.id_entreprise} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                       <Building2 className="w-6 h-6 text-white" />
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -421,7 +421,7 @@ export const AdminEntreprisesPage = () => {
                     <tr key={entreprise.id_entreprise} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-lg flex items-center justify-center">
                             <Building2 className="w-5 h-5 text-white" />
                           </div>
                           <div>

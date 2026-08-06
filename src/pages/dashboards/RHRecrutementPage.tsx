@@ -203,9 +203,9 @@ export const RHRecrutementPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {[
-          { label: 'Offres actives', value: stats.offresActives, color: 'from-primary-500 to-purple-600', icon: Briefcase },
-          { label: 'Candidats', value: stats.totalCandidats, color: 'from-accent-500 to-emerald-600', icon: User },
-          { label: 'Postulations', value: stats.postulations, color: 'from-amber-500 to-orange-600', icon: FileText },
+          { label: 'Offres actives', value: stats.offresActives, color: 'from-primary-500 to-primary-600', icon: Briefcase },
+          { label: 'Candidats', value: stats.totalCandidats, color: 'from-primary-500 to-primary-600', icon: User },
+          { label: 'Postulations', value: stats.postulations, color: 'from-primary-500 to-primary-600', icon: FileText },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -265,7 +265,7 @@ export const RHRecrutementPage = () => {
                       </button>
                     )}
                     {offre.statut === 'Publiée' && (
-                      <button onClick={() => void handleOfferStatus(offre.id_offre, 'Archivée')} className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
+                      <button onClick={() => void handleOfferStatus(offre.id_offre, 'Archivée')} className="inline-flex items-center gap-1 rounded-lg bg-primary-600 px-3 py-2 text-xs font-semibold text-white hover:bg-primary-700">
                         <Pause className="h-3.5 w-3.5" /> Archiver
                       </button>
                     )}
@@ -280,7 +280,7 @@ export const RHRecrutementPage = () => {
               {filteredCandidats.map(candidat => (
                 <div key={candidat.id_candidat} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold">{candidat.prenom[0]}</span>
                     </div>
                     <div>
