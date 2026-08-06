@@ -1,4 +1,5 @@
-﻿import { Building2, Mail, Phone, MapPin } from 'lucide-react';
+﻿import { Mail, Phone, MapPin } from 'lucide-react';
+import { BrandMark } from '../BrandMark';
 
 export const Footer = () => {
   const footerLinks = {
@@ -29,11 +30,8 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-12 mb-12">
           <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-white">RH Pro</span>
+            <div className="mb-6 text-white">
+              <BrandMark subtitle={''} labelClassName="text-2xl text-white bg-none bg-clip-border text-white" />
             </div>
             <p className="text-slate-400 mb-6 leading-relaxed">
               La plateforme de gestion des ressources humaines nouvelle generation.

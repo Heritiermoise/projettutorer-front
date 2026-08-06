@@ -6,6 +6,7 @@ import {
   Shield, Server, Bell, Moon, Sun
 } from 'lucide-react';
 import { clearDashboardContextCache } from '../../services/dashboardData';
+import { BrandMark } from '../BrandMark';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -85,17 +86,7 @@ export const DashboardLayout = ({ children, userRole, userName, onLogout }: Dash
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                  RH Pro
-                </span>
-                <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{userRole}</p>
-              </div>
-            </div>
+            <BrandMark subtitle={userRole} compact />
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
               <X className="w-6 h-6" />
             </button>
@@ -163,7 +154,7 @@ export const DashboardLayout = ({ children, userRole, userName, onLogout }: Dash
               </button>
 
               <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center shadow-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-700 rounded-full flex items-center justify-center shadow-sm">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="hidden sm:block">

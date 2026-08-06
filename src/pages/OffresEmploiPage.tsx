@@ -8,6 +8,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion'
 import { offreAPI, entrepriseAPI } from '../services/api'
 
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+
 export const OffresEmploiPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
@@ -247,7 +249,7 @@ export const OffresEmploiPage = () => {
             {[
               { label: "Offres Actives", val: loading ? "..." : statsOffres.totalActives, icon: Briefcase, color: "text-blue-500 bg-blue-500/10" },
               { label: "Partenaires", val: loading ? "..." : `${statsOffres.entreprisesPartenaires}+`, icon: Building2, color: "text-indigo-500 bg-indigo-500/10" },
-              { label: "Moyenne Salaires", val: loading ? "..." : `$${statsOffres.salaireMoyen.toLocaleString('en-US')}`, icon: TrendingUp, color: "text-emerald-500 bg-emerald-500/10" },
+              { label: "Moyenne Salaires", val: loading ? "..." : money.format(statsOffres.salaireMoyen), icon: TrendingUp, color: "text-primary-600 bg-primary-500/10" },
               { label: "Candidatures simples", val: `${statsOffres.postulationsRapides}%`, icon: CheckCircle2, color: "text-amber-500 bg-amber-500/10" }
             ].map((stat, idx) => (
               <div 
@@ -390,7 +392,7 @@ export const OffresEmploiPage = () => {
                         <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
                           <DollarSign className="w-4 h-4 text-emerald-500" />
                           <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                            {salaireFormate ? `$${Number(offre.salaire_base).toLocaleString('en-US')}` : 'À négocier'}
+                            {salaireFormate ? money.format(Number(offre.salaire_base)) : 'À négocier'}
                           </span>
                         </div>
                       </div>

@@ -251,17 +251,17 @@ export const DirecteurDashboard = () => {
   }, [employes, postes, contrats])
 
   const kpiCards = useMemo(() => [
-    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: 'Données base', color: 'from-amber-500 to-orange-600' },
-    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: 'Somme contrats', color: 'from-green-500 to-emerald-600' },
-    { icon: Briefcase, label: 'Postes Occupés', value: `${stats.postesOccupes}/${stats.postesTotal}`, change: `${stats.postesVacants} vacants`, color: 'from-primary-500 to-purple-600' },
-    { icon: Target, label: 'Recrutements ce mois', value: stats.recrutementMois, change: 'Créés ce mois', color: 'from-pink-500 to-rose-600' },
+    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: 'Données base', color: 'from-primary-500 to-primary-700' },
+    { icon: DollarSign, label: 'Masse Salariale', value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(stats.masseSalariale), change: 'Somme contrats', color: 'from-primary-600 to-primary-800' },
+    { icon: Briefcase, label: 'Postes Occupés', value: `${stats.postesOccupes}/${stats.postesTotal}`, change: `${stats.postesVacants} vacants`, color: 'from-primary-500 to-primary-700' },
+    { icon: Target, label: 'Recrutements ce mois', value: stats.recrutementMois, change: 'Créés ce mois', color: 'from-primary-600 to-primary-700' },
   ], [stats])
 
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           <p className="text-slate-600 dark:text-slate-300 font-medium">Chargement de votre espace direction...</p>
         </div>
       </div>

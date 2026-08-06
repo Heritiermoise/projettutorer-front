@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, Menu, X, Moon, Sun, LogIn, UserPlus, Briefcase, Home } from 'lucide-react';
+import { Menu, X, Moon, Sun, LogIn, UserPlus, Briefcase, Home } from 'lucide-react';
+import { BrandMark } from '../BrandMark';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -47,16 +48,8 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16 sm:h-20">
               {/* Logo */}
-              <Link to="/" className="flex items-center space-x-3 group">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                    RH Pro
-                  </span>
-                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 -mt-1 hidden sm:block">Enterprise Suite</p>
-                </div>
+              <Link to="/" className="group">
+                <BrandMark />
               </Link>
 
               {/* Navigation Desktop */}
@@ -73,7 +66,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
                   <UserPlus className="w-4 h-4" />
                   <span>Inscription</span>
                 </Link>
-                <Link to="/create-entreprise" className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-warm-500 to-warm-600 hover:from-warm-600 hover:to-warm-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+                <Link to="/create-entreprise" className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
                   <Briefcase className="w-4 h-4" />
                   <span>Creer entreprise</span>
                 </Link>
@@ -124,7 +117,7 @@ export const AuthLayout = ({ children }: AuthLayoutProps) => {
                   <UserPlus className="w-5 h-5" />
                   <span>Inscription</span>
                 </Link>
-                <Link to="/create-entreprise" onClick={() => setMobileOpen(false)} className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-warm-500 to-warm-600 text-white font-semibold rounded-lg shadow-lg">
+                <Link to="/create-entreprise" onClick={() => setMobileOpen(false)} className="flex items-center space-x-3 px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-lg shadow-lg">
                   <Briefcase className="w-5 h-5" />
                   <span>Creer mon entreprise</span>
                 </Link>

@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Building2, LogIn, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BrandMark } from '../BrandMark'
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,16 +35,8 @@ export const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center space-x-3"
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-              RH Pro
-            </span>
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center">
+            <BrandMark compact />
           </motion.div>
 
           <div className="hidden md:flex items-center space-x-8">

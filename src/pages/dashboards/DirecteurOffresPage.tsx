@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Briefcase, Plus, Search, Edit, Eye, Send, Pause, Users, Calendar, DollarSign, X, AlertCircle } from 'lucide-react'
 import { offreAPI } from '../../services/api'
 
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+
 type OfferDisplay = {
   id: number
   titre: string
@@ -150,7 +152,7 @@ export const DirecteurOffresPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Publication d'Offres</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gerez vos offres d'emploi</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle offre</span>
         </button>
@@ -160,11 +162,11 @@ export const DirecteurOffresPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Briefcase, color: 'from-amber-500 to-orange-600' },
-          { label: 'Publiees', value: stats.publiees, icon: Send, color: 'from-green-500 to-emerald-600' },
-          { label: 'Brouillons', value: stats.brouillons, icon: Edit, color: 'from-slate-500 to-slate-600' },
-          { label: 'Expirees', value: stats.expirees, icon: AlertCircle, color: 'from-red-500 to-rose-600' },
-          { label: 'Candidatures', value: stats.totalCandidatures, icon: Users, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: Briefcase, color: 'from-primary-500 to-primary-700' },
+          { label: 'Publiees', value: stats.publiees, icon: Send, color: 'from-primary-600 to-primary-800' },
+          { label: 'Brouillons', value: stats.brouillons, icon: Edit, color: 'from-slate-500 to-slate-700' },
+          { label: 'Expirees', value: stats.expirees, icon: AlertCircle, color: 'from-primary-700 to-primary-900' },
+          { label: 'Candidatures', value: stats.totalCandidatures, icon: Users, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -185,7 +187,7 @@ export const DirecteurOffresPage = () => {
               { id: 'draft', label: 'Brouillons', count: stats.brouillons },
               { id: 'expired', label: 'Expirees', count: stats.expirees }
             ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center space-x-2 px-6 py-4 font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-amber-600 border-b-2 border-amber-600' : 'text-slate-600 dark:text-slate-400'}`}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`flex items-center space-x-2 px-6 py-4 font-semibold whitespace-nowrap ${activeTab === tab.id ? 'text-primary-600 border-b-2 border-primary-600' : 'text-slate-600 dark:text-slate-400'}`}>
                 <span>{tab.label}</span>
                 <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded-full text-xs">{tab.count}</span>
               </button>
@@ -213,7 +215,7 @@ export const DirecteurOffresPage = () => {
               <div key={offre.id} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
                       <Briefcase className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -230,7 +232,7 @@ export const DirecteurOffresPage = () => {
                 <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <DollarSign className="w-4 h-4" />
-                    <span className="font-bold text-emerald-700 dark:text-emerald-300">${offre.salaire_base.toLocaleString('en-US')}</span>
+                    <span className="font-bold text-primary-700 dark:text-primary-300">{money.format(offre.salaire_base)}</span>
                   </div>
                   <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
                     <Calendar className="w-4 h-4" />
@@ -348,7 +350,7 @@ export const DirecteurOffresPage = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Salaire</p>
-                  <p className="font-bold text-emerald-700 dark:text-emerald-300">${selectedOffre.salaire_base.toLocaleString('en-US')}</p>
+                  <p className="font-bold text-primary-700 dark:text-primary-300">{money.format(selectedOffre.salaire_base)}</p>
                 </div>
                 <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                   <p className="text-xs text-slate-500 dark:text-slate-400">Échéance</p>

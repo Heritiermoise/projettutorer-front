@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Building2, FileText, Calendar, DollarSign, LogOut, X } from 'lucide-react';
+import { BrandMark } from '../BrandMark';
 
 interface SidebarProps {
   userRole: string;
