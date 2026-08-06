@@ -385,13 +385,16 @@ export const OffresEmploiPage = () => {
 
                       {/* Métadonnées */}
                       <div className="space-y-2.5 mb-6">
-                        <Link 
-                          to={`/entreprise/${entreprise?.code_entreprise}`} 
-                          className="flex items-center space-x-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
+                        <div className="flex items-center space-x-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
                           <Building2 className="w-4 h-4 text-slate-400" />
-                          <span>{entreprise?.nom || 'Entreprise non spécifiée'}</span>
-                        </Link>
+                          {entreprise?.code_entreprise ? (
+                            <Link to={`/entreprise/${entreprise.code_entreprise}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                              {entreprise.nom}
+                            </Link>
+                          ) : (
+                            <span>Entreprise non spécifiée</span>
+                          )}
+                        </div>
                         
                         <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
                           <MapPin className="w-4 h-4 text-slate-400" />
