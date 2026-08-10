@@ -72,11 +72,11 @@ export const AdminSystemPage = () => {
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <HardDrive className="w-8 h-8 text-accent-600" />
+            <HardDrive className="w-8 h-8 text-primary-600" />
             <span className="text-3xl font-bold text-slate-800 dark:text-white">68%</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Memoire RAM</p>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2"><div className="bg-accent-500 h-2 rounded-full" style={{ width: '68%' }}></div></div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2"><div className="bg-primary-500 h-2 rounded-full" style={{ width: '68%' }}></div></div>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
@@ -88,11 +88,11 @@ export const AdminSystemPage = () => {
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between mb-4">
-            <Wifi className="w-8 h-8 text-pink-600" />
+            <Wifi className="w-8 h-8 text-primary-600" />
             <span className="text-3xl font-bold text-slate-800 dark:text-white">99.9%</span>
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400">Uptime (30 jours)</p>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2"><div className="bg-pink-500 h-2 rounded-full" style={{ width: '99.9%' }}></div></div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2"><div className="bg-primary-500 h-2 rounded-full" style={{ width: '99.9%' }}></div></div>
         </div>
       </div>
 

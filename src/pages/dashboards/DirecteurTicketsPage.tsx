@@ -93,7 +93,7 @@ export const DirecteurTicketsPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Support & Tickets RH</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gestion des demandes et incidents</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouveau ticket</span>
         </button>
@@ -101,11 +101,11 @@ export const DirecteurTicketsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: MessageSquare, color: 'from-amber-500 to-orange-600' },
-          { label: 'Ouverts', value: stats.ouverts, icon: AlertCircle, color: 'from-blue-500 to-cyan-600' },
-          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Resolus', value: stats.resolus, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Urgents', value: stats.urgents, icon: XCircle, color: 'from-red-500 to-rose-600' }
+          { label: 'Total', value: stats.total, icon: MessageSquare, color: 'from-primary-500 to-primary-600' },
+          { label: 'Ouverts', value: stats.ouverts, icon: AlertCircle, color: 'from-primary-500 to-cyan-600' },
+          { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Resolus', value: stats.resolus, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Urgents', value: stats.urgents, icon: XCircle, color: 'from-red-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -238,7 +238,7 @@ export const DirecteurTicketsPage = () => {
                     <div key={msg.id} className={`p-4 rounded-xl ${msg.est_interne ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-slate-50 dark:bg-slate-700/50'}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                             <span className="text-white font-bold text-xs">{msg.auteur[0]}</span>
                           </div>
                           <div>
@@ -257,7 +257,7 @@ export const DirecteurTicketsPage = () => {
               <div className="sticky bottom-0 bg-white dark:bg-slate-800 pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex space-x-2">
                   <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Ecrire une reponse..." className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl" onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} />
-                  <button onClick={handleSendMessage} className="px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+                  <button onClick={handleSendMessage} className="px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
                     <Send className="w-5 h-5" />
                   </button>
                 </div>
@@ -312,7 +312,7 @@ export const DirecteurTicketsPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Creer</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Creer</button>
               </div>
             </form>
           </div>

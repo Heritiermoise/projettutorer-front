@@ -275,10 +275,10 @@ export const RHEmployesPage = () => {
   }
 
   const statsCards = useMemo(() => [
-    { label: 'Total Employés', value: employes.length, color: 'from-primary-500 to-purple-600', icon: Users },
-    { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
-    { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
-    { label: 'Actifs', value: employes.filter((e: any) => e.statut === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
+    { label: 'Total Employés', value: employes.length, color: 'from-primary-500 to-primary-600', icon: Users },
+    { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-primary-500 to-primary-600', icon: Users },
+    { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-primary-500 to-primary-600', icon: Users },
+    { label: 'Actifs', value: employes.filter((e: any) => e.statut === 'Actif').length, color: 'from-primary-500 to-primary-600', icon: Users },
   ], [employes])
 
   return (
@@ -342,7 +342,7 @@ export const RHEmployesPage = () => {
             return (
               <div key={emp.matricule} onClick={() => setSelectedMember(emp)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all cursor-pointer">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-pink-500 to-pink-600'}`}>
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-primary-500 to-primary-600'}`}>
                     <span className="text-white font-bold text-lg">{emp.prenom?.[0] || 'E'}</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -388,8 +388,8 @@ export const RHEmployesPage = () => {
                   <tr key={emp.matricule} onClick={() => setSelectedMember(emp)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer">
                     <td className="py-3 px-4">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-pink-100 dark:bg-pink-900/30'}`}>
-                          <span className={`font-bold text-sm ${emp.sexe === 'M' ? 'text-blue-600' : 'text-pink-600'}`}>{emp.prenom?.[0] || 'E'}</span>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-primary-100 dark:bg-primary-900/30'}`}>
+                          <span className={`font-bold text-sm ${emp.sexe === 'M' ? 'text-blue-600' : 'text-primary-600'}`}>{emp.prenom?.[0] || 'E'}</span>
                         </div>
                         <div>
                           <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp.prenom} {emp.nom}</p>
@@ -542,7 +542,7 @@ export const RHEmployesPage = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4">
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center ${selectedMember.sexe === 'M' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-pink-500 to-pink-600'}`}>
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center ${selectedMember.sexe === 'M' ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-primary-500 to-primary-600'}`}>
                   <span className="text-3xl font-bold text-white">{selectedMember.prenom?.[0] || 'E'}</span>
                 </div>
                 <div>

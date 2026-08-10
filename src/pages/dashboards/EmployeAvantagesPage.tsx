@@ -35,9 +35,9 @@ export const EmployeAvantagesPage = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
         {[
-          { label: 'Total avantages', value: stats.total, color: 'from-primary-500 to-purple-600', icon: Award },
-          { label: 'Avantages actifs', value: stats.actifs, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'Valeur totale', value: '$' + stats.valeurTotale, color: 'from-amber-500 to-orange-600', icon: DollarSign },
+          { label: 'Total avantages', value: stats.total, color: 'from-primary-500 to-primary-600', icon: Award },
+          { label: 'Avantages actifs', value: stats.actifs, color: 'from-primary-500 to-primary-600', icon: CheckCircle2 },
+          { label: 'Valeur totale', value: '$' + stats.valeurTotale, color: 'from-primary-500 to-primary-600', icon: DollarSign },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -66,7 +66,7 @@ export const EmployeAvantagesPage = () => {
           {filteredAvantages.map(avantage => (
             <div key={avantage.id_avantage} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                   <Award className="w-6 h-6 text-white" />
                 </div>
                 <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold">{avantage.statut}</span>

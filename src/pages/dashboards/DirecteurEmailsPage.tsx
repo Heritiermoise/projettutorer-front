@@ -65,10 +65,10 @@ export const DirecteurEmailsPage = () => {
     const colors: Record<string, string> = {
       'entretien': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
       'validation': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-      'candidature': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+      'candidature': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
       'poste': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
       'paie': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
-      'conge': 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+      'conge': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
     }
     return colors[type] || 'bg-slate-100 text-slate-700'
   }
@@ -89,11 +89,11 @@ export const DirecteurEmailsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, color: 'from-amber-500 to-orange-600', icon: Mail },
-          { label: 'Non lus', value: stats.nonLus, color: 'from-red-500 to-rose-600', icon: XCircle },
-          { label: 'Entretiens', value: stats.parType.entretien, color: 'from-blue-500 to-cyan-600', icon: Calendar },
-          { label: 'Validations', value: stats.parType.validation, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
-          { label: 'Action requise', value: stats.actionRequise, color: 'from-pink-500 to-rose-600', icon: Star },
+          { label: 'Total', value: stats.total, color: 'from-primary-500 to-primary-600', icon: Mail },
+          { label: 'Non lus', value: stats.nonLus, color: 'from-red-500 to-primary-600', icon: XCircle },
+          { label: 'Entretiens', value: stats.parType.entretien, color: 'from-primary-500 to-cyan-600', icon: Calendar },
+          { label: 'Validations', value: stats.parType.validation, color: 'from-primary-500 to-primary-600', icon: CheckCircle2 },
+          { label: 'Action requise', value: stats.actionRequise, color: 'from-primary-500 to-primary-600', icon: Star },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -140,7 +140,7 @@ export const DirecteurEmailsPage = () => {
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" placeholder="Rechercher..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm">
                   <option value="all">Tous les types</option>
@@ -222,7 +222,7 @@ export const DirecteurEmailsPage = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">Modeles d'email</h3>
-                <button onClick={() => { setEditingTemplate(null); setShowTemplateModal(true) }} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 text-sm">
+                <button onClick={() => { setEditingTemplate(null); setShowTemplateModal(true) }} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 text-sm">
                   <Plus className="w-4 h-4" />
                   <span>Nouveau modele</span>
                 </button>
@@ -355,7 +355,7 @@ const TemplateForm = ({ template, onSave, onCancel }: { template: EmailTemplate 
       </div>
       <div className="flex space-x-3 pt-4">
         <button type="button" onClick={onCancel} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-        <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Sauvegarder</button>
+        <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Sauvegarder</button>
       </div>
     </form>
   )

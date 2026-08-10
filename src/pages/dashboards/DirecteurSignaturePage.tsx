@@ -68,13 +68,13 @@ export const DirecteurSignaturePage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Signature Electronique</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gestion securisee des signatures de documents</p>
         </div>
-        <button onClick={() => setShowSendModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowSendModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Send className="w-5 h-5" />
           <span>Envoyer pour signature</span>
         </button>
       </div>
 
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Shield className="w-6 h-6" />
@@ -94,10 +94,10 @@ export const DirecteurSignaturePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileSignature, color: 'from-amber-500 to-orange-600' },
-          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Signes', value: stats.signes, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Refuses', value: stats.refuses, icon: XCircle, color: 'from-red-500 to-rose-600' },
+          { label: 'Total', value: stats.total, icon: FileSignature, color: 'from-primary-500 to-primary-600' },
+          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Signes', value: stats.signes, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Refuses', value: stats.refuses, icon: XCircle, color: 'from-red-500 to-primary-600' },
           { label: 'Expires', value: stats.expires, icon: AlertCircle, color: 'from-slate-500 to-slate-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -302,7 +302,7 @@ export const DirecteurSignaturePage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowSendModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Envoyer</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Envoyer</button>
               </div>
             </form>
           </div>

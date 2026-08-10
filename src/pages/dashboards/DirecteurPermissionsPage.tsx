@@ -146,7 +146,7 @@ export const DirecteurPermissionsPage = () => {
             <Save className="w-5 h-5" />
             <span>Rafraîchir</span>
           </button>
-          <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+          <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
             <Plus className="w-5 h-5" />
             <span>Nouveau rôle</span>
           </button>
@@ -159,10 +159,10 @@ export const DirecteurPermissionsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Rôles', value: roles.length, color: 'from-amber-500 to-orange-600' },
-          { label: 'Actifs', value: roles.filter((role: any) => role.statut === 'Actif').length, color: 'from-green-500 to-emerald-600' },
-          { label: 'Inactifs', value: roles.filter((role: any) => role.statut !== 'Actif').length, color: 'from-red-500 to-rose-600' },
-          { label: 'Permissions', value: totalPermissions, color: 'from-primary-500 to-purple-600' },
+          { label: 'Rôles', value: roles.length, color: 'from-primary-500 to-primary-600' },
+          { label: 'Actifs', value: roles.filter((role: any) => role.statut === 'Actif').length, color: 'from-primary-500 to-primary-600' },
+          { label: 'Inactifs', value: roles.filter((role: any) => role.statut !== 'Actif').length, color: 'from-red-500 to-primary-600' },
+          { label: 'Permissions', value: totalPermissions, color: 'from-primary-500 to-primary-600' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{stat.label}</p>
@@ -274,7 +274,7 @@ export const DirecteurPermissionsPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" disabled={submittingCreate} className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button type="submit" disabled={submittingCreate} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {submittingCreate && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{submittingCreate ? 'Création en cours...' : 'Créer'}</span>
                 </button>
@@ -317,7 +317,7 @@ export const DirecteurPermissionsPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" disabled={submittingEdit} className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button type="submit" disabled={submittingEdit} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                   {submittingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{submittingEdit ? 'Mise à jour...' : 'Enregistrer'}</span>
                 </button>

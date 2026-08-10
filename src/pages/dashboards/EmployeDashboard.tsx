@@ -166,10 +166,10 @@ export const EmployeDashboard = () => {
   ]
 
   const kpiCards = [
-    { icon: DollarSign, label: 'Dernière paie', value: formatCurrency(stats.dernierSalaire), color: 'from-primary-500 to-purple-600' },
-    { icon: Briefcase, label: 'Cumul annuel', value: formatCurrency(stats.cumulAnnuel), color: 'from-accent-500 to-emerald-600' },
-    { icon: FileText, label: 'Documents', value: userDocuments.length, color: 'from-amber-500 to-orange-600' },
-    { icon: Clock, label: 'Présences ce mois', value: stats.joursPresence, color: 'from-pink-500 to-rose-600' },
+    { icon: DollarSign, label: 'Dernière paie', value: formatCurrency(stats.dernierSalaire), color: 'from-primary-500 to-primary-600' },
+    { icon: Briefcase, label: 'Cumul annuel', value: formatCurrency(stats.cumulAnnuel), color: 'from-primary-500 to-primary-600' },
+    { icon: FileText, label: 'Documents', value: userDocuments.length, color: 'from-primary-500 to-primary-600' },
+    { icon: Clock, label: 'Présences ce mois', value: stats.joursPresence, color: 'from-primary-500 to-primary-600' },
   ]
 
   const renderContent = () => {
@@ -189,7 +189,7 @@ export const EmployeDashboard = () => {
               <p className="text-slate-600 dark:text-slate-400">Voici un resume de votre espace personnel</p>
             </div>
 
-            <div className="bg-gradient-to-r from-primary-500 to-purple-600 rounded-2xl p-6 text-white">
+            <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-6 text-white">
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                   <User className="w-8 h-8" />
@@ -269,8 +269,8 @@ export const EmployeDashboard = () => {
                     {userConges.map((conge) => (
                       <div key={conge.id_conge} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+                          <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-primary-600 dark:text-primary-300" />
                           </div>
                           <div>
                             <p className="font-semibold text-slate-800 dark:text-white text-sm">{conge.type_conge}</p>
@@ -366,7 +366,7 @@ export const EmployeDashboard = () => {
                 onClick={() => navigate(item.path)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
-                    ? 'bg-gradient-to-r from-secondary-500 to-orange-600 text-white shadow-lg' 
+                    ? 'bg-gradient-to-r from-secondary-500 to-primary-600 text-white shadow-lg' 
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -399,7 +399,7 @@ export const EmployeDashboard = () => {
                   {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
                 </button>
                 <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
-                  <div className="w-10 h-10 bg-gradient-to-br from-secondary-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-secondary-500 to-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">{user.prenom[0]}</span>
                   </div>
                   <div className="hidden sm:block">

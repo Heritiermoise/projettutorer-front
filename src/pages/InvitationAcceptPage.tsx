@@ -89,7 +89,7 @@ export const InvitationAcceptPage = () => {
   const posteName = invitation?.poste_name || 'Poste'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/40 to-accent-50/30 dark:from-slate-950 dark:via-primary-950/10 dark:to-accent-950/10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/40 to-primary-50/30 dark:from-slate-950 dark:via-primary-950/10 dark:to-primary-950/10">
       <PublicNavbar />
 
       <div className="relative overflow-hidden px-4 pt-24 pb-16 sm:px-6 lg:px-8">
@@ -258,7 +258,7 @@ export const InvitationAcceptPage = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-accent-600 px-5 py-3 font-semibold text-white shadow-lg shadow-primary-600/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-600 px-5 py-3 font-semibold text-white shadow-lg shadow-primary-600/20 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
                   Activer mon compte

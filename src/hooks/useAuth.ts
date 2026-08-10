@@ -191,6 +191,7 @@ export const useAuth = () => {
       case 'manager':
         return '/dashboard/directeur';
       case 'utilisateur':
+        return '/dashboard/utilisateur';
       case 'employe':
         return '/dashboard/employe';
       default:

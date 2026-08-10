@@ -46,10 +46,10 @@ export const RHArchivagePage = () => {
   }
 
   const categories = [
-    { name: 'Contrats', count: 45, icon: FileText, color: 'from-primary-500 to-purple-600' },
-    { name: 'Evaluations', count: 28, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-    { name: 'Documents RH', count: 67, icon: Folder, color: 'from-amber-500 to-orange-600' },
-    { name: 'Paies', count: 156, icon: Archive, color: 'from-pink-500 to-rose-600' },
+    { name: 'Contrats', count: 45, icon: FileText, color: 'from-primary-500 to-primary-600' },
+    { name: 'Evaluations', count: 28, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+    { name: 'Documents RH', count: 67, icon: Folder, color: 'from-primary-500 to-primary-600' },
+    { name: 'Paies', count: 156, icon: Archive, color: 'from-primary-500 to-primary-600' },
   ]
 
   return (
@@ -67,11 +67,11 @@ export const RHArchivagePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Total documents', value: stats.total, icon: FileText, color: 'from-primary-500 to-purple-600' },
-          { label: 'Archives', value: stats.archives, icon: Archive, color: 'from-green-500 to-emerald-600' },
-          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Espace utilise', value: stats.espaceUtilise, icon: Folder, color: 'from-amber-500 to-orange-600' },
-          { label: 'Chiffrement', value: stats.tauxChiffrement + '%', icon: Lock, color: 'from-pink-500 to-rose-600' },
+          { label: 'Total documents', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'Archives', value: stats.archives, icon: Archive, color: 'from-primary-500 to-primary-600' },
+          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Espace utilise', value: stats.espaceUtilise, icon: Folder, color: 'from-primary-500 to-primary-600' },
+          { label: 'Chiffrement', value: stats.tauxChiffrement + '%', icon: Lock, color: 'from-primary-500 to-primary-600' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -131,7 +131,7 @@ export const RHArchivagePage = () => {
               <div key={doc.id_document} className="p-4 sm:p-6 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center flex-shrink-0">
                       <FileText className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -182,7 +182,7 @@ export const RHArchivagePage = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
                   <FileText className="w-8 h-8 text-white" />
                 </div>
                 <div>

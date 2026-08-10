@@ -251,17 +251,17 @@ export const DirecteurDashboard = () => {
   }, [employes, postes, contrats])
 
   const kpiCards = useMemo(() => [
-    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: 'Données base', color: 'from-amber-500 to-orange-600' },
-    { icon: DollarSign, label: 'Masse Salariale', value: '$' + (stats.masseSalariale / 1000).toFixed(1) + 'K', change: 'Somme contrats', color: 'from-green-500 to-emerald-600' },
-    { icon: Briefcase, label: 'Postes Occupés', value: `${stats.postesOccupes}/${stats.postesTotal}`, change: `${stats.postesVacants} vacants`, color: 'from-primary-500 to-purple-600' },
-    { icon: Target, label: 'Recrutements ce mois', value: stats.recrutementMois, change: 'Créés ce mois', color: 'from-pink-500 to-rose-600' },
+    { icon: Users, label: 'Total Membres', value: stats.totalMembres, change: 'Données base', color: 'from-primary-500 to-primary-700' },
+    { icon: DollarSign, label: 'Masse Salariale', value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(stats.masseSalariale), change: 'Somme contrats', color: 'from-primary-600 to-primary-800' },
+    { icon: Briefcase, label: 'Postes Occupés', value: `${stats.postesOccupes}/${stats.postesTotal}`, change: `${stats.postesVacants} vacants`, color: 'from-primary-500 to-primary-700' },
+    { icon: Target, label: 'Recrutements ce mois', value: stats.recrutementMois, change: 'Créés ce mois', color: 'from-primary-600 to-primary-700' },
   ], [stats])
 
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           <p className="text-slate-600 dark:text-slate-300 font-medium">Chargement de votre espace direction...</p>
         </div>
       </div>
@@ -395,7 +395,7 @@ export const DirecteurDashboard = () => {
                 onClick={() => { navigate(item.path); setSidebarOpen(false); }}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg' 
+                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg' 
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -421,7 +421,7 @@ export const DirecteurDashboard = () => {
               <div className="flex-1 max-w-md mx-4 hidden md:block">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="text" placeholder="Rechercher..." className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl border-0 focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-white text-sm" />
+                  <input type="text" placeholder="Rechercher..." className="w-full pl-11 pr-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl border-0 focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-white text-sm" />
                 </div>
               </div>
 
@@ -436,7 +436,7 @@ export const DirecteurDashboard = () => {
                   {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
                 </button>
                 <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">D</span>
                   </div>
                   <div className="hidden sm:block">

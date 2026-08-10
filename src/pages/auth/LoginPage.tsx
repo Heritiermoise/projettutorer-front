@@ -28,7 +28,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-accent-600 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-primary-600 p-4">
       <div className="w-full max-w-md">
         <Link to="/" className="inline-flex items-center text-white/80 hover:text-white mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />

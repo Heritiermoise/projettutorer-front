@@ -23,7 +23,7 @@ export const DirecteurBienEtrePage = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Heart className="w-6 h-6" />
@@ -42,10 +42,10 @@ export const DirecteurBienEtrePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Defis actifs', value: stats.totalDefis, icon: Trophy, color: 'from-amber-500 to-orange-600' },
-          { label: 'Participants', value: stats.totalParticipants, icon: Users, color: 'from-pink-500 to-rose-600' },
-          { label: 'Progression moy.', value: stats.moyenneProgression + '%', icon: Trophy, color: 'from-purple-500 to-pink-600' },
-          { label: 'Ressources', value: stats.totalRessources, icon: BookOpen, color: 'from-blue-500 to-cyan-600' }
+          { label: 'Defis actifs', value: stats.totalDefis, icon: Trophy, color: 'from-primary-500 to-primary-600' },
+          { label: 'Participants', value: stats.totalParticipants, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'Progression moy.', value: stats.moyenneProgression + '%', icon: Trophy, color: 'from-primary-500 to-primary-600' },
+          { label: 'Ressources', value: stats.totalRessources, icon: BookOpen, color: 'from-primary-500 to-cyan-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -117,7 +117,7 @@ export const DirecteurBienEtrePage = () => {
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                       ressource.type === 'Article' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' :
                       ressource.type === 'Video' ? 'bg-red-100 dark:bg-red-900/30 text-red-600' :
-                      ressource.type === 'Podcast' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600' :
+                      ressource.type === 'Podcast' ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600' :
                       'bg-green-100 dark:bg-green-900/30 text-green-600'
                     }`}>
                       {ressource.type === 'Video' ? <Play className="w-6 h-6" /> : <BookOpen className="w-6 h-6" />}

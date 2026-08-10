@@ -33,13 +33,13 @@ export const DirecteurMentoratPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Programme de Mentorat</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Developpez les talents de votre entreprise</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouveau binome</span>
         </button>
       </div>
 
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Award className="w-6 h-6" />
@@ -58,10 +58,10 @@ export const DirecteurMentoratPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Total binomes', value: stats.total, icon: Users, color: 'from-indigo-500 to-purple-600' },
-          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Termines', value: stats.termines, icon: Users, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Sessions totales', value: stats.totalSessions, icon: Calendar, color: 'from-amber-500 to-orange-600' }
+          { label: 'Total binomes', value: stats.total, icon: Users, color: 'from-primary-500 to-primary-600' },
+          { label: 'Actifs', value: stats.actifs, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Termines', value: stats.termines, icon: Users, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Sessions totales', value: stats.totalSessions, icon: Calendar, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -94,7 +94,7 @@ export const DirecteurMentoratPage = () => {
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-2">
                   <span className="text-white font-bold text-xl">{binome.mentor_photo}</span>
                 </div>
                 <p className="font-bold text-slate-800 dark:text-white text-sm">{binome.mentor}</p>
@@ -102,7 +102,7 @@ export const DirecteurMentoratPage = () => {
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{binome.mentor_poste}</p>
               </div>
               <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-2">
                   <span className="text-white font-bold text-xl">{binome.mentore_photo}</span>
                 </div>
                 <p className="font-bold text-slate-800 dark:text-white text-sm">{binome.mentore}</p>
@@ -166,16 +166,16 @@ export const DirecteurMentoratPage = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-6">
-                <div className="text-center p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl">
-                  <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="text-center p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl">
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-white font-bold text-2xl">{selectedBinome.mentor_photo}</span>
                   </div>
                   <p className="font-bold text-slate-800 dark:text-white">{selectedBinome.mentor}</p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">{selectedBinome.mentor_poste}</p>
                   <p className="text-xs font-semibold text-amber-600 mt-2">MENTOR</p>
                 </div>
-                <div className="text-center p-6 bg-gradient-to-br from-primary-50 to-purple-50 dark:from-primary-900/20 dark:to-purple-900/20 rounded-2xl">
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div className="text-center p-6 bg-gradient-to-br from-primary-50 to-primary-50 dark:from-primary-900/20 dark:to-primary-900/20 rounded-2xl">
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-white font-bold text-2xl">{selectedBinome.mentore_photo}</span>
                   </div>
                   <p className="font-bold text-slate-800 dark:text-white">{selectedBinome.mentore}</p>

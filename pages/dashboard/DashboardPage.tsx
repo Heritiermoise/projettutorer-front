@@ -5,10 +5,10 @@ export const DashboardPage = () => {
   const { user } = useAuth();
 
   const stats = [
-    { icon: Users, label: 'Total Employés', value: '0', color: 'from-blue-500 to-blue-600' },
-    { icon: Building2, label: 'Services', value: '0', color: 'from-purple-500 to-purple-600' },
-    { icon: TrendingUp, label: 'Recrutements', value: '0', color: 'from-green-500 to-green-600' },
-    { icon: Calendar, label: 'Congés ce mois', value: '0', color: 'from-orange-500 to-orange-600' },
+    { icon: Users, label: 'Total Employés', value: '0', color: 'from-primary-500 to-primary-600' },
+    { icon: Building2, label: 'Services', value: '0', color: 'from-primary-500 to-primary-600' },
+    { icon: TrendingUp, label: 'Recrutements', value: '0', color: 'from-primary-500 to-primary-600' },
+    { icon: Calendar, label: 'Congés ce mois', value: '0', color: 'from-primary-500 to-primary-600' },
   ];
 
   return (

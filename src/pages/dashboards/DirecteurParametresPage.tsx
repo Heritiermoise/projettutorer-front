@@ -64,27 +64,27 @@ export const DirecteurParametresPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nom de l'entreprise</label>
-                  <input type="text" defaultValue={entreprise.nom} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.nom} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Nom commercial</label>
-                  <input type="text" defaultValue={entreprise.nom_commercial} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.nom_commercial} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email</label>
-                  <input type="email" defaultValue={entreprise.email} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="email" defaultValue={entreprise.email} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Telephone</label>
-                  <input type="tel" defaultValue={entreprise.telephone} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="tel" defaultValue={entreprise.telephone} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Adresse</label>
-                  <input type="text" defaultValue={entreprise.adresse} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="text" defaultValue={entreprise.adresse} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description</label>
-                  <textarea rows={4} defaultValue={entreprise.description} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm resize-none" />
+                  <textarea rows={4} defaultValue={entreprise.description} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm resize-none" />
                 </div>
               </div>
               <div>
@@ -129,7 +129,7 @@ export const DirecteurParametresPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Complexite du mot de passe</label>
-                  <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm">
+                  <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm">
                     <option>Elevee (12+ caracteres)</option>
                     <option>Moyenne (8+ caracteres)</option>
                     <option>Minimale (6 caracteres)</option>
@@ -137,7 +137,7 @@ export const DirecteurParametresPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Duree de session (minutes)</label>
-                  <input type="number" defaultValue="120" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm" />
+                  <input type="number" defaultValue="120" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm" />
                 </div>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl flex items-center justify-between">
@@ -179,7 +179,7 @@ export const DirecteurParametresPage = () => {
         </div>
 
         <div className="p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end">
-          <button onClick={handleSave} className="px-6 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 font-semibold flex items-center space-x-2 text-sm sm:text-base">
+          <button onClick={handleSave} className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-semibold flex items-center space-x-2 text-sm sm:text-base">
             <Save className="w-5 h-5" /><span>Sauvegarder</span>
           </button>
         </div>

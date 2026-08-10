@@ -54,14 +54,14 @@ export const HomePage = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/30 to-accent-50/30 dark:from-slate-900 dark:via-primary-900/10 dark:to-accent-900/10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-50/30 dark:from-slate-900 dark:via-primary-900/10 dark:to-primary-900/10">
       <PublicNavbar />
 
       {/* --- HERO SECTION --- */}
       <section className="relative min-h-screen flex items-center overflow-hidden pt-20">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-20 left-10 w-96 h-96 bg-primary-200/30 dark:bg-primary-900/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-accent-200/30 dark:bg-accent-900/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-primary-200/30 dark:bg-primary-900/20 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -75,7 +75,7 @@ export const HomePage = () => {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight mb-6">
                 <span className="text-slate-800 dark:text-white">Gérez votre</span>
                 <br />
-                <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 bg-clip-text text-transparent">entreprise</span>
+                <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 bg-clip-text text-transparent">entreprise</span>
                 <br />
                 <span className="text-slate-800 dark:text-white">intelligemment</span>
               </h1>
@@ -85,7 +85,7 @@ export const HomePage = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/register" className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 hover:from-primary-700 hover:via-purple-700 hover:to-accent-700 text-white font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:-translate-y-1">
+                <Link to="/register" className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 hover:from-primary-700 hover:via-purple-700 hover:to-primary-700 text-white font-bold rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:-translate-y-1">
                   <span>Démarrer maintenant</span>
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -144,7 +144,7 @@ export const HomePage = () => {
                       <div 
                         key={i} 
                         style={{ height: `${Math.max(height, 5)}%` }} // Garde une petite présence visuelle même si égal à 0
-                        className="group relative flex-1 bg-gradient-to-t from-primary-500 to-accent-400 rounded-t-lg opacity-80 hover:opacity-100 transition-all cursor-pointer"
+                        className="group relative flex-1 bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg opacity-80 hover:opacity-100 transition-all cursor-pointer"
                       >
                         {/* Tooltip interactif contenant le nom du mois et les contrats */}
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-slate-900 text-white text-[10px] py-1.5 px-2.5 rounded-lg shadow-xl whitespace-nowrap z-10 border border-slate-700">
@@ -164,15 +164,15 @@ export const HomePage = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div className="bg-gradient-to-br from-primary-50 to-purple-100/50 dark:from-primary-900/30 dark:to-purple-900/30 p-4 rounded-2xl border border-primary-200 dark:border-primary-800">
+                    <div className="bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/30 dark:to-primary-900/30 p-4 rounded-2xl border border-primary-200 dark:border-primary-800">
                       <div className="text-xs font-semibold text-primary-600 dark:text-primary-300">Contrats actifs</div>
                       <div className="text-2xl font-bold text-primary-700 dark:text-primary-200">
                         {loading ? "..." : stats.contrats_actifs}
                       </div>
                     </div>
-                    <div className="bg-gradient-to-br from-accent-50 to-emerald-100/50 dark:from-accent-900/30 dark:to-emerald-900/30 p-4 rounded-2xl border border-accent-200 dark:border-accent-800">
-                      <div className="text-xs font-semibold text-accent-600 dark:text-accent-300">Nouveaux ce mois</div>
-                      <div className="text-2xl font-bold text-accent-700 dark:text-accent-200">
+                    <div className="bg-gradient-to-br from-primary-50 to-primary-100/50 dark:from-primary-900/30 dark:to-primary-900/30 p-4 rounded-2xl border border-primary-200 dark:border-primary-800">
+                      <div className="text-xs font-semibold text-primary-600 dark:text-primary-300">Nouveaux ce mois</div>
+                      <div className="text-2xl font-bold text-primary-700 dark:text-primary-200">
                         {loading ? "..." : stats.nouveaux_contrats}
                       </div>
                     </div>
@@ -196,7 +196,7 @@ export const HomePage = () => {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-800 dark:text-white mb-4">
               Dernières opportunités publiées
             </h2>
-            <div className="w-24 h-1.5 bg-gradient-to-r from-primary-600 to-accent-500 mx-auto rounded-full mb-6"></div>
+            <div className="w-24 h-1.5 bg-gradient-to-r from-primary-600 to-primary-500 mx-auto rounded-full mb-6"></div>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Rejoignez l'une des entreprises partenaires de la plateforme RH Pro. Vos compétences méritent le meilleur cadre.
             </p>
@@ -285,7 +285,7 @@ export const HomePage = () => {
       </section>
 
       {/* --- SECTION CREATION D'ENTREPRISE --- */}
-      <section className="py-20 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-red-900/20">
+      <section className="py-20 bg-gradient-to-br from-primary-50 via-orange-50 to-red-50 dark:from-primary-900/20 dark:via-orange-900/20 dark:to-red-900/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-flex items-center space-x-2 bg-amber-100 dark:bg-amber-900/30 px-5 py-2.5 rounded-full shadow-lg border border-amber-200 dark:border-amber-800 mb-6">
@@ -295,7 +295,7 @@ export const HomePage = () => {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-800 dark:text-white mb-4">
               Créez votre entreprise en
               <br />
-              <span className="bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">quelques minutes</span>
+              <span className="bg-gradient-to-r from-primary-600 via-orange-600 to-red-600 bg-clip-text text-transparent">quelques minutes</span>
             </h2>
             <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Lancez votre entreprise et devenez automatiquement Directeur. Gérez votre équipe, publiez des offres d'emploi et développez votre activité.
@@ -304,9 +304,9 @@ export const HomePage = () => {
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             {[
-              { icon: Zap, title: "Création rapide", desc: "Formulaire simple et intuitif", color: "from-amber-500 to-orange-500" },
-              { icon: Shield, title: "Sécurisé", desc: "Données protégées et chiffrées", color: "from-orange-500 to-red-500" },
-              { icon: Star, title: "Support dédié", desc: "Accompagnement personnalisé", color: "from-red-500 to-pink-500" },
+              { icon: Zap, title: "Création rapide", desc: "Formulaire simple et intuitif", color: "from-primary-500 to-primary-500" },
+              { icon: Shield, title: "Sécurisé", desc: "Données protégées et chiffrées", color: "from-primary-500 to-red-500" },
+              { icon: Star, title: "Support dédié", desc: "Accompagnement personnalisé", color: "from-red-500 to-primary-500" },
             ].map((feature, i) => (
               <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-slate-200 dark:border-slate-700 hover:shadow-2xl transition-all transform hover:-translate-y-2">
                 <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-xl mb-6`}>
@@ -319,7 +319,7 @@ export const HomePage = () => {
           </div>
 
           <div className="text-center">
-            <Link to="/entreprise/inscription" className="group inline-flex items-center justify-center px-10 py-5 bg-gradient-to-r from-amber-500 via-orange-50 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:-translate-y-1">
+            <Link to="/entreprise/inscription" className="group inline-flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary-500 via-orange-50 to-red-500 hover:from-primary-600 hover:via-orange-600 hover:to-red-600 text-white font-bold text-lg rounded-full shadow-2xl hover:shadow-3xl transition-all transform hover:-translate-y-1">
               <Crown className="mr-3 w-6 h-6" />
               <span>Créer mon entreprise maintenant</span>
               <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
@@ -338,14 +338,14 @@ export const HomePage = () => {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-800 dark:text-white mb-4">
               Toutes les fonctionnalités
               <br />
-              <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 bg-clip-text text-transparent">dont vous avez besoin</span>
+              <span className="bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 bg-clip-text text-transparent">dont vous avez besoin</span>
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: Briefcase, title: "Recrutement", desc: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-purple-600" },
-              { icon: CheckCircle2, title: "Contrats", desc: "Créez, signez et archivez tous vos contrats avec renouvellement automatique.", color: "from-accent-500 to-emerald-600" },
-              { icon: Users, title: "Employés", desc: "Gestion complète des employés, services et postes de votre entreprise.", color: "from-secondary-500 to-orange-600" },
+              { icon: Briefcase, title: "Recrutement", desc: "Publiez des offres, recevez les candidatures, planifiez des entretiens.", color: "from-primary-500 to-primary-600" },
+              { icon: CheckCircle2, title: "Contrats", desc: "Créez, signez et archivez tous vos contrats avec renouvellement automatique.", color: "from-primary-500 to-primary-600" },
+              { icon: Users, title: "Employés", desc: "Gestion complète des employés, services et postes de votre entreprise.", color: "from-secondary-500 to-primary-600" },
             ].map((feature, i) => (
               <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-slate-200 dark:border-slate-700 hover:shadow-2xl transition-all transform hover:-translate-y-2">
                 <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-xl mb-6`}>
@@ -364,7 +364,7 @@ export const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>

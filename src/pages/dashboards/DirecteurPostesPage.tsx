@@ -310,7 +310,7 @@ export const DirecteurPostesPage = () => {
           <button 
             type="button" 
             onClick={() => setShowCreateModal(true)} 
-            className="flex items-center space-x-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 text-sm transition-all shadow-md font-semibold"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 text-sm transition-all shadow-md font-semibold"
           >
             <Plus className="w-4 h-4" />
             <span>Nouveau poste</span>
@@ -321,10 +321,10 @@ export const DirecteurPostesPage = () => {
       {/* Cartes statistiques */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total postes', value: stats.total, color: 'from-amber-500 to-orange-600', icon: Briefcase },
-          { label: 'Postes actifs', value: stats.actifs, color: 'from-green-500 to-emerald-600', icon: CheckCircle2 },
+          { label: 'Total postes', value: stats.total, color: 'from-primary-500 to-primary-600', icon: Briefcase },
+          { label: 'Postes actifs', value: stats.actifs, color: 'from-primary-500 to-primary-600', icon: CheckCircle2 },
           { label: 'Postes archivés', value: stats.archives, color: 'from-slate-500 to-slate-700', icon: EyeOff },
-          { label: 'Postes disponibles', value: stats.disponibles, color: 'from-purple-500 to-indigo-600', icon: Users },
+          { label: 'Postes disponibles', value: stats.disponibles, color: 'from-primary-500 to-primary-600', icon: Users },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -349,7 +349,7 @@ export const DirecteurPostesPage = () => {
             placeholder="Rechercher un poste ou un département..." 
             value={searchTerm} 
             onChange={(e) => setSearchTerm(e.target.value)} 
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white" 
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white" 
           />
         </div>
         
@@ -403,7 +403,7 @@ export const DirecteurPostesPage = () => {
                   <div key={pItem.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center shadow-md">
                           <Briefcase className="w-6 h-6 text-white" />
                         </div>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -536,7 +536,7 @@ export const DirecteurPostesPage = () => {
                   value={formData.titre}
                   onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
                   placeholder="Ex: Développeur Full Stack"
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 />
               </div>
 
@@ -546,7 +546,7 @@ export const DirecteurPostesPage = () => {
                   required
                   value={formData.id_service}
                   onChange={(e) => setFormData({ ...formData, id_service: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 >
                   <option value="">Sélectionner un service</option>
                   {servicesDeLentrepriseActifs.map((s) => (
@@ -564,7 +564,7 @@ export const DirecteurPostesPage = () => {
                   value={formData.detail}
                   onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
                   placeholder="Description du poste..."
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 />
               </div>
 
@@ -579,7 +579,7 @@ export const DirecteurPostesPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingCreate}
-                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
+                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
                 >
                   {isSubmittingCreate && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>Créer</span>
@@ -612,7 +612,7 @@ export const DirecteurPostesPage = () => {
                   required
                   value={selectedPoste.titre}
                   onChange={(e) => setSelectedPoste({ ...selectedPoste, titre: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 />
               </div>
 
@@ -621,7 +621,7 @@ export const DirecteurPostesPage = () => {
                 <select 
                   value={selectedPoste.statut}
                   onChange={(e) => setSelectedPoste({ ...selectedPoste, statut: e.target.value as 'Actif' | 'Archivé' })}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 >
                   <option value="Actif">Actif</option>
                   <option value="Archivé">Archivé</option>
@@ -634,7 +634,7 @@ export const DirecteurPostesPage = () => {
                   rows={3}
                   value={selectedPoste.description}
                   onChange={(e) => setSelectedPoste({ ...selectedPoste, description: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-sm dark:text-white"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm dark:text-white"
                 />
               </div>
 
@@ -649,7 +649,7 @@ export const DirecteurPostesPage = () => {
                 <button
                   type="submit"
                   disabled={isSubmittingEdit}
-                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
+                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md flex items-center space-x-2"
                 >
                   {isSubmittingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>Enregistrer</span>

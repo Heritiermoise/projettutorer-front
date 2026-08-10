@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Briefcase, User, Bell, Settings, LogOut, 
-  Menu, X, Moon, Sun, Search, FileText, CheckCircle2, Clock, XCircle
+  Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle
 } from 'lucide-react'
 import { mockCandidatures } from '../../data/phase5Data'
+import { BrandMark } from '../../components/BrandMark'
 
 export const UtilisateurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -49,13 +50,7 @@ export const UtilisateurDashboard = () => {
         <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform transition-transform duration-300 lg:translate-x-0 flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">RH Pro</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Candidat</p>
-              </div>
+              <BrandMark subtitle="Candidat" compact />
             </div>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden"><X className="w-6 h-6" /></button>
           </div>
@@ -67,7 +62,7 @@ export const UtilisateurDashboard = () => {
                 onClick={() => setActiveSection(item.id)}
                 className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   activeSection === item.id 
-                    ? 'bg-gradient-to-r from-primary-500 to-purple-600 text-white shadow-lg' 
+                    ? 'bg-primary-600 text-white shadow-lg' 
                     : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
@@ -94,7 +89,7 @@ export const UtilisateurDashboard = () => {
                   {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
                 </button>
                 <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold">U</span>
                   </div>
                   <div className="hidden sm:block">
@@ -115,10 +110,10 @@ export const UtilisateurDashboard = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {[
-                  { label: 'Total candidatures', value: stats.total, icon: FileText, color: 'from-primary-500 to-purple-600' },
-                  { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-amber-500 to-orange-600' },
-                  { label: 'Acceptees', value: stats.acceptees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-                  { label: 'Refusees', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-rose-600' }
+                  { label: 'Total candidatures', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+                  { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
+                  { label: 'Acceptees', value: stats.acceptees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+                  { label: 'Refusees', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-primary-600' }
                 ].map((stat, i) => (
                   <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Building2, Home, Briefcase, HelpCircle, Users, LogIn, UserPlus, Menu, X, Moon, Sun, Crown } from 'lucide-react'
+import { Home, Briefcase, HelpCircle, Users, LogIn, UserPlus, Menu, X, Moon, Sun, Crown } from 'lucide-react'
+import { BrandMark } from './BrandMark'
 
 export const PublicNavbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -45,16 +46,8 @@ export const PublicNavbar = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-primary-500 via-purple-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 bg-clip-text text-transparent">
-                RH Pro
-              </span>
-              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 -mt-1 hidden sm:block">Enterprise Suite</p>
-            </div>
+          <Link to="/" className="group">
+            <BrandMark />
           </Link>
 
           <div className="hidden lg:flex items-center space-x-6">
@@ -65,7 +58,7 @@ export const PublicNavbar = () => {
                   to={link.href}
                   className={`flex items-center space-x-1.5 font-medium transition-colors ${
                     link.highlight 
-                      ? 'text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300' 
+                      ? 'text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300' 
                       : 'text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400'
                   }`}
                 >
@@ -96,7 +89,7 @@ export const PublicNavbar = () => {
               <LogIn className="w-4 h-4" />
               <span>Connexion</span>
             </Link>
-            <Link to="/register" className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 via-purple-600 to-accent-600 hover:from-primary-700 hover:via-purple-700 hover:to-accent-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
+            <Link to="/register" className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-primary-600 via-purple-600 to-primary-600 hover:from-primary-700 hover:via-purple-700 hover:to-primary-700 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5">
               <UserPlus className="w-4 h-4" />
               <span>S'inscrire</span>
             </Link>
@@ -124,7 +117,7 @@ export const PublicNavbar = () => {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center space-x-3 font-medium py-3 px-4 rounded-lg transition-colors ${
                     link.highlight
-                      ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                       : 'text-slate-600 dark:text-slate-300 hover:bg-primary-50 dark:hover:bg-primary-900/30'
                   }`}
                 >
@@ -148,7 +141,7 @@ export const PublicNavbar = () => {
                 <LogIn className="w-4 h-4" />
                 <span>Connexion</span>
               </Link>
-              <Link to="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center space-x-2 w-full px-5 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-full font-semibold shadow-lg">
+              <Link to="/register" onClick={() => setMobileOpen(false)} className="flex items-center justify-center space-x-2 w-full px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white rounded-full font-semibold shadow-lg">
                 <UserPlus className="w-4 h-4" />
                 <span>S'inscrire</span>
               </Link>

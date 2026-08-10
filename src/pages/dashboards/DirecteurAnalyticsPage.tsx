@@ -27,7 +27,7 @@ export const DirecteurAnalyticsPage = () => {
             <option value="6mois">6 derniers mois</option>
             <option value="1an">Derniere annee</option>
           </select>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+          <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
             <Download className="w-5 h-5" />
             <span>Exporter PDF</span>
           </button>
@@ -128,7 +128,7 @@ export const DirecteurAnalyticsPage = () => {
             ].map((rapport, i) => (
               <div key={i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-lg flex items-center justify-center">
                     <Download className="w-5 h-5 text-white" />
                   </div>
                   <div>

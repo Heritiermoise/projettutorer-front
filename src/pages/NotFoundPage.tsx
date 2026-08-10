@@ -6,7 +6,7 @@ export const NotFoundPage = () => {
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.22),_transparent_34%),linear-gradient(135deg,_#f8fafc_0%,_#fff7ed_45%,_#fff1f2_100%)] dark:bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.14),_transparent_34%),linear-gradient(135deg,_#020617_0%,_#111827_45%,_#1f2937_100%)]">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-24 left-1/4 h-72 w-72 rounded-full bg-amber-300/20 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-orange-400/20 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-primary-400/20 blur-3xl" />
         <div className="absolute top-1/3 right-1/3 h-48 w-48 rounded-full bg-red-300/20 blur-3xl" />
       </div>
 
@@ -20,7 +20,7 @@ export const NotFoundPage = () => {
 
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl shadow-amber-500/30">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-2xl shadow-amber-500/30">
                   <Building2 className="h-7 w-7" />
                 </div>
                 <p className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-slate-400">RH Pro</p>
@@ -45,7 +45,7 @@ export const NotFoundPage = () => {
               </div>
 
               <div className="rounded-3xl border border-white/70 bg-white/85 p-5 shadow-xl shadow-slate-200/40 backdrop-blur dark:border-slate-800/70 dark:bg-slate-900/80 dark:shadow-black/20">
-                <RefreshCw className="mb-3 h-6 w-6 text-orange-600" />
+                <RefreshCw className="mb-3 h-6 w-6 text-primary-600" />
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">Ce que fait le plan B</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                   Il vous remet sur une page valide, puis vous pouvez revenir au tableau de bord ou à l’accueil en un clic.
@@ -56,7 +56,7 @@ export const NotFoundPage = () => {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-orange-500/30 transition-transform hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-500 via-orange-500 to-red-500 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-primary-500/30 transition-transform hover:-translate-y-0.5"
               >
                 <Home className="h-4 w-4" />
                 Retour à l’accueil

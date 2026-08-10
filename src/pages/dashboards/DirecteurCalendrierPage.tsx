@@ -39,7 +39,7 @@ export const DirecteurCalendrierPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Calendrier Partage</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Vue d'ensemble des evenements</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvel evenement</span>
         </button>
@@ -50,7 +50,7 @@ export const DirecteurCalendrierPage = () => {
           { label: 'Total', value: evenements.length, color: 'bg-primary-500' },
           { label: 'Conges', value: evenements.filter(e => e.type === 'conge').length, color: 'bg-green-500' },
           { label: 'Entretiens', value: evenements.filter(e => e.type === 'entretien').length, color: 'bg-amber-500' },
-          { label: 'Formations', value: evenements.filter(e => e.type === 'formation').length, color: 'bg-purple-500' },
+          { label: 'Formations', value: evenements.filter(e => e.type === 'formation').length, color: 'bg-primary-500' },
           { label: 'Reunions', value: evenements.filter(e => e.type === 'reunion').length, color: 'bg-blue-500' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">

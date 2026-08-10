@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
 import { useEffect } from 'react'
 import { offreAPI } from '../services/api'
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
 export const OffreDetailPage = () => {
   const { id } = useParams()
@@ -107,7 +108,7 @@ export const OffreDetailPage = () => {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-r from-primary-600 to-accent-600 py-12">
+      <section className="bg-gradient-to-r from-primary-600 to-primary-600 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start space-x-6">
             <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -123,7 +124,7 @@ export const OffreDetailPage = () => {
                 </span>
                 <span className="flex items-center space-x-2">
                   <DollarSign className="w-5 h-5" />
-                  <span className="font-bold text-emerald-200">${Number(offre.salaire_base).toLocaleString('en-US')}</span>
+                    <span className="font-bold text-emerald-200">{money.format(Number(offre.salaire_base))}</span>
                 </span>
                 <span className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
@@ -167,7 +168,7 @@ export const OffreDetailPage = () => {
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">À propos de l'entreprise</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                     <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -190,7 +191,7 @@ export const OffreDetailPage = () => {
               </div>
               <button
                 onClick={() => setShowPostulationModal(true)}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-primary-600 to-accent-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                className="w-full mt-6 py-3 bg-gradient-to-r from-primary-600 to-primary-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
               >
                 Postuler maintenant
               </button>
@@ -202,6 +203,7 @@ export const OffreDetailPage = () => {
                 <div><dt className="text-slate-500 dark:text-slate-400">Type de contrat</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.type_contrat || 'Non précisé'}</dd></div>
                 <div><dt className="text-slate-500 dark:text-slate-400">Lieu de travail</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.localisation || 'Non précisé'}</dd></div>
                 <div><dt className="text-slate-500 dark:text-slate-400">Rémunération</dt><dd className="mt-1 font-semibold text-emerald-700 dark:text-emerald-300">{offre.salaire_base !== null && offre.salaire_base !== undefined ? `$${Number(offre.salaire_base).toLocaleString('en-US')}` : 'À négocier'}</dd></div>
+                  <div><dt className="text-slate-500 dark:text-slate-400">Rémunération</dt><dd className="mt-1 font-semibold text-primary-700 dark:text-primary-300">{offre.salaire_base !== null && offre.salaire_base !== undefined ? money.format(Number(offre.salaire_base)) : 'À négocier'}</dd></div>
                 <div><dt className="text-slate-500 dark:text-slate-400">Date limite de candidature</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-white">{offre.date_limite || 'Non précisée'}</dd></div>
               </dl>
             </div>

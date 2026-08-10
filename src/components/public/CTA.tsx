@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -13,7 +13,7 @@ export const CTA = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-accent-700 rounded-3xl p-12 md:p-16 text-center shadow-2xl overflow-hidden"
+          className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-700 rounded-3xl p-12 md:p-16 text-center shadow-2xl overflow-hidden"
         >
           <div className="relative">
             <motion.div
@@ -34,7 +34,7 @@ export const CTA = () => {
             >
               Transformez votre gestion RH
               <br />
-              <span className="text-accent-300">des aujourd'hui</span>
+              <span className="text-primary-300">des aujourd'hui</span>
             </motion.h2>
 
             <motion.div
@@ -66,7 +66,7 @@ export const CTA = () => {
             >
               {["Configuration gratuite", "Sans engagement", "Support 24/7", "Securite maximale"].map((item, i) => (
                 <div key={i} className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-accent-300" />
+                  <CheckCircle2 className="w-4 h-4 text-primary-300" />
                   <span>{item}</span>
                 </div>
               ))}

@@ -60,10 +60,10 @@ export const DirecteurApprobationsPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileText, color: 'from-amber-500 to-orange-600' },
-          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-amber-500 to-yellow-600' },
-          { label: 'Approuvees', value: stats.approuvees, icon: CheckCircle2, color: 'from-green-500 to-emerald-600' },
-          { label: 'Refusees', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-rose-600' }
+          { label: 'Total', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+          { label: 'En attente', value: stats.enAttente, icon: Clock, color: 'from-primary-500 to-primary-600' },
+          { label: 'Approuvees', value: stats.approuvees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+          { label: 'Refusees', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -104,13 +104,13 @@ export const DirecteurApprobationsPage = () => {
                     demande.type === 'conge' ? 'bg-green-100 dark:bg-green-900/30' :
                     demande.type === 'note_frais' ? 'bg-amber-100 dark:bg-amber-900/30' :
                     demande.type === 'recrutement' ? 'bg-blue-100 dark:bg-blue-900/30' :
-                    'bg-purple-100 dark:bg-purple-900/30'
+                    'bg-primary-100 dark:bg-primary-900/30'
                   }`}>
                     <TypeIcon className={`w-6 h-6 ${
                       demande.type === 'conge' ? 'text-green-600' :
                       demande.type === 'note_frais' ? 'text-amber-600' :
                       demande.type === 'recrutement' ? 'text-blue-600' :
-                      'text-purple-600'
+                      'text-primary-600'
                     }`} />
                   </div>
                   <div className="flex-1">

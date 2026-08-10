@@ -39,14 +39,14 @@ export const DirecteurMesEntreprisesPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Mes Entreprises</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gerez vos multiples entreprises</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvelle entreprise</span>
         </button>
       </div>
 
       {activeEntreprise && (
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-xl">
+        <div className="bg-gradient-to-r from-primary-500 to-primary-500 rounded-2xl p-6 text-white shadow-xl">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
               <Building2 className="w-8 h-8" />
@@ -65,7 +65,7 @@ export const DirecteurMesEntreprisesPage = () => {
         {entreprises.map(entreprise => (
           <div key={entreprise.id} className={`bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border-2 transition-all ${entrepriseActive === entreprise.id ? 'border-amber-500' : 'border-slate-200 dark:border-slate-700'}`}>
             <div className="flex items-start justify-between mb-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center">
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-500 rounded-2xl flex items-center justify-center">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

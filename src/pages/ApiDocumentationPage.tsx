@@ -239,7 +239,7 @@ export const ApiDocumentationPage = () => {
       'POST': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
       'PUT': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
       'DELETE': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
-      'PATCH': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+      'PATCH': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
     }
     return colors[method] || colors['GET']
   }
@@ -255,7 +255,7 @@ export const ApiDocumentationPage = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-3xl p-8 sm:p-12 text-white shadow-2xl mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-primary-500 via-orange-500 to-red-500 rounded-3xl p-8 sm:p-12 text-white shadow-2xl mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
           <div className="relative">

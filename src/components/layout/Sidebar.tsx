@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Building2, FileText, Calendar, DollarSign, LogOut, X } from 'lucide-react';
+import { BrandMark } from '../BrandMark';
 
 interface SidebarProps {
   userRole: string;
@@ -57,10 +58,7 @@ export const Sidebar = ({ userRole, onLogout, isOpen, onClose }: SidebarProps) =
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-6 border-b border-slate-800">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold">RH Pro</span>
+              <BrandMark subtitle="" compact />
             </div>
             <button onClick={onClose} className="lg:hidden">
               <X className="w-6 h-6" />

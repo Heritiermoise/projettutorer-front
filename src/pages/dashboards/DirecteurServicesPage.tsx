@@ -228,7 +228,7 @@ export const DirecteurServicesPage = () => {
           <button 
             type="button" 
             onClick={() => setShowCreateModal(true)} 
-            className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-all shadow-md shadow-amber-600/10 hover:shadow-lg font-medium"
+            className="flex items-center justify-center space-x-2 px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-all shadow-md shadow-primary-600/10 hover:shadow-lg font-medium"
           >
             <Plus className="w-5 h-5" />
             <span>Nouveau service</span>
@@ -265,7 +265,7 @@ export const DirecteurServicesPage = () => {
               placeholder="Rechercher un service par son nom..." 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm transition-all" 
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm transition-all" 
             />
           </div>
           
@@ -316,7 +316,7 @@ export const DirecteurServicesPage = () => {
                 }`}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${isInactive ? 'bg-slate-400 text-white' : 'bg-gradient-to-br from-amber-500 to-orange-500 text-white'}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${isInactive ? 'bg-slate-400 text-white' : 'bg-gradient-to-br from-primary-500 to-primary-500 text-white'}`}>
                     <Briefcase className="w-6 h-6" />
                   </div>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -440,7 +440,7 @@ export const DirecteurServicesPage = () => {
                   placeholder="Ex: Ressources Humaines, Comptabilité" 
                   value={formData.nom} 
                   onChange={(e) => setFormData({ ...formData, nom: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white" 
                 />
               </div>
 
@@ -451,7 +451,7 @@ export const DirecteurServicesPage = () => {
                   placeholder="Décrivez brièvement le rôle et les tâches principales de ce service..." 
                   value={formData.description} 
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white" 
                 />
               </div>
 
@@ -460,7 +460,7 @@ export const DirecteurServicesPage = () => {
                 <select 
                   value={formData.statut} 
                   onChange={(e) => setFormData({ ...formData, statut: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-300"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-300"
                 >
                   <option value="Actif">Actif</option>
                   <option value="Inactif">Inactif</option>
@@ -478,7 +478,7 @@ export const DirecteurServicesPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmittingCreate} 
-                  className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-semibold hover:bg-amber-700 transition-all flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-all flex items-center justify-center space-x-2"
                 >
                   {isSubmittingCreate ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Confirmer</span>}
                 </button>
@@ -505,7 +505,7 @@ export const DirecteurServicesPage = () => {
                   required 
                   value={selectedService.nom} 
                   onChange={(e) => setSelectedService({ ...selectedService, nom: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white" 
                 />
               </div>
 
@@ -515,7 +515,7 @@ export const DirecteurServicesPage = () => {
                   rows={3} 
                   value={selectedService.description || ''} 
                   onChange={(e) => setSelectedService({ ...selectedService, description: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 dark:text-white" 
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white" 
                 />
               </div>
 
@@ -524,7 +524,7 @@ export const DirecteurServicesPage = () => {
                 <select 
                   value={selectedService.statut} 
                   onChange={(e) => setSelectedService({ ...selectedService, statut: e.target.value })} 
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-slate-800 dark:text-slate-300"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-slate-800 dark:text-slate-300"
                 >
                   <option value="Actif">Actif (Visible partout)</option>
                   <option value="Inactif">Inactif (Archivé)</option>
@@ -542,7 +542,7 @@ export const DirecteurServicesPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmittingEdit} 
-                  className="flex-1 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-semibold hover:bg-amber-700 transition-all flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700 transition-all flex items-center justify-center space-x-2"
                 >
                   {isSubmittingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Sauvegarder</span>}
                 </button>

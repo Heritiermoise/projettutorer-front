@@ -431,7 +431,7 @@ export const DirecteurMembresPage = () => {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Actualiser</span>
           </button>
-          <button type="button" onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 text-sm">
+          <button type="button" onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 text-sm">
             <UserPlus className="w-4 h-4" />
             <span className="hidden sm:inline">Ajouter un employé</span>
           </button>
@@ -447,10 +447,10 @@ export const DirecteurMembresPage = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total', value: employes.length, color: 'from-amber-500 to-orange-600', icon: Users },
-          { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-blue-500 to-blue-600', icon: Users },
-          { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-pink-500 to-pink-600', icon: Users },
-          { label: 'Actifs', value: employes.filter((e: any) => (e.statut || 'Actif') === 'Actif').length, color: 'from-green-500 to-emerald-600', icon: Users },
+          { label: 'Total', value: employes.length, color: 'from-primary-500 to-primary-600', icon: Users },
+          { label: 'Hommes', value: employes.filter((e: any) => e.sexe === 'M').length, color: 'from-primary-500 to-primary-600', icon: Users },
+          { label: 'Femmes', value: employes.filter((e: any) => e.sexe === 'F').length, color: 'from-primary-500 to-primary-600', icon: Users },
+          { label: 'Actifs', value: employes.filter((e: any) => (e.statut || 'Actif') === 'Actif').length, color: 'from-primary-500 to-primary-600', icon: Users },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -467,9 +467,9 @@ export const DirecteurMembresPage = () => {
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher un membre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm dark:text-white" />
+            <input type="text" placeholder="Rechercher un membre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm dark:text-white" />
           </div>
-          <select value={filterService} onChange={(e) => setFilterService(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm dark:text-white">
+          <select value={filterService} onChange={(e) => setFilterService(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm dark:text-white">
             <option value="all">Tous les postes</option>
             {postes.map((p: any) => <option key={p.id_poste} value={String(p.id_poste)}>{p.titre_poste}</option>)}
           </select>
@@ -486,7 +486,7 @@ export const DirecteurMembresPage = () => {
           {filteredMembers.map((emp: any) => (
             <div key={emp.matricule || emp.id} onClick={() => setSelectedMember(emp)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all cursor-pointer">
               <div className="flex items-center space-x-3 mb-4">
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-pink-500 to-pink-600'}`}>
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-primary-500 to-primary-600'}`}>
                   <span className="text-white font-bold text-lg">{emp.prenom ? emp.prenom[0] : 'U'}</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -523,8 +523,8 @@ export const DirecteurMembresPage = () => {
                 <tr key={emp.matricule || emp.id} onClick={() => setSelectedMember(emp)} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer">
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-pink-100 dark:bg-pink-900/30'}`}>
-                        <span className={`font-bold text-sm ${emp.sexe === 'M' ? 'text-blue-600' : 'text-pink-600'}`}>{emp.prenom ? emp.prenom[0] : 'U'}</span>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${emp.sexe === 'M' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-primary-100 dark:bg-primary-900/30'}`}>
+                        <span className={`font-bold text-sm ${emp.sexe === 'M' ? 'text-blue-600' : 'text-primary-600'}`}>{emp.prenom ? emp.prenom[0] : 'U'}</span>
                       </div>
                       <div>
                         <p className="font-semibold text-slate-800 dark:text-white text-sm">{emp.prenom} {emp.nom}</p>
@@ -553,7 +553,7 @@ export const DirecteurMembresPage = () => {
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-4">
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center ${selectedMember.sexe === 'M' ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-pink-500 to-pink-600'}`}>
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center ${selectedMember.sexe === 'M' ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gradient-to-br from-primary-500 to-primary-600'}`}>
                   <span className="text-3xl font-bold text-white">{selectedMember.prenom ? selectedMember.prenom[0] : 'U'}</span>
                 </div>
                 <div>
@@ -682,7 +682,7 @@ export const DirecteurMembresPage = () => {
               <button
                 type="button"
                 onClick={() => setCreatedCredentials(null)}
-                className={`flex-1 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 ${createdCredentials.status === 'warning' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                className={`flex-1 py-2.5 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 ${createdCredentials.status === 'warning' ? 'bg-primary-600 hover:bg-primary-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
               >
                 <LinkIcon className="w-4 h-4" />
                 <span>Terminer</span>
@@ -719,11 +719,11 @@ export const DirecteurMembresPage = () => {
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Sexe *</label>
                 <div className="flex gap-4">
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="sexe" value="M" checked={createForm.sexe === 'M'} onChange={(e) => setCreateForm({ ...createForm, sexe: e.target.value })} className="text-amber-600 focus:ring-amber-500" required />
+                    <input type="radio" name="sexe" value="M" checked={createForm.sexe === 'M'} onChange={(e) => setCreateForm({ ...createForm, sexe: e.target.value })} className="text-amber-600 focus:ring-primary-500" required />
                     <span className="text-slate-700 dark:text-slate-300 text-sm">Masculin</span>
                   </label>
                   <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="sexe" value="F" checked={createForm.sexe === 'F'} onChange={(e) => setCreateForm({ ...createForm, sexe: e.target.value })} className="text-amber-600 focus:ring-amber-500" />
+                    <input type="radio" name="sexe" value="F" checked={createForm.sexe === 'F'} onChange={(e) => setCreateForm({ ...createForm, sexe: e.target.value })} className="text-amber-600 focus:ring-primary-500" />
                     <span className="text-slate-700 dark:text-slate-300 text-sm">Féminin</span>
                   </label>
                 </div>
@@ -762,7 +762,7 @@ export const DirecteurMembresPage = () => {
 
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold">Annuler</button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 disabled:opacity-60 flex items-center justify-center gap-2 text-sm font-semibold">
+                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:opacity-60 flex items-center justify-center gap-2 text-sm font-semibold">
                   {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{isSubmitting ? 'Création du profil...' : 'Enregistrer et notifier'}</span>
                 </button>

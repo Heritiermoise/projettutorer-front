@@ -5,10 +5,10 @@ export const DashboardPage = () => {
   const { user } = useAuth();
 
   const stats = [
-    { icon: Users, label: 'Total Employes', value: '142', color: 'from-blue-500 to-blue-600', change: '+12%' },
-    { icon: Building2, label: 'Services', value: '8', color: 'from-purple-500 to-purple-600', change: '+2' },
-    { icon: DollarSign, label: 'Masse salariale', value: '$245K', color: 'from-green-500 to-green-600', change: '+8%' },
-    { icon: Calendar, label: 'Conges ce mois', value: '12', color: 'from-orange-500 to-orange-600', change: '-3' },
+    { icon: Users, label: 'Total Employes', value: '142', color: 'from-primary-500 to-primary-600', change: '+12%' },
+    { icon: Building2, label: 'Services', value: '8', color: 'from-primary-500 to-primary-600', change: '+2' },
+    { icon: DollarSign, label: 'Masse salariale', value: '$245K', color: 'from-primary-500 to-primary-600', change: '+8%' },
+    { icon: Calendar, label: 'Conges ce mois', value: '12', color: 'from-primary-500 to-primary-600', change: '-3' },
   ];
 
   return (
@@ -47,7 +47,7 @@ export const DashboardPage = () => {
             {[
               { icon: FileText, text: 'Nouveau contrat signe', time: 'Il y a 2h', color: 'bg-green-100 text-green-600' },
               { icon: Users, text: '3 nouveaux employes', time: 'Il y a 5h', color: 'bg-blue-100 text-blue-600' },
-              { icon: Calendar, text: 'Conge approuve', time: 'Hier', color: 'bg-purple-100 text-purple-600' },
+              { icon: Calendar, text: 'Conge approuve', time: 'Hier', color: 'bg-primary-100 text-primary-600' },
             ].map((item, i) => (
               <div key={i} className="flex items-center space-x-4">
                 <div className={
@@ -69,9 +69,9 @@ export const DashboardPage = () => {
           <div className="grid grid-cols-2 gap-4">
             {[
               { icon: Users, label: 'Ajouter employe', color: 'from-primary-500 to-primary-600' },
-              { icon: FileText, label: 'Nouveau contrat', color: 'from-accent-500 to-accent-600' },
-              { icon: DollarSign, label: 'Generer paie', color: 'from-green-500 to-green-600' },
-              { icon: Calendar, label: 'Voir conges', color: 'from-purple-500 to-purple-600' },
+              { icon: FileText, label: 'Nouveau contrat', color: 'from-primary-500 to-primary-600' },
+              { icon: DollarSign, label: 'Generer paie', color: 'from-primary-500 to-primary-600' },
+              { icon: Calendar, label: 'Voir conges', color: 'from-primary-500 to-primary-600' },
             ].map((action, i) => (
               <button
                 key={i}

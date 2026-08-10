@@ -43,7 +43,7 @@ export const DirecteurEntreprisePage = () => {
         </div>
         <button 
           onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center justify-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors"
+          className="flex items-center justify-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors"
         >
           {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
           <span>{isEditing ? 'Sauvegarder' : 'Modifier'}</span>
@@ -51,7 +51,7 @@ export const DirecteurEntreprisePage = () => {
       </div>
 
       {/* Banniere entreprise */}
-      <div className="relative h-40 sm:h-56 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl overflow-hidden">
+      <div className="relative h-40 sm:h-56 bg-gradient-to-r from-primary-500 via-orange-500 to-red-500 rounded-2xl overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
           <div className="flex items-end space-x-4 sm:space-x-6">
@@ -73,10 +73,10 @@ export const DirecteurEntreprisePage = () => {
       {/* Stats rapides */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { icon: Users, label: 'Employes', value: stats.totalEmployes, color: 'from-primary-500 to-purple-600' },
-          { icon: Briefcase, label: 'Services', value: stats.totalServices, color: 'from-accent-500 to-emerald-600' },
-          { icon: Award, label: 'Postes', value: stats.totalPostes, color: 'from-amber-500 to-orange-600' },
-          { icon: FileText, label: 'Contrats', value: stats.contratsActifs, color: 'from-pink-500 to-rose-600' },
+          { icon: Users, label: 'Employes', value: stats.totalEmployes, color: 'from-primary-500 to-primary-600' },
+          { icon: Briefcase, label: 'Services', value: stats.totalServices, color: 'from-primary-500 to-primary-600' },
+          { icon: Award, label: 'Postes', value: stats.totalPostes, color: 'from-primary-500 to-primary-600' },
+          { icon: FileText, label: 'Contrats', value: stats.contratsActifs, color: 'from-primary-500 to-primary-600' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
@@ -179,7 +179,7 @@ export const DirecteurEntreprisePage = () => {
             <p className="font-semibold text-slate-800 dark:text-white">Logo actuel</p>
             <p className="text-xs text-slate-600 dark:text-slate-400">PNG, JPG ou SVG. Max 2MB.</p>
           </div>
-          <button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center space-x-2">
+          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center space-x-2">
             <Upload className="w-4 h-4" /><span>Changer le logo</span>
           </button>
         </div>

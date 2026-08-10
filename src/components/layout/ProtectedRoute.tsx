@@ -10,6 +10,7 @@ const dashboardPathForRole = (role: string) => {
   if (role === 'admin' || role === 'it') return '/dashboard/admin';
   if (role === 'directeur' || role === 'manager') return '/dashboard/directeur';
   if (role === 'rh') return '/dashboard/rh';
+      if (role === 'utilisateur') return '/dashboard/utilisateur';
   return '/dashboard/employe';
 };
 

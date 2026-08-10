@@ -63,7 +63,7 @@ export const DirecteurJoursFeriesPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Jours Feries & Calendrier</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Gestion des jours non travailles</p>
         </div>
-        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Ajouter un jour ferie</span>
         </button>
@@ -71,10 +71,10 @@ export const DirecteurJoursFeriesPage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: Calendar, color: 'from-amber-500 to-orange-600' },
-          { label: 'Nationaux', value: stats.nationaux, icon: Flag, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Entreprise', value: stats.entreprise, icon: Building2, color: 'from-green-500 to-emerald-600' },
-          { label: 'A venir', value: stats.aVenir, icon: Calendar, color: 'from-purple-500 to-pink-600' }
+          { label: 'Total', value: stats.total, icon: Calendar, color: 'from-primary-500 to-primary-600' },
+          { label: 'Nationaux', value: stats.nationaux, icon: Flag, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Entreprise', value: stats.entreprise, icon: Building2, color: 'from-primary-500 to-primary-600' },
+          { label: 'A venir', value: stats.aVenir, icon: Calendar, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -180,7 +180,7 @@ export const DirecteurJoursFeriesPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700">Ajouter</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Ajouter</button>
               </div>
             </form>
           </div>

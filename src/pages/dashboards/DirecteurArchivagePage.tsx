@@ -52,7 +52,7 @@ export const DirecteurArchivagePage = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-6 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-primary-500 to-cyan-500 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
             <Shield className="w-6 h-6" />
@@ -72,11 +72,11 @@ export const DirecteurArchivagePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
         {[
-          { label: 'Total', value: stats.total, icon: FileText, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Actifs', value: stats.actifs, icon: Archive, color: 'from-green-500 to-emerald-600' },
-          { label: 'Archives', value: stats.archives, icon: Archive, color: 'from-amber-500 to-orange-600' },
-          { label: 'Detruits', value: stats.detruits, icon: Trash2, color: 'from-red-500 to-rose-600' },
-          { label: 'Taille', value: stats.tailleTotale, icon: HardDrive, color: 'from-purple-500 to-pink-600' },
+          { label: 'Total', value: stats.total, icon: FileText, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Actifs', value: stats.actifs, icon: Archive, color: 'from-primary-500 to-primary-600' },
+          { label: 'Archives', value: stats.archives, icon: Archive, color: 'from-primary-500 to-primary-600' },
+          { label: 'Detruits', value: stats.detruits, icon: Trash2, color: 'from-red-500 to-primary-600' },
+          { label: 'Taille', value: stats.tailleTotale, icon: HardDrive, color: 'from-primary-500 to-primary-600' },
           { label: 'Restreints', value: stats.documentsRestreints, icon: Lock, color: 'from-slate-500 to-slate-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
@@ -138,7 +138,7 @@ export const DirecteurArchivagePage = () => {
                 <tr key={doc.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                   <td className="py-4 px-6">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-lg flex items-center justify-center">
                         <FileText className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -184,7 +184,7 @@ export const DirecteurArchivagePage = () => {
             </div>
             <div className="p-6 space-y-6">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-2xl flex items-center justify-center">
                   <FileText className="w-8 h-8 text-white" />
                 </div>
                 <div>

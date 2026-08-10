@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { UserPlus, Building2, Users, Rocket, CheckCircle2 } from 'lucide-react';
 
@@ -18,15 +18,15 @@ export const HowItWorks = () => {
       icon: Building2,
       title: "Configurez votre structure",
       description: "Definissez vos departements, services et postes selon votre organisation.",
-      color: "from-accent-500 to-accent-600",
-      bgColor: "bg-accent-50",
+      color: "from-primary-500 to-primary-600",
+      bgColor: "bg-primary-50",
       number: "02"
     },
     {
       icon: Users,
       title: "Invitez votre equipe",
       description: "Ajoutez vos employes, attribuez les roles et personnalisez les acces.",
-      color: "from-warm-500 to-warm-600",
+      color: "from-primary-500 to-primary-600",
       bgColor: "bg-warm-50",
       number: "03"
     },

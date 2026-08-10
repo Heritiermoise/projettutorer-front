@@ -829,6 +829,19 @@ export const notificationAPI = {
   },
 };
 
+export const entrepriseParametresAPI = {
+  get: async () => {
+    return await apiRequest('/rh/parametres');
+  },
+
+  update: async (data: Record<string, unknown>) => {
+    return await apiRequest('/rh/parametres', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const avancesPaieAPI = {
   getAll: async () => {
     return await apiRequest('/rh/avances-paie');

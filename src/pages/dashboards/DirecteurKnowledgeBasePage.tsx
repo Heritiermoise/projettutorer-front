@@ -31,7 +31,7 @@ export const DirecteurKnowledgeBasePage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Base de Connaissances</h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">Documentation et savoirs de l'entreprise</p>
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-xl hover:bg-amber-700">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
           <Plus className="w-5 h-5" />
           <span>Nouvel article</span>
         </button>
@@ -39,11 +39,11 @@ export const DirecteurKnowledgeBasePage = () => {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {[
-          { label: 'Articles', value: stats.total, icon: BookOpen, color: 'from-blue-500 to-cyan-600' },
-          { label: 'Publies', value: stats.publies, icon: BookOpen, color: 'from-green-500 to-emerald-600' },
-          { label: 'Vues totales', value: stats.totalVues, icon: Eye, color: 'from-amber-500 to-orange-600' },
-          { label: 'Likes', value: stats.totalLikes, icon: ThumbsUp, color: 'from-pink-500 to-rose-600' },
-          { label: 'Categories', value: stats.categories, icon: Tag, color: 'from-purple-500 to-pink-600' }
+          { label: 'Articles', value: stats.total, icon: BookOpen, color: 'from-primary-500 to-cyan-600' },
+          { label: 'Publies', value: stats.publies, icon: BookOpen, color: 'from-primary-500 to-primary-600' },
+          { label: 'Vues totales', value: stats.totalVues, icon: Eye, color: 'from-primary-500 to-primary-600' },
+          { label: 'Likes', value: stats.totalLikes, icon: ThumbsUp, color: 'from-primary-500 to-primary-600' },
+          { label: 'Categories', value: stats.categories, icon: Tag, color: 'from-primary-500 to-primary-600' }
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
             <div className={`w-10 h-10 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-2`}>
@@ -86,7 +86,7 @@ export const DirecteurKnowledgeBasePage = () => {
             <div key={article.id} onClick={() => setSelectedArticle(article)} className="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-600 hover:shadow-lg transition-all cursor-pointer">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-cyan-500 rounded-xl flex items-center justify-center">
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div>
