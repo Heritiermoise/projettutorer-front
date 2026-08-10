@@ -12,13 +12,14 @@ export const RHPresencesPage = () => {
   const [workRules, setWorkRules] = useState({ heure_arrivee: '08:00', heure_depart: '17:00', tolerance_retard_minutes: 15 })
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [viewMode, setViewMode] = useState<'today' | 'history'>('today')
+  const [sortField, setSortField] = useState<string>('date_presence')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
-  // Fonction utilitaire pour s'assurer du format HH:mm strict (H:i pour Laravel)
   const formatTimeForApi = useCallback((dateObj: Date) => {
     return dateObj.toTimeString().slice(0, 5)
   }, [])
 
-  // Formulaire de pointage dynamique basé sur l'heure actuelle
   const [formData, setFormData] = useState({
     matricule: '',
     date_presence: new Date().toISOString().split('T')[0],
@@ -59,7 +60,6 @@ export const RHPresencesPage = () => {
   const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
   const rawPresences = useMemo(() => dashboardData?.presences || [], [dashboardData])
 
-  // Filtrer uniquement les employés valides (rôle employé)
   const employes = useMemo(() => {
     if (!rawEmployes.length) return []
     return rawEmployes.filter((emp: any) => {
@@ -76,7 +76,28 @@ export const RHPresencesPage = () => {
 
   const getEmployeDetails = useCallback((matricule: string) => getEmployeInfo.get(String(matricule)), [getEmployeInfo])
 
-  // Fonction utilitaire pour déterminer automatiquement le statut selon les règles horaires
+  // Présences du jour
+  const today = new Date().toISOString().split('T')[0]
+  const todayPresences = useMemo(() => {
+    return rawPresences.filter((p: any) => String(p.date_presence) === String(today))
+  }, [rawPresences, today])
+
+  // Statistiques du jour
+  const todayStats = useMemo(() => {
+    const presents = todayPresences.filter((p: any) => ['present', 'présent'].includes(p.statut?.toLowerCase())).length
+    const retards = todayPresences.filter((p: any) => p.statut?.toLowerCase() === 'retard').length
+    const absents = todayPresences.filter((p: any) => p.statut?.toLowerCase() === 'absent').length
+    return { total: todayPresences.length, presents, retards, absents }
+  }, [todayPresences])
+
+  // Statistiques historiques
+  const historyStats = useMemo(() => {
+    const presents = rawPresences.filter((p: any) => ['present', 'présent'].includes(p.statut?.toLowerCase())).length
+    const retards = rawPresences.filter((p: any) => p.statut?.toLowerCase() === 'retard').length
+    const absents = rawPresences.filter((p: any) => p.statut?.toLowerCase() === 'absent').length
+    return { total: rawPresences.length, presents, retards, absents }
+  }, [rawPresences])
+
   const determineStatutByTime = useCallback((timeStr: string) => {
     if (!timeStr) return 'Present'
     const [hours, minutes] = timeStr.split(':').map(Number)
@@ -92,7 +113,6 @@ export const RHPresencesPage = () => {
     }
   }, [workRules])
 
-  // Gestion dynamique lorsqu'on change d'employé dans le modal
   const handleEmployeChange = useCallback((matricule: string) => {
     const today = new Date().toISOString().split('T')[0]
     const found = rawPresences.find((p: any) => 
@@ -149,8 +169,20 @@ export const RHPresencesPage = () => {
     }))
   }, [formatTimeForApi])
 
-  const filteredPresences = useMemo(() => {
-    return rawPresences.filter((p: any) => {
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
+  // Filtrer et trier les présences selon le mode
+  const filteredAndSortedPresences = useMemo(() => {
+    let source = viewMode === 'today' ? todayPresences : rawPresences
+    
+    let filtered = source.filter((p: any) => {
       const emp = getEmployeDetails(p.matricule)
       const empName = emp ? `${emp.prenom} ${emp.nom}`.toLowerCase() : ''
       const matricule = (p.matricule || '').toLowerCase()
@@ -160,25 +192,37 @@ export const RHPresencesPage = () => {
       const matchesStatut = filterStatut === 'all' || p.statut?.toLowerCase() === filterStatut.toLowerCase()
       return matchesSearch && matchesStatut
     })
-  }, [rawPresences, searchTerm, filterStatut, getEmployeDetails])
 
-  const stats = useMemo(() => {
-    const presents = rawPresences.filter((p: any) => ['present', 'présent'].includes(p.statut?.toLowerCase())).length
-    const retards = rawPresences.filter((p: any) => p.statut?.toLowerCase() === 'retard').length
-    const absents = rawPresences.filter((p: any) => p.statut?.toLowerCase() === 'absent').length
-    return {
-      total: rawPresences.length,
-      presents,
-      retards,
-      absents
-    }
-  }, [rawPresences])
+    // Tri
+    filtered.sort((a: any, b: any) => {
+      let valA = a[sortField] || ''
+      let valB = b[sortField] || ''
+      
+      if (sortField === 'date_presence') {
+        valA = new Date(valA).getTime() || 0
+        valB = new Date(valB).getTime() || 0
+      }
+      
+      if (typeof valA === 'string') {
+        valA = valA.toLowerCase()
+        valB = valB.toLowerCase()
+      }
+      
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+
+    return filtered
+  }, [viewMode, todayPresences, rawPresences, searchTerm, filterStatut, getEmployeDetails, sortField, sortDirection])
+
+  const currentStats = viewMode === 'today' ? todayStats : historyStats
 
   const presenceData = useMemo(() => [
-    { name: 'Présents', value: stats.presents, color: '#10b981' },
-    { name: 'Retards', value: stats.retards, color: '#f59e0b' },
-    { name: 'Absents', value: stats.absents, color: '#ef4444' },
-  ], [stats])
+    { name: 'Présents', value: currentStats.presents, color: '#10b981' },
+    { name: 'Retards', value: currentStats.retards, color: '#f59e0b' },
+    { name: 'Absents', value: currentStats.absents, color: '#ef4444' },
+  ], [currentStats])
 
   const handlePointageSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -285,7 +329,11 @@ export const RHPresencesPage = () => {
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Arrivée {workRules.heure_arrivee} · fermeture {workRules.heure_depart} · tolérance {workRules.tolerance_retard_minutes} min</p>
         </div>
         <div className="flex items-center space-x-3">
-          <button 
+          <ViewSwitch />
+          
+          <motion.button 
+            whileHover={{ scale: 1.05, rotate: 180 }}
+            whileTap={{ scale: 0.95 }}
             onClick={loadData}
             title="Rafraîchir"
             className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
@@ -314,11 +362,11 @@ export const RHPresencesPage = () => {
             }} 
             className="flex items-center space-x-2 px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary-600/20 transition-all active:scale-95"
           >
-            <Fingerprint className="w-4 h-4 animate-pulse" />
+            <FontAwesomeIcon icon={faFingerprint} className="w-4 h-4 animate-pulse" />
             <span>Pointage</span>
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
       {successMsg && <div className="fixed right-5 top-5 z-[70] max-w-sm rounded-2xl border border-white/40 bg-emerald-500/20 px-4 py-3 text-sm font-medium text-emerald-950 shadow-xl shadow-emerald-950/20 backdrop-blur-xl dark:border-emerald-300/20 dark:bg-emerald-400/15 dark:text-emerald-100"><div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 shrink-0" />{successMsg}</div></div>}
 
@@ -338,43 +386,55 @@ export const RHPresencesPage = () => {
               <stat.icon className="w-6 h-6" />
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/85 lg:col-span-2">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Aperçu Global</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={presenceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.1} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', color: '#fff' }} />
-                <Bar dataKey="value" fill="#6366f1" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-lg border border-slate-200/80 dark:border-slate-700/85 flex flex-col justify-between">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+              <FontAwesomeIcon icon={faChartPie} className="text-primary-500" />
+              Répartition
+            </h3>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie 
+                    data={presenceData} 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={55} 
+                    outerRadius={80} 
+                    paddingAngle={6} 
+                    dataKey="value" 
+                    label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`} 
+                    labelLine={false}
+                  >
+                    {presenceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', color: '#fff' }} 
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-        </div>
+        </motion.div>
+      </AnimatePresence>
 
-        <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/85 flex flex-col justify-between">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">Répartition</h3>
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={presenceData} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={6} dataKey="value" label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                  {presenceData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} stroke="none" />))}
-                </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', color: '#fff' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-700/85 overflow-hidden">
+      {/* Liste des présences */}
+      <motion.div 
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-lg border border-slate-200/80 dark:border-slate-700/85 overflow-hidden"
+      >
         <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row gap-3 items-center justify-between">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Liste des présences</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <FontAwesomeIcon icon={viewMode === 'today' ? faCalendarDay : faHistory} className="text-primary-500" />
+            {viewMode === 'today' ? 'Présences du Jour' : 'Historique complet'}
+            <span className="text-sm font-normal text-slate-500 dark:text-slate-400">
+              ({filteredAndSortedPresences.length})
+            </span>
+          </h3>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-72">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -398,15 +458,35 @@ export const RHPresencesPage = () => {
             <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
             <p className="text-slate-500 dark:text-slate-400 text-sm">Aucune présence trouvée</p>
           </div>
+        ) : filteredAndSortedPresences.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16"
+          >
+            <FontAwesomeIcon icon={faClock} className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              {viewMode === 'today' ? 'Aucune présence enregistrée aujourd\'hui' : 'Aucune présence dans l\'historique'}
+            </p>
+          </motion.div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-[500px] overflow-y-auto">
-            {filteredPresences.map((presence: any) => {
-              const emp = getEmployeDetails(presence.matricule)
-              const fullName = emp ? `${emp.prenom} ${emp.nom}` : 'Employé inconnu'
-              const sexe = emp?.sexe || 'M'
-              const initial = emp?.prenom?.[0] || '?'
-              const isPresentOrRetard = ['present', 'présent', 'retard'].includes(presence.statut?.toLowerCase())
-              const statutLower = presence.statut?.toLowerCase()
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={viewMode}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-[500px] overflow-y-auto"
+            >
+              {filteredAndSortedPresences.map((presence: any, index: number) => {
+                const emp = getEmployeDetails(presence.matricule)
+                const fullName = emp ? `${emp.prenom} ${emp.nom}` : 'Employé inconnu'
+                const sexe = emp?.sexe || 'M'
+                const initial = emp?.prenom?.[0] || '?'
+                const StatutIcon = getStatutIcon(presence.statut)
+                const isPresentOrRetard = ['present', 'présent', 'retard'].includes(presence.statut?.toLowerCase())
+                const statutColor = getStatutColor(presence.statut)
 
               return (
                 <div key={presence.id_presence || presence.id} className="flex items-center justify-between p-4 hover:bg-slate-50/80 dark:hover:bg-slate-700/20 transition-colors">
@@ -421,32 +501,30 @@ export const RHPresencesPage = () => {
                         <span>•</span>
                         <span className="font-mono">Mat: {presence.matricule}</span>
                       </div>
-                      {presence.justification && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 italic mt-1.5 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-md inline-block border border-amber-200/50 dark:border-amber-900/50">
-                          Motif : "{presence.justification}"
-                        </p>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statutColor}`}>
+                        <FontAwesomeIcon icon={StatutIcon} className="mr-1.5 w-3 h-3" />
+                        {presence.statut}
+                      </span>
+                      {isPresentOrRetard && presence.heure_arrivee && (
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1.5 flex items-center space-x-1"
+                        >
+                          <FontAwesomeIcon icon={faClock} className="w-3 h-3 text-slate-400" />
+                          <span>{presence.heure_arrivee.slice(0, 5)} {presence.heure_depart ? `→ ${presence.heure_depart.slice(0, 5)}` : '(En cours)'}</span>
+                        </motion.p>
                       )}
                     </div>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                      statutLower === 'present' || statutLower === 'présent' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' :
-                      statutLower === 'retard' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300' :
-                      'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
-                    }`}>{presence.statut}</span>
-                    {isPresentOrRetard && presence.heure_arrivee && (
-                      <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1.5 flex items-center space-x-1">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span>{presence.heure_arrivee.slice(0, 5)} {presence.heure_depart ? `→ ${presence.heure_depart.slice(0, 5)}` : '(En cours)'}</span>
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                  </motion.div>
+                )
+              })}
+            </motion.div>
+          </AnimatePresence>
         )}
-      </div>
+      </motion.div>
 
       {/* Modal Pointage */}
       {showAddModal && (
@@ -478,56 +556,29 @@ export const RHPresencesPage = () => {
                   onChange={(e) => handleEmployeChange(e.target.value)} 
                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary-500 outline-none transition-all dark:text-white"
                 >
-                  <option value="">Sélectionner un employé...</option>
-                  {employes.map((emp: any) => (
-                    <option key={emp.matricule} value={emp.matricule}>{emp.prenom} {emp.nom} ({emp.matricule})</option>
-                  ))}
-                </select>
+                  <FontAwesomeIcon icon={faX} className="w-5 h-5 text-slate-500" />
+                </motion.button>
               </div>
+              
+              <form onSubmit={handlePointageSubmit} className="p-6 space-y-5">
+                {errorMsg && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 rounded-xl text-sm border border-rose-200 dark:border-rose-900 flex items-center gap-2"
+                  >
+                    <FontAwesomeIcon icon={faExclamationCircle} className="w-4 h-4" />
+                    {errorMsg}
+                  </motion.div>
+                )}
 
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">Statut du pointage (Automatique selon l'heure)</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'Present', label: 'Présent', activeClass: 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-2 ring-emerald-500/20' },
-                    { id: 'Retard', label: 'Retard', activeClass: 'border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 ring-2 ring-amber-500/20' },
-                    { id: 'Absent', label: 'Absent', activeClass: 'border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 ring-2 ring-rose-500/20' },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleStatutChange(s.id)}
-                      className={`py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                        formData.statut === s.id ? s.activeClass : 'border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {['Present', 'Retard'].includes(formData.statut) && (
-                <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Heure d'arrivée</label>
-                    <input type="time" disabled value={formData.heure_arrivee} className="w-full px-3 py-2 bg-slate-200/60 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono rounded-xl text-sm cursor-not-allowed" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Heure de départ</label>
-                    <input type="time" disabled value={formData.heure_depart || (existingPresenceToday ? formatTimeForApi(new Date()) : '')} className="w-full px-3 py-2 bg-slate-200/60 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono rounded-xl text-sm cursor-not-allowed" />
-                  </div>
-                </div>
-              )}
-
-              {['Absent', 'Retard'].includes(formData.statut) && (
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
-                    Motif {formData.statut === 'Absent' ? "de l'absence" : "du retard"} <span className="text-rose-500">*</span>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faUsers} className="w-3 h-3" />
+                    Employé *
                   </label>
                   <textarea rows={3} required value={formData.justification} onChange={(e) => setFormData({...formData, justification: e.target.value})} placeholder="Précisez le motif..." className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none dark:text-white"></textarea>
                 </div>
-              )}
 
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors">Annuler</button>

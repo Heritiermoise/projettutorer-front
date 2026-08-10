@@ -1,7 +1,68 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
-import { Calendar, Search, Plus, CheckCircle2, XCircle, Clock, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCalendar, faSearch, faPlus, faCheckCircle, faTimesCircle,
+  faClock, faX, faUsers, faShield, faHourglassHalf,
+  faUser, faFileAlt, faCalendarAlt, faSort, faSortUp,
+  faSortDown, faFilter, faCheck, faSpinner, faCircleCheck,
+  faCircleExclamation, faUserCheck, faUserClock, faUserTimes,
+  faRocket, faFire, faGem, faStar, faArrowUp, faArrowDown,
+  faUmbrella, faHeartbeat, faBaby, faChild, faHandshake,
+  faRing, faHeartBroken, faPlane, faSun, faMoon
+} from '@fortawesome/free-solid-svg-icons'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'
+
+// Animations artistiques
+const fadeInUp = {
+  initial: { opacity: 0, y: 30, scale: 0.95 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -20, scale: 0.95 }
+}
+
+const floatAnimation = {
+  animate: {
+    y: [0, -8, 0],
+    transition: {
+      duration: 3,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+}
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1
+    }
+  }
+}
+
+const slideInFromLeft = {
+  initial: { opacity: 0, x: -50 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 50 }
+}
+
+const rotateIn = {
+  initial: { opacity: 0, rotate: -180, scale: 0.5 },
+  animate: { opacity: 1, rotate: 0, scale: 1 },
+  exit: { opacity: 0, rotate: 180, scale: 0.5 }
+}
+
+const pulseAnimation = {
+  animate: {
+    scale: [1, 1.05, 1],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+}
 
 export const RHCongesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -10,8 +71,11 @@ export const RHCongesPage = () => {
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [sortField, setSortField] = useState<string>('date_debut')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [newCongeInfo, setNewCongeInfo] = useState<any>(null)
 
-  // Formulaire d'ajout
   const [formData, setFormData] = useState({
     matricule: '',
     type_conge: 'Annuel',
@@ -22,6 +86,7 @@ export const RHCongesPage = () => {
   })
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+  const [successMsg, setSuccessMsg] = useState('')
 
   const loadData = useCallback(() => {
     setLoading(true)
@@ -38,7 +103,6 @@ export const RHCongesPage = () => {
   const rawEmployes = useMemo(() => dashboardData?.employes || [], [dashboardData])
   const rawConges = useMemo(() => dashboardData?.conges || [], [dashboardData])
 
-  // Filtrer uniquement les employés valides
   const employes = useMemo(() => {
     if (!rawEmployes.length) return []
     return rawEmployes.filter((emp: any) => {
@@ -52,8 +116,22 @@ export const RHCongesPage = () => {
     return emp ? `${emp.prenom} ${emp.nom}` : 'N/A'
   }, [employes])
 
-  const filteredConges = useMemo(() => {
-    return rawConges.filter((c: any) => {
+  const getEmployeEmail = useCallback((matricule: string) => {
+    const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
+    return emp?.email || 'N/A'
+  }, [employes])
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('desc')
+    }
+  }
+
+  const filteredAndSortedConges = useMemo(() => {
+    let filtered = rawConges.filter((c: any) => {
       const empName = getEmployeName(c.matricule).toLowerCase()
       const typeConge = (c.type_conge || '').toLowerCase()
       const searchLower = searchTerm.toLowerCase()
@@ -63,7 +141,33 @@ export const RHCongesPage = () => {
       const matchesStatut = filterStatut === 'all' || c.statut === filterStatut
       return matchesSearch && matchesType && matchesStatut
     })
-  }, [rawConges, getEmployeName, searchTerm, filterType, filterStatut])
+
+    filtered.sort((a: any, b: any) => {
+      let valA = a[sortField] || ''
+      let valB = b[sortField] || ''
+      
+      if (sortField === 'date_debut' || sortField === 'date_fin') {
+        valA = new Date(valA).getTime() || 0
+        valB = new Date(valB).getTime() || 0
+      }
+      
+      if (sortField === 'nombre_jours') {
+        valA = parseInt(valA) || 0
+        valB = parseInt(valB) || 0
+      }
+      
+      if (typeof valA === 'string') {
+        valA = valA.toLowerCase()
+        valB = valB.toLowerCase()
+      }
+      
+      if (valA < valB) return sortDirection === 'asc' ? -1 : 1
+      if (valA > valB) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+
+    return filtered
+  }, [rawConges, getEmployeName, searchTerm, filterType, filterStatut, sortField, sortDirection])
 
   const stats = useMemo(() => ({
     total: rawConges.length,
@@ -88,12 +192,23 @@ export const RHCongesPage = () => {
     e.preventDefault()
     setSubmitting(true)
     setErrorMsg('')
+    setSuccessMsg('')
     try {
-      await apiRequest('rh/conges', {
+      const response = await apiRequest('rh/conges', {
         method: 'POST',
         body: JSON.stringify(formData)
       })
+
+      setNewCongeInfo({
+        ...formData,
+        employeName: getEmployeName(formData.matricule),
+        id: response?.id_conge || Date.now()
+      })
+      
       setShowAddModal(false)
+      setShowSuccessModal(true)
+      setSuccessMsg('Demande de congé créée avec succès !')
+
       setFormData({
         matricule: '',
         type_conge: 'Annuel',
@@ -110,18 +225,147 @@ export const RHCongesPage = () => {
     }
   }
 
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false)
+    setNewCongeInfo(null)
+    setSuccessMsg('')
+  }
+
+  const getStatutColor = (statut: string) => {
+    const colors = {
+      'Approuve': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+      'En attente': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+      'Refuse': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300',
+    }
+    return colors[statut as keyof typeof colors] || 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+  }
+
+  const getStatutIcon = (statut: string) => {
+    const icons = {
+      'Approuve': faCheckCircle,
+      'En attente': faClock,
+      'Refuse': faTimesCircle,
+    }
+    return icons[statut as keyof typeof icons] || faShield
+  }
+
+  const getTypeIcon = (type: string) => {
+    const icons: { [key: string]: any } = {
+      'Annuel': faSun,
+      'Maladie': faHeartbeat,
+      'Maternité': faBaby,
+      'Paternité': faChild,
+      'Exceptionnel': faStar,
+      'Sans solde': faMoon,
+      'Mariage': faRing,
+      "Décès d'un proche": faHeartBroken,
+    }
+    return icons[type] || faCalendar
+  }
+
+  const getTypeColor = (type: string) => {
+    const colors: { [key: string]: string } = {
+      'Annuel': 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+      'Maladie': 'bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300',
+      'Maternité': 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+      'Paternité': 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300',
+      'Exceptionnel': 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+      'Sans solde': 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-300',
+      'Mariage': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+      "Décès d'un proche": 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+    }
+    return colors[type] || 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+  }
+
+  const statsCards = useMemo(() => [
+    { 
+      label: 'Total Demandes', 
+      value: stats.total, 
+      color: 'from-violet-500 to-indigo-600', 
+      icon: faCalendar,
+      bg: 'bg-violet-50 dark:bg-violet-950/30',
+      iconBg: 'bg-violet-100 dark:bg-violet-900/40'
+    },
+    { 
+      label: 'Approuvés', 
+      value: stats.approuves, 
+      color: 'from-emerald-500 to-teal-600', 
+      icon: faCheckCircle,
+      bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+      iconBg: 'bg-emerald-100 dark:bg-emerald-900/40'
+    },
+    { 
+      label: 'En Attente', 
+      value: stats.enAttente, 
+      color: 'from-amber-500 to-orange-600', 
+      icon: faClock,
+      bg: 'bg-amber-50 dark:bg-amber-950/30',
+      iconBg: 'bg-amber-100 dark:bg-amber-900/40'
+    },
+    { 
+      label: 'Refusés', 
+      value: stats.refuses, 
+      color: 'from-rose-500 to-red-600', 
+      icon: faTimesCircle,
+      bg: 'bg-rose-50 dark:bg-rose-950/30',
+      iconBg: 'bg-rose-100 dark:bg-rose-900/40'
+    },
+  ], [stats])
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Gestion des Congés</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">{stats.total} demandes de congé</p>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6 p-4 sm:p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 min-h-screen"
+    >
+      {/* Header */}
+      <motion.div 
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white/80 dark:bg-slate-800/80 rounded-3xl p-4 sm:p-6 shadow-xl border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl"
+        style={{ backdropFilter: 'blur(20px)' }}
+      >
+        <div className="flex items-center gap-4">
+          <motion.div 
+            variants={floatAnimation}
+            animate="animate"
+            className="p-3 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl shadow-2xl shadow-primary-500/30"
+          >
+            <FontAwesomeIcon icon={faCalendar} className="w-6 h-6 text-white" />
+          </motion.div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 via-primary-600 to-slate-800 dark:from-white dark:via-primary-400 dark:to-white bg-clip-text text-transparent bg-300 animate-gradient">
+              Gestion des Congés
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-sm flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-primary-50 dark:bg-primary-900/20 rounded-lg text-primary-600 dark:text-primary-300">
+                <FontAwesomeIcon icon={faCalendar} className="text-xs" />
+                {stats.total} demandes
+              </span>
+              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-300">
+                <FontAwesomeIcon icon={faCheckCircle} className="text-xs" />
+                {stats.approuves} approuvés
+              </span>
+              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-300">
+                <FontAwesomeIcon icon={faClock} className="text-xs" />
+                {stats.enAttente} en attente
+              </span>
+            </p>
+          </div>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="flex items-center space-x-2 px-3 sm:px-4 py-2 bg-primary-600 text-white rounded-xl hover:bg-primary-700 text-sm">
-          <Plus className="w-4 h-4" />
+        <motion.button 
+          whileHover={{ scale: 1.05, y: -2 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowAddModal(true)} 
+          className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all text-sm"
+        >
+          <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
           <span className="hidden sm:inline">Nouvelle demande</span>
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {[
@@ -134,41 +378,99 @@ export const RHCongesPage = () => {
             <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
               <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">{stat.label}</p>
-            <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
-          </div>
+            <motion.div 
+              className="absolute bottom-0 right-0 w-32 h-32 rounded-full bg-gradient-to-r from-white/5 to-transparent -mb-16 -mr-16"
+              animate={{
+                scale: [1, 1.2, 1],
+                transition: {
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }
+              }}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+      {/* Filtres et recherche */}
+      <motion.div 
+        variants={fadeInUp}
+        initial="initial"
+        animate="animate"
+        className="bg-white/80 dark:bg-slate-800/80 rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl"
+        style={{ backdropFilter: 'blur(20px)' }}
+      >
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input type="text" placeholder="Rechercher par employé ou type..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white" />
+          <div className="relative flex-1 group">
+            <motion.div
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <FontAwesomeIcon icon={faSearch} className="w-5 h-5" />
+            </motion.div>
+            <input 
+              type="text" 
+              placeholder="Rechercher par employé, type ou matricule..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white placeholder:text-slate-400"
+            />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
-            <option value="all">Tous les types</option>
-            <option value="Annuel">Annuel</option>
-            <option value="Maladie">Maladie</option>
-            <option value="Maternité">Maternité</option>
-            <option value="Paternité">Paternité</option>
-            <option value="Exceptionnel">Exceptionnel</option>
-            <option value="Sans solde">Sans solde</option>
-            <option value="Mariage">Mariage</option>
-            <option value="Décès d'un proche">Décès d'un proche</option>
-          </select>
-          <select value={filterStatut} onChange={(e) => setFilterStatut(e.target.value)} className="px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-sm text-slate-800 dark:text-white">
-            <option value="all">Tous les statuts</option>
-            <option value="Approuve">Approuvé</option>
-            <option value="En attente">En attente</option>
-            <option value="Refuse">Refusé</option>
-          </select>
+          <div className="flex gap-2">
+            <div className="relative">
+              <FontAwesomeIcon icon={faFilter} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <select 
+                value={filterType} 
+                onChange={(e) => setFilterType(e.target.value)} 
+                className="pl-10 pr-8 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white appearance-none"
+              >
+                <option value="all">Tous les types</option>
+                <option value="Annuel">Annuel</option>
+                <option value="Maladie">Maladie</option>
+                <option value="Maternité">Maternité</option>
+                <option value="Paternité">Paternité</option>
+                <option value="Exceptionnel">Exceptionnel</option>
+                <option value="Sans solde">Sans solde</option>
+                <option value="Mariage">Mariage</option>
+                <option value="Décès d'un proche">Décès d'un proche</option>
+              </select>
+              <FontAwesomeIcon icon={faSortDown} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-3 h-3 pointer-events-none" />
+            </div>
+            <div className="relative">
+              <FontAwesomeIcon icon={faShield} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <select 
+                value={filterStatut} 
+                onChange={(e) => setFilterStatut(e.target.value)} 
+                className="pl-10 pr-8 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white appearance-none"
+              >
+                <option value="all">Tous les statuts</option>
+                <option value="Approuve">Approuvé</option>
+                <option value="En attente">En attente</option>
+                <option value="Refuse">Refusé</option>
+              </select>
+              <FontAwesomeIcon icon={faSortDown} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-3 h-3 pointer-events-none" />
+            </div>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
+      {/* Liste des congés */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            className="relative"
+          >
+            <div className="rounded-full h-16 w-16 border-4 border-primary-200 dark:border-primary-900/30 border-t-primary-600 dark:border-t-primary-400"></div>
+            <motion.div 
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-300 dark:border-t-primary-200"
+              animate={{ rotate: -360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+          </motion.div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -179,107 +481,404 @@ export const RHCongesPage = () => {
                   <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-500 rounded-xl flex items-center justify-center">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <p className="font-bold text-slate-800 dark:text-white">{getEmployeName(conge.matricule)}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{conge.type_conge}</p>
+
+                  <div className="space-y-2 mb-4 text-sm relative z-10">
+                    <motion.div 
+                      whileHover={{ x: 4 }}
+                      className="flex items-center space-x-2 text-slate-600 dark:text-slate-400"
+                    >
+                      <FontAwesomeIcon icon={faCalendarAlt} className="w-4 h-4 text-slate-400" />
+                      <span>{conge.date_debut} → {conge.date_fin}</span>
+                    </motion.div>
+                    <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+                      <FontAwesomeIcon icon={faClock} className="w-4 h-4 text-slate-400" />
+                      <span className="font-semibold text-primary-600 dark:text-primary-400">{conge.nombre_jours} jours</span>
+                    </div>
+                    {conge.motif && (
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-xs text-slate-500 dark:text-slate-400 italic flex items-start gap-1.5"
+                      >
+                        <FontAwesomeIcon icon={faFileAlt} className="w-3 h-3 text-slate-400 mt-0.5" />
+                        "{conge.motif}"
+                      </motion.p>
+                    )}
                   </div>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  conge.statut === 'Approuve' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
-                  conge.statut === 'En attente' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                  'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                }`}>{conge.statut}</span>
-              </div>
-              <div className="space-y-2 mb-4 text-sm">
-                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                  <Calendar className="w-4 h-4" />
-                  <span>{conge.date_debut} → {conge.date_fin}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
-                  <Clock className="w-4 h-4" />
-                  <span>{conge.nombre_jours} jours</span>
-                </div>
-              </div>
-              {conge.motif && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-4">"{conge.motif}"</p>
-              )}
-              {conge.statut === 'En attente' && (
-                <div className="flex space-x-2">
-                  <button onClick={() => handleStatutChange(conge.id_conge, 'Approuve')} className="flex-1 px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm hover:bg-green-200 dark:hover:bg-green-900/50 flex items-center justify-center space-x-1">
-                    <CheckCircle2 className="w-4 h-4" /><span>Approuver</span>
-                  </button>
-                  <button onClick={() => handleStatutChange(conge.id_conge, 'Refuse')} className="flex-1 px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg text-sm hover:bg-red-200 dark:hover:bg-red-900/50 flex items-center justify-center space-x-1">
-                    <XCircle className="w-4 h-4" /><span>Refuser</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+
+                  {conge.statut === 'En attente' && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex space-x-2 relative z-10"
+                    >
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleStatutChange(conge.id_conge, 'Approuve')} 
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg text-sm hover:shadow-lg hover:shadow-emerald-500/30 transition-all flex items-center justify-center space-x-1.5"
+                      >
+                        <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
+                        <span>Approuver</span>
+                      </motion.button>
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleStatutChange(conge.id_conge, 'Refuse')} 
+                        className="flex-1 px-3 py-2 bg-gradient-to-r from-rose-500 to-red-500 text-white rounded-lg text-sm hover:shadow-lg hover:shadow-rose-500/30 transition-all flex items-center justify-center space-x-1.5"
+                      >
+                        <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4" />
+                        <span>Refuser</span>
+                      </motion.button>
+                    </motion.div>
+                  )}
+
+                  <motion.div 
+                    className="mt-3 h-0.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <motion.div 
+                      className={`h-full bg-gradient-to-r ${
+                        conge.statut === 'Approuve' ? 'from-emerald-500 to-teal-500' :
+                        conge.statut === 'Refuse' ? 'from-rose-500 to-red-500' :
+                        'from-amber-500 to-orange-500'
+                      }`}
+                      initial={{ width: 0 }}
+                      animate={{ width: conge.statut === 'Approuve' ? '100%' : conge.statut === 'Refuse' ? '30%' : '60%' }}
+                      transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+                    />
+                  </motion.div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        </motion.div>
       )}
 
-      {/* Modal Nouvelle Demande de Congé */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white">Nouvelle demande de congé</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"><X className="w-6 h-6 text-slate-500" /></button>
-            </div>
-            <form onSubmit={handleAddConge} className="p-6 space-y-4">
-              {errorMsg && (
-                <div className="p-3 bg-red-100 text-red-700 rounded-xl text-sm">{errorMsg}</div>
-              )}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Employé</label>
-                <select required value={formData.matricule} onChange={(e) => setFormData({...formData, matricule: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
-                  <option value="">Sélectionner un employé</option>
-                  {employes.map((emp: any) => (
-                    <option key={emp.matricule} value={emp.matricule}>
-                      {emp.prenom} {emp.nom} ({emp.matricule})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Type de congé</label>
-                <select value={formData.type_conge} onChange={(e) => setFormData({...formData, type_conge: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white">
-                  <option value="Annuel">Annuel</option>
-                  <option value="Maladie">Maladie</option>
-                  <option value="Maternité">Maternité</option>
-                  <option value="Paternité">Paternité</option>
-                  <option value="Exceptionnel">Exceptionnel</option>
-                  <option value="Sans solde">Sans solde</option>
-                  <option value="Mariage">Mariage</option>
-                  <option value="Décès d'un proche">Décès d'un proche</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date début</label>
-                  <input type="date" required value={formData.date_debut} onChange={(e) => setFormData({...formData, date_debut: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
+      {/* MODAL DE SUCCÈS */}
+      <AnimatePresence>
+        {showSuccessModal && newCongeInfo && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xl p-4"
+            onClick={closeSuccessModal}
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 50 }}
+              transition={{ type: "spring", damping: 20, stiffness: 100 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-7 space-y-5 border border-emerald-300/50 dark:border-emerald-800/50 relative overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5"
+                animate={{
+                  scale: [1, 1.1, 1],
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+
+              <div className="flex items-start gap-3 relative z-10">
+                <motion.div 
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", delay: 0.1 }}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-2xl shadow-emerald-500/40"
+                >
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-white text-2xl" />
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-500 dark:from-emerald-400 dark:to-emerald-300 bg-clip-text text-transparent">
+                    ✅ Demande créée avec succès !
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                    {successMsg || 'La demande de congé a été enregistrée.'}
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Date fin</label>
-                  <input type="date" required value={formData.date_fin} onChange={(e) => setFormData({...formData, date_fin: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={closeSuccessModal} 
+                  className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <FontAwesomeIcon icon={faX} className="w-4 h-4" />
+                </motion.button>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl space-y-3 text-sm border border-slate-200 dark:border-slate-700 relative z-10">
+                <div className="flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 p-2 rounded-xl">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg">
+                    <FontAwesomeIcon icon={faUser} className="text-white text-lg" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{newCongeInfo.employeName}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Type:</span>
+                      <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">{newCongeInfo.type_conge}</span>
+                    </div>
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-slate-500">Début</span>
+                    <p className="font-semibold text-slate-800 dark:text-white">{newCongeInfo.date_debut || 'N/A'}</p>
+                  </div>
+                  <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-slate-500">Fin</span>
+                    <p className="font-semibold text-slate-800 dark:text-white">{newCongeInfo.date_fin || 'N/A'}</p>
+                  </div>
+                  <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-slate-500">Jours</span>
+                    <p className="font-semibold text-primary-600 dark:text-primary-400">{newCongeInfo.nombre_jours} jours</p>
+                  </div>
+                  <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-slate-500">Statut</span>
+                    <p className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
+                      En attente
+                    </p>
+                  </div>
+                </div>
+
+                {newCongeInfo.motif && (
+                  <div className="p-2 bg-white/50 dark:bg-slate-800/50 rounded-lg">
+                    <span className="text-xs text-slate-500">Motif</span>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 italic">"{newCongeInfo.motif}"</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nombre de jours</label>
-                <input type="number" min="1" required value={formData.nombre_jours} onChange={(e) => setFormData({...formData, nombre_jours: e.target.value})} placeholder="5" className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white" />
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={closeSuccessModal}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all flex items-center justify-center gap-2"
+              >
+                <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
+                <span>Terminé</span>
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL AJOUT CONGÉ */}
+      <AnimatePresence>
+        {showAddModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xl p-4"
+            onClick={() => {
+              if (!submitting) setShowAddModal(false)
+            }}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 30 }}
+              transition={{ type: "spring", damping: 20, stiffness: 100 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-900 z-10 backdrop-blur-xl bg-opacity-90">
+                <div className="flex items-center gap-3">
+                  <motion.div 
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", delay: 0.1 }}
+                    className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/30"
+                  >
+                    <FontAwesomeIcon icon={faPlus} className="text-white text-lg" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+                    Nouvelle demande de congé
+                  </h3>
+                </div>
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    if (!submitting) setShowAddModal(false)
+                  }} 
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                >
+                  <FontAwesomeIcon icon={faX} className="w-5 h-5 text-slate-500" />
+                </motion.button>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Motif</label>
-                <textarea rows={3} value={formData.motif} onChange={(e) => setFormData({...formData, motif: e.target.value})} placeholder="Raison de la demande..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-white"></textarea>
-              </div>
-              <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold">Annuler</button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700">{submitting ? 'Enregistrement...' : 'Enregistrer'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+
+              <form onSubmit={handleAddConge} className="p-6 space-y-4">
+                {errorMsg && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-gradient-to-r from-rose-50 to-rose-100 dark:from-rose-900/30 dark:to-rose-900/20 text-rose-700 dark:text-rose-200 rounded-xl text-sm border border-rose-200 dark:border-rose-800 flex items-center gap-2"
+                  >
+                    <FontAwesomeIcon icon={faCircleExclamation} className="w-4 h-4" />
+                    {errorMsg}
+                  </motion.div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faUser} className="w-3 h-3" />
+                    Employé *
+                  </label>
+                  <select 
+                    required 
+                    value={formData.matricule} 
+                    onChange={(e) => setFormData({...formData, matricule: e.target.value})} 
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white"
+                  >
+                    <option value="">Sélectionner un employé</option>
+                    {employes.map((emp: any) => (
+                      <option key={emp.matricule} value={emp.matricule}>
+                        {emp.prenom} {emp.nom} ({emp.matricule})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                    Type de congé *
+                  </label>
+                  <select 
+                    value={formData.type_conge} 
+                    onChange={(e) => setFormData({...formData, type_conge: e.target.value})} 
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white"
+                  >
+                    <option value="Annuel">Annuel</option>
+                    <option value="Maladie">Maladie</option>
+                    <option value="Maternité">Maternité</option>
+                    <option value="Paternité">Paternité</option>
+                    <option value="Exceptionnel">Exceptionnel</option>
+                    <option value="Sans solde">Sans solde</option>
+                    <option value="Mariage">Mariage</option>
+                    <option value="Décès d'un proche">Décès d'un proche</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                      Date début *
+                    </label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={formData.date_debut} 
+                      onChange={(e) => setFormData({...formData, date_debut: e.target.value})} 
+                      className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                      <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                      Date fin *
+                    </label>
+                    <input 
+                      type="date" 
+                      required 
+                      value={formData.date_fin} 
+                      onChange={(e) => setFormData({...formData, date_fin: e.target.value})} 
+                      className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faClock} className="w-3 h-3" />
+                    Nombre de jours *
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    required 
+                    value={formData.nombre_jours} 
+                    onChange={(e) => setFormData({...formData, nombre_jours: e.target.value})} 
+                    placeholder="5" 
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                    <FontAwesomeIcon icon={faFileAlt} className="w-3 h-3" />
+                    Motif
+                  </label>
+                  <textarea 
+                    rows={3} 
+                    value={formData.motif} 
+                    onChange={(e) => setFormData({...formData, motif: e.target.value})} 
+                    placeholder="Raison de la demande..." 
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all text-sm text-slate-800 dark:text-white placeholder:text-slate-400"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <motion.button 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button" 
+                    onClick={() => {
+                      if (!submitting) setShowAddModal(false)
+                    }} 
+                    className="px-4 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    Annuler
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit" 
+                    disabled={submitting} 
+                    className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {submitting ? (
+                      <>
+                        <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                        Enregistrer
+                      </>
+                    )}
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Styles CSS supplémentaires */}
+      <style jsx>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .bg-300 { background-size: 300% 300%; }
+        .animate-gradient { animation: gradient 6s ease infinite; }
+      `}</style>
+    </motion.div>
   )
 }
