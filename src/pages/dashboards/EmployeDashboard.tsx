@@ -21,16 +21,14 @@ import {
   faCalendarAlt,
   faUserCheck,
   faEnvelope,
-  faStar,
   faGift,
   faWallet,
   faReceipt,
   faCircle,
-  faBrain,
-  faTh,
+  faTh
 } from '@fortawesome/free-solid-svg-icons'
 import {
-  ResponsiveContainer, PieChart, Pie, Cell
+  ResponsiveContainer, PieChart, Pie, Cell, Tooltip
 } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
 import { notificationAPI } from '../../services/api'
@@ -75,29 +73,6 @@ const floatAI = {
   }
 }
 
-const pulseGlow = {
-  animate: {
-    scale: [1, 1.05, 1],
-    opacity: [0.3, 0.6, 0.3],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
-}
-
-const rotateIcon = {
-  animate: {
-    rotate: [0, 360],
-    transition: {
-      duration: 20,
-      repeat: Infinity,
-      ease: "linear"
-    }
-  }
-}
-
 // Items du menu principal
 const MAIN_MENU_ITEMS = [
   { icon: faHouse, label: 'Accueil', id: 'dashboard', path: '/dashboard/employe' },
@@ -129,7 +104,6 @@ export const EmployeDashboard = () => {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showCircleMenu, setShowCircleMenu] = useState(false)
-  const [showFullMenu, setShowFullMenu] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -231,7 +205,6 @@ export const EmployeDashboard = () => {
       return
     }
     setShowCircleMenu(false)
-    setShowFullMenu(false)
     navigate(path)
   }, [navigate])
 
@@ -465,7 +438,7 @@ export const EmployeDashboard = () => {
               ))}
             </motion.div>
 
-            {/* Graphique Présences */}
+            {/* Graphique Présences avec correction de hauteur */}
             <motion.div 
               variants={slideUp}
               className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
@@ -479,15 +452,15 @@ export const EmployeDashboard = () => {
                   {currentMonthPresences.length} enreg.
                 </span>
               </div>
-              <div className="h-40">
+              <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie 
                       data={presenceData} 
                       cx="50%" 
                       cy="50%" 
-                      innerRadius={30} 
-                      outerRadius={55} 
+                      innerRadius={35} 
+                      outerRadius={60} 
                       paddingAngle={2} 
                       dataKey="value" 
                       label={({ name, value }) => `${name}: ${value}`}
@@ -497,6 +470,13 @@ export const EmployeDashboard = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                       ))}
                     </Pie>
+                    <Tooltip contentStyle={{ 
+                      backgroundColor: isDark ? '#1E293B' : '#FFFFFF', 
+                      border: 'none', 
+                      borderRadius: '12px', 
+                      color: isDark ? '#FFFFFF' : '#1A202C',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -756,7 +736,7 @@ export const EmployeDashboard = () => {
 
         {/* Contenu principal */}
         <div className="flex-1 flex flex-col overflow-hidden lg:ml-[280px]">
-          {/* Header avec NOVA RH IA */}
+          {/* Header avec titre "Mon Espace Employé" */}
           <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-xl border-b border-[#F0F0F0] dark:border-[#2D3748] px-4 py-2.5 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -767,79 +747,24 @@ export const EmployeDashboard = () => {
                   <FontAwesomeIcon icon={faBars} className="w-5 h-5" />
                 </button>
                 
-                {/* NOVA RH IA - Logo */}
+                {/* Titre "Mon Espace Employé" avec icône utilisateur */}
                 <motion.div 
                   variants={floatAI}
                   animate="animate"
                   className="flex items-center gap-2 ml-1"
                 >
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A86B] via-[#00B97A] to-[#00C97A] flex items-center justify-center shadow-lg shadow-[#00A86B]/30">
-                      <FontAwesomeIcon icon={faBrain} className="w-4 h-4 text-white" />
-                      <motion.div 
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-[#00FF88] rounded-full border-2 border-white dark:border-[#1A1A2E]"
-                        animate={{
-                          scale: [1, 1.3, 1],
-                          opacity: [1, 0.5, 1]
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      />
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-lg shadow-[#00A86B]/30">
+                      <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-white" />
                     </div>
-                    <motion.div 
-                      className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#00A86B] to-[#00C97A] opacity-20 blur-md"
-                      animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.2, 0.4, 0.2]
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
-                    <motion.div 
-                      className="absolute -top-2 -right-2 text-yellow-300"
-                      animate={{
-                        scale: [0.8, 1.2, 0.8],
-                        rotate: [0, 360, 0],
-                        opacity: [0.5, 1, 0.5]
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faStar} className="w-2.5 h-2.5" />
-                    </motion.div>
-                  </div>
-                  <div className="flex flex-col leading-tight">
-                    <span className="font-bold text-[#1A202C] dark:text-white text-sm flex items-center gap-1">
-                      NOVA RH
-                      <span className="text-[10px] bg-gradient-to-r from-[#00A86B] to-[#00C97A] bg-clip-text text-transparent font-bold">
-                        IA
+                    <div className="flex flex-col leading-tight">
+                      <span className="font-bold text-[#1A202C] dark:text-white text-sm">
+                        Mon Espace Employé
                       </span>
-                      <motion.span
-                        animate={{
-                          opacity: [1, 0, 1]
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                        className="text-[8px] text-[#00A86B] dark:text-[#00A86B]"
-                      >
-                        ●
-                      </motion.span>
-                    </span>
-                    <span className="text-[8px] text-[#718096] dark:text-[#94A3B8] font-medium">
-                      Assistant intelligent
-                    </span>
+                      <span className="text-[8px] text-[#718096] dark:text-[#94A3B8] font-medium">
+                        Bienvenue, {user.prenom}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               </div>
@@ -1060,7 +985,7 @@ export const EmployeDashboard = () => {
 
                 {/* Version */}
                 <div className="text-center mt-4 relative z-10">
-                  <span className="text-[10px] text-white/40">NOVA RH IA v2.0</span>
+                  <span className="text-[10px] text-white/40">Mon Espace Employé v2.0</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -1068,7 +993,7 @@ export const EmployeDashboard = () => {
         </AnimatePresence>
       </div>
 
-      <style jsx>{`
+      <style>{`
         ::-webkit-scrollbar {
           width: 0;
         }
