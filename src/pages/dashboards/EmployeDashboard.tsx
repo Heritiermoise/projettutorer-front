@@ -42,12 +42,6 @@ import { EmployePresencesPage } from './EmployePresencesPage'
 import { EmployeAvantagesPage } from './EmployeAvantagesPage'
 
 // Animations
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
-}
-
 const slideUp = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0 },
@@ -62,7 +56,7 @@ const staggerContainer = {
   }
 }
 
-const floatAI = {
+const floatAnimation = {
   animate: {
     y: [0, -4, 0],
     transition: {
@@ -73,7 +67,7 @@ const floatAI = {
   }
 }
 
-// Items du menu principal
+// Items du menu
 const MAIN_MENU_ITEMS = [
   { icon: faHouse, label: 'Accueil', id: 'dashboard', path: '/dashboard/employe' },
   { icon: faDollarSign, label: 'Paies', id: 'paies', path: '/dashboard/employe/paies' },
@@ -87,7 +81,6 @@ const MAIN_MENU_ITEMS = [
   { icon: faRightFromBracket, label: 'Déconnexion', id: 'logout', path: '#logout' },
 ]
 
-// Items du menu circulaire (4 premiers + plus)
 const CIRCLE_MENU_ITEMS = [
   { icon: faHouse, label: 'Accueil', id: 'dashboard' },
   { icon: faDollarSign, label: 'Paies', id: 'paies' },
@@ -313,33 +306,19 @@ export const EmployeDashboard = () => {
             animate={{ opacity: 1 }}
             className="space-y-4 pb-20"
           >
-            {/* Header profil style Airtel */}
+            {/* Header profil */}
             <motion.div 
               variants={slideUp}
               initial="initial"
               animate="animate"
               className="relative overflow-hidden bg-gradient-to-r from-[#00A86B] via-[#00B97A] to-[#00C97A] rounded-3xl p-5 shadow-xl shadow-[#00A86B]/25"
             >
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                animate={{
-                  x: ['-100%', '100%'],
-                  transition: {
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }
-                }}
-              />
               <div className="relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <motion.div 
-                      whileHover={{ scale: 1.05 }}
-                      className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30"
-                    >
+                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
                       <span className="text-white font-bold text-2xl">{user.prenom?.[0] || 'E'}</span>
-                    </motion.div>
+                    </div>
                     <div>
                       <h2 className="text-white font-bold text-lg leading-tight">
                         {user.prenom} {user.nom}
@@ -360,15 +339,13 @@ export const EmployeDashboard = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <button 
                       onClick={fetchData}
                       disabled={isRefreshing}
                       className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20"
                     >
                       <FontAwesomeIcon icon={faSpinner} className={`w-3.5 h-3.5 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
-                    </motion.button>
+                    </button>
                     <span className="text-[10px] text-white/60 font-medium">RH Pro</span>
                   </div>
                 </div>
@@ -438,7 +415,7 @@ export const EmployeDashboard = () => {
               ))}
             </motion.div>
 
-            {/* Graphique Présences avec correction de hauteur */}
+            {/* Graphique Présences - Version corrigée */}
             <motion.div 
               variants={slideUp}
               className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
@@ -452,8 +429,8 @@ export const EmployeDashboard = () => {
                   {currentMonthPresences.length} enreg.
                 </span>
               </div>
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <div style={{ width: '100%', height: 180, minHeight: 180 }}>
+                <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
                     <Pie 
                       data={presenceData} 
@@ -506,11 +483,8 @@ export const EmployeDashboard = () => {
               ) : (
                 <div className="space-y-2">
                   {userPaies.slice(0, 3).map((paie: any, index: number) => (
-                    <motion.div 
+                    <div 
                       key={paie.id_paie}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.04 }}
                       className="flex items-center justify-between p-3 bg-[#F7FAFC] dark:bg-[#2D3748] rounded-2xl"
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -535,123 +509,111 @@ export const EmployeDashboard = () => {
                           {paie.statut}
                         </span>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               )}
             </motion.div>
 
-            {/* Congés et Avantages */}
+            {/* Congés */}
             <motion.div 
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
-              className="space-y-3"
+              variants={slideUp}
+              className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
             >
-              <motion.div 
-                variants={slideUp}
-                className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-[#1A202C] dark:text-white flex items-center gap-2">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="text-[#00A86B]" />
-                    Congés
-                  </h3>
-                  {stats.congesEnAttente > 0 && (
-                    <span className="text-[10px] text-[#F5A623] bg-[#FEF8ED] dark:bg-[#F5A623]/20 px-2 py-0.5 rounded-full font-medium animate-pulse">
-                      {stats.congesEnAttente} en attente
-                    </span>
-                  )}
-                </div>
-                {userConges.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <FontAwesomeIcon icon={faCalendarAlt} className="w-8 h-8 text-[#CBD5E0] dark:text-[#4A5568] mb-2" />
-                    <p className="text-sm text-[#718096] dark:text-[#94A3B8]">Aucune demande</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {userConges.slice(0, 2).map((conge: any, index: number) => {
-                      const statusColors = {
-                        'Approuve': 'bg-[#E8F5EE] text-[#00A86B] dark:bg-[#00A86B]/20 dark:text-[#00A86B]',
-                        'En attente': 'bg-[#FEF8ED] text-[#F5A623] dark:bg-[#F5A623]/20 dark:text-[#F5A623]',
-                        'Refuse': 'bg-[#FFF0F0] text-[#FF4757] dark:bg-[#FF4757]/20 dark:text-[#FF4757]',
-                      }
-                      return (
-                        <motion.div 
-                          key={conge.id_conge}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.04 }}
-                          className="flex items-center justify-between p-3 bg-[#F7FAFC] dark:bg-[#2D3748] rounded-2xl"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-[#F0F7FF] dark:bg-[#0088CC]/20 flex items-center justify-center flex-shrink-0">
-                              <FontAwesomeIcon icon={faCalendarAlt} className="w-3.5 h-3.5 text-[#0088CC]" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-semibold text-[#1A202C] dark:text-white text-sm">{conge.type_conge}</p>
-                              <p className="text-[10px] text-[#718096] dark:text-[#94A3B8]">
-                                {conge.date_debut} → {conge.date_fin}
-                              </p>
-                            </div>
-                          </div>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ml-2 ${statusColors[conge.statut as keyof typeof statusColors] || 'bg-[#F7FAFC] text-[#718096] dark:bg-[#2D3748] dark:text-[#94A3B8]'}`}>
-                            {conge.statut}
-                          </span>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-[#1A202C] dark:text-white flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-[#00A86B]" />
+                  Congés
+                </h3>
+                {stats.congesEnAttente > 0 && (
+                  <span className="text-[10px] text-[#F5A623] bg-[#FEF8ED] dark:bg-[#F5A623]/20 px-2 py-0.5 rounded-full font-medium animate-pulse">
+                    {stats.congesEnAttente} en attente
+                  </span>
                 )}
-              </motion.div>
-
-              <motion.div 
-                variants={slideUp}
-                className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-[#1A202C] dark:text-white flex items-center gap-2">
-                    <FontAwesomeIcon icon={faGift} className="text-[#00A86B]" />
-                    Avantages
-                  </h3>
-                  {stats.avantagesTotal > 0 && (
-                    <span className="text-[10px] text-[#00A86B] bg-[#E8F5EE] dark:bg-[#00A86B]/20 px-2 py-0.5 rounded-full">
-                      {stats.avantagesTotal}
-                    </span>
-                  )}
+              </div>
+              {userConges.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="w-8 h-8 text-[#CBD5E0] dark:text-[#4A5568] mb-2" />
+                  <p className="text-sm text-[#718096] dark:text-[#94A3B8]">Aucune demande</p>
                 </div>
-                {userAvantages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <FontAwesomeIcon icon={faGift} className="w-8 h-8 text-[#CBD5E0] dark:text-[#4A5568] mb-2" />
-                    <p className="text-sm text-[#718096] dark:text-[#94A3B8]">Aucun avantage</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {userAvantages.slice(0, 2).map((avantage: any, index: number) => (
-                      <motion.div 
-                        key={avantage.id_avantage}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.04 }}
+              ) : (
+                <div className="space-y-2">
+                  {userConges.slice(0, 2).map((conge: any, index: number) => {
+                    const statusColors = {
+                      'Approuve': 'bg-[#E8F5EE] text-[#00A86B] dark:bg-[#00A86B]/20 dark:text-[#00A86B]',
+                      'En attente': 'bg-[#FEF8ED] text-[#F5A623] dark:bg-[#F5A623]/20 dark:text-[#F5A623]',
+                      'Refuse': 'bg-[#FFF0F0] text-[#FF4757] dark:bg-[#FF4757]/20 dark:text-[#FF4757]',
+                    }
+                    return (
+                      <div 
+                        key={conge.id_conge}
                         className="flex items-center justify-between p-3 bg-[#F7FAFC] dark:bg-[#2D3748] rounded-2xl"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-[#FEF8ED] dark:bg-[#F5A623]/20 flex items-center justify-center flex-shrink-0">
-                            <FontAwesomeIcon icon={faGift} className="w-3.5 h-3.5 text-[#F5A623]" />
+                          <div className="w-8 h-8 rounded-xl bg-[#F0F7FF] dark:bg-[#0088CC]/20 flex items-center justify-center flex-shrink-0">
+                            <FontAwesomeIcon icon={faCalendarAlt} className="w-3.5 h-3.5 text-[#0088CC]" />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-[#1A202C] dark:text-white text-sm truncate">{avantage.libelle}</p>
-                            <p className="text-[10px] text-[#718096] dark:text-[#94A3B8]">{avantage.type_avantage}</p>
+                            <p className="font-semibold text-[#1A202C] dark:text-white text-sm">{conge.type_conge}</p>
+                            <p className="text-[10px] text-[#718096] dark:text-[#94A3B8]">
+                              {conge.date_debut} → {conge.date_fin}
+                            </p>
                           </div>
                         </div>
-                        <span className="font-bold text-[#00A86B] dark:text-[#00A86B] text-sm flex-shrink-0 ml-2">
-                          {formatCurrency(Number(avantage.valeur || 0))}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 flex-shrink-0 ml-2 ${statusColors[conge.statut as keyof typeof statusColors] || 'bg-[#F7FAFC] text-[#718096] dark:bg-[#2D3748] dark:text-[#94A3B8]'}`}>
+                          {conge.statut}
                         </span>
-                      </motion.div>
-                    ))}
-                  </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </motion.div>
+
+            {/* Avantages */}
+            <motion.div 
+              variants={slideUp}
+              className="bg-white dark:bg-[#1E293B] rounded-2xl p-4 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-[#F0F0F0] dark:border-[#2D3748]"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-[#1A202C] dark:text-white flex items-center gap-2">
+                  <FontAwesomeIcon icon={faGift} className="text-[#00A86B]" />
+                  Avantages
+                </h3>
+                {stats.avantagesTotal > 0 && (
+                  <span className="text-[10px] text-[#00A86B] bg-[#E8F5EE] dark:bg-[#00A86B]/20 px-2 py-0.5 rounded-full">
+                    {stats.avantagesTotal}
+                  </span>
                 )}
-              </motion.div>
+              </div>
+              {userAvantages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-4">
+                  <FontAwesomeIcon icon={faGift} className="w-8 h-8 text-[#CBD5E0] dark:text-[#4A5568] mb-2" />
+                  <p className="text-sm text-[#718096] dark:text-[#94A3B8]">Aucun avantage</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {userAvantages.slice(0, 2).map((avantage: any, index: number) => (
+                    <div 
+                      key={avantage.id_avantage}
+                      className="flex items-center justify-between p-3 bg-[#F7FAFC] dark:bg-[#2D3748] rounded-2xl"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-[#FEF8ED] dark:bg-[#F5A623]/20 flex items-center justify-center flex-shrink-0">
+                          <FontAwesomeIcon icon={faGift} className="w-3.5 h-3.5 text-[#F5A623]" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-[#1A202C] dark:text-white text-sm truncate">{avantage.libelle}</p>
+                          <p className="text-[10px] text-[#718096] dark:text-[#94A3B8]">{avantage.type_avantage}</p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-[#00A86B] dark:text-[#00A86B] text-sm flex-shrink-0 ml-2">
+                        {formatCurrency(Number(avantage.valeur || 0))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )
@@ -661,13 +623,8 @@ export const EmployeDashboard = () => {
   return (
     <div className={isDark ? 'dark' : ''}>
       <div className="flex h-screen overflow-hidden bg-[#F5F7FA] dark:bg-[#0F172A]">
-        {/* Sidebar pour desktop */}
-        <motion.aside 
-          initial={{ x: -300 }}
-          animate={{ x: 0 }}
-          transition={{ type: "spring", damping: 25 }}
-          className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-[280px] bg-white dark:bg-[#1A1A2E] shadow-2xl dark:shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-300 flex-col"
-        >
+        {/* Sidebar desktop */}
+        <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-[280px] bg-white dark:bg-[#1A1A2E] shadow-2xl dark:shadow-[0_0_30px_rgba(0,0,0,0.5)] transform transition-all duration-300 flex-col">
           <div className="flex items-center p-4 border-b border-[#F0F0F0] dark:border-[#2D3748] flex-shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-[#00A86B] rounded-xl flex items-center justify-center">
@@ -694,11 +651,8 @@ export const EmployeDashboard = () => {
 
           <nav className="flex-1 overflow-y-auto p-3 space-y-1">
             {MAIN_MENU_ITEMS.map((item, index) => (
-              <motion.button
+              <button
                 key={item.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
                 onClick={() => handleNavigation(item.path, item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all text-sm font-medium ${
                   activeSection === item.id 
@@ -711,23 +665,17 @@ export const EmployeDashboard = () => {
                 <FontAwesomeIcon icon={item.icon} className={`w-5 h-5 ${activeSection === item.id ? 'text-white' : ''}`} />
                 <span>{item.label}</span>
                 {activeSection === item.id && (
-                  <motion.div 
-                    layoutId="activeIndicator"
-                    className="ml-auto w-1.5 h-6 rounded-full bg-white/50"
-                  />
+                  <div className="ml-auto w-1.5 h-6 rounded-full bg-white/50" />
                 )}
-              </motion.button>
+              </button>
             ))}
           </nav>
-        </motion.aside>
+        </aside>
 
-        {/* Overlay pour mobile */}
+        {/* Overlay mobile */}
         <AnimatePresence>
           {sidebarOpen && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div 
               onClick={() => setSidebarOpen(false)}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
             />
@@ -736,7 +684,7 @@ export const EmployeDashboard = () => {
 
         {/* Contenu principal */}
         <div className="flex-1 flex flex-col overflow-hidden lg:ml-[280px]">
-          {/* Header avec titre "Mon Espace Employé" */}
+          {/* Header mobile */}
           <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-xl border-b border-[#F0F0F0] dark:border-[#2D3748] px-4 py-2.5 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -747,26 +695,19 @@ export const EmployeDashboard = () => {
                   <FontAwesomeIcon icon={faBars} className="w-5 h-5" />
                 </button>
                 
-                {/* Titre "Mon Espace Employé" avec icône utilisateur */}
-                <motion.div 
-                  variants={floatAI}
-                  animate="animate"
-                  className="flex items-center gap-2 ml-1"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-lg shadow-[#00A86B]/30">
-                      <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex flex-col leading-tight">
-                      <span className="font-bold text-[#1A202C] dark:text-white text-sm">
-                        Mon Espace Employé
-                      </span>
-                      <span className="text-[8px] text-[#718096] dark:text-[#94A3B8] font-medium">
-                        Bienvenue, {user.prenom}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-2 ml-1">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-lg shadow-[#00A86B]/30">
+                    <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-white" />
                   </div>
-                </motion.div>
+                  <div className="flex flex-col leading-tight">
+                    <span className="font-bold text-[#1A202C] dark:text-white text-sm">
+                      Mon Espace
+                    </span>
+                    <span className="text-[8px] text-[#718096] dark:text-[#94A3B8] font-medium">
+                      {user.prenom}
+                    </span>
+                  </div>
+                </div>
               </div>
               
               <div className="flex items-center gap-1 sm:gap-2">
@@ -782,17 +723,6 @@ export const EmployeDashboard = () => {
                     className={`w-4 h-4 ${isDark ? 'text-yellow-400' : 'text-[#4A5568]'}`} 
                   />
                 </button>
-                <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#F0F0F0] dark:border-[#2D3748]">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-lg shadow-[#00A86B]/20">
-                    <span className="text-white font-bold text-xs">{user.prenom?.[0] || 'E'}</span>
-                  </div>
-                  <div className="hidden md:block">
-                    <p className="font-semibold text-[#1A202C] dark:text-white text-xs truncate max-w-[80px]">
-                      {user.prenom}
-                    </p>
-                    <p className="text-[9px] text-[#718096] dark:text-[#94A3B8]">Employé</p>
-                  </div>
-                </div>
               </div>
             </div>
           </header>
@@ -800,21 +730,17 @@ export const EmployeDashboard = () => {
           {/* Main content */}
           <main className="flex-1 overflow-y-auto p-4 pb-28 lg:pb-6">
             <AnimatePresence mode="wait">
-              <motion.div
+              <div
                 key={activeSection}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
                 className="max-w-lg mx-auto"
               >
                 {renderContent()}
-              </motion.div>
+              </div>
             </AnimatePresence>
           </main>
         </div>
 
-        {/* Bottom Navigation Style Movie Box - Menu Circulaire */}
+        {/* Bottom Navigation - Style Movie Box */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-xl border-t border-[#F0F0F0] dark:border-[#2D3748] shadow-lg px-2 pb-3 pt-1">
           <div className="flex items-center justify-around relative">
             {CIRCLE_MENU_ITEMS.map((item) => {
@@ -843,65 +769,36 @@ export const EmployeDashboard = () => {
                     {item.label}
                   </span>
                   {isActive && (
-                    <motion.div 
-                      layoutId="bottomIndicator"
-                      className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-[#00A86B]"
-                    />
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-[#00A86B]" />
                   )}
                 </button>
               )
             })}
 
-            {/* Bouton Menu Central - Style Movie Box */}
+            {/* Bouton Menu Central */}
             <button
               onClick={() => setShowCircleMenu(true)}
               className="flex flex-col items-center py-1 px-2 relative"
             >
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-xl shadow-[#00A86B]/30 border-4 border-white dark:border-[#1A1A2E]"
-              >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00A86B] to-[#00C97A] flex items-center justify-center shadow-xl shadow-[#00A86B]/30 border-4 border-white dark:border-[#1A1A2E]">
                 <FontAwesomeIcon icon={faTh} className="w-6 h-6 text-white" />
-              </motion.div>
+              </div>
               <span className="text-[9px] font-medium mt-0.5 text-[#00A86B]">Menu</span>
             </button>
           </div>
         </div>
 
-        {/* Modal Menu Circulaire - Style Movie Box */}
+        {/* Modal Menu Circulaire */}
         <AnimatePresence>
           {showCircleMenu && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <div 
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
               onClick={() => setShowCircleMenu(false)}
             >
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.8, opacity: 0, y: 50 }}
-                transition={{ type: "spring", damping: 25 }}
+              <div 
                 className="relative w-full max-w-md mx-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Effet de glow circulaire */}
-                <motion.div 
-                  className="absolute inset-0 rounded-full bg-gradient-to-r from-[#00A86B]/20 via-[#00C97A]/20 to-[#00A86B]/20 blur-3xl"
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    opacity: [0.5, 0.8, 0.5]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-
-                {/* Bouton Fermer */}
                 <button
                   onClick={() => setShowCircleMenu(false)}
                   className="absolute -top-4 -right-4 z-10 w-10 h-10 rounded-full bg-white dark:bg-[#1A1A2E] shadow-lg flex items-center justify-center border border-[#F0F0F0] dark:border-[#2D3748]"
@@ -909,27 +806,20 @@ export const EmployeDashboard = () => {
                   <FontAwesomeIcon icon={faXmark} className="w-5 h-5 text-[#4A5568] dark:text-[#94A3B8]" />
                 </button>
 
-                {/* Titre */}
-                <div className="text-center mb-6 relative z-10">
+                <div className="text-center mb-6">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
                     <FontAwesomeIcon icon={faTh} className="text-[#00A86B] text-sm" />
                     <span className="text-white font-bold text-sm">Menu Principal</span>
                   </div>
                 </div>
 
-                {/* Grille de menu en cercle */}
-                <div className="relative z-10 grid grid-cols-3 gap-4 bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
+                <div className="grid grid-cols-3 gap-4 bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl">
                   {MAIN_MENU_ITEMS.map((item, index) => {
                     const isActive = activeSection === item.id
                     const isLogout = item.id === 'logout'
                     return (
-                      <motion.button
+                      <button
                         key={item.id}
-                        initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
-                        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                        transition={{ delay: index * 0.03 }}
-                        whileHover={{ scale: 1.05, y: -4 }}
-                        whileTap={{ scale: 0.95 }}
                         onClick={() => {
                           if (isLogout) {
                             navigate('/')
@@ -972,38 +862,19 @@ export const EmployeDashboard = () => {
                         }`}>
                           {item.label}
                         </span>
-                        {isActive && (
-                          <motion.div 
-                            layoutId="circleIndicator"
-                            className="mt-1 w-8 h-0.5 rounded-full bg-white/50"
-                          />
-                        )}
-                      </motion.button>
+                      </button>
                     )
                   })}
                 </div>
 
-                {/* Version */}
-                <div className="text-center mt-4 relative z-10">
-                  <span className="text-[10px] text-white/40">Mon Espace Employé v2.0</span>
+                <div className="text-center mt-4">
+                  <span className="text-[10px] text-white/40">Mon Espace v2.0</span>
                 </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           )}
         </AnimatePresence>
       </div>
-
-      <style>{`
-        ::-webkit-scrollbar {
-          width: 0;
-        }
-        ::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: transparent;
-        }
-      `}</style>
     </div>
   )
 }
