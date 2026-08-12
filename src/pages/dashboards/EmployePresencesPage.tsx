@@ -5,8 +5,7 @@ import {
   faClock, faCheckCircle, faExclamationCircle, faTimesCircle,
   faRefresh, faSignInAlt, faSignOutAlt, faCalendarDay,
   faChartBar, faUserCheck, faUserClock, faUserTimes,
-  faCircle, faSpinner, faInfoCircle, faArrowRight,
-  faCheck, faHourglassHalf, faSun, faMoon, faCloudSun
+  faCircle, faSpinner, faCheck, faCloudSun
 } from '@fortawesome/free-solid-svg-icons'
 import { presenceAPI, type Presence } from '../../services/api'
 
