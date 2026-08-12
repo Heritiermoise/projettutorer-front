@@ -5,10 +5,7 @@ import {
   faClock, faSearch, faCheckCircle, faTimesCircle, faExclamationCircle,
   faCalendar, faDownload, faFingerprint, faX, faSync, faSpinner,
   faUsers, faUserCheck, faUserClock, faUserTimes, faChartPie,
-  faChartBar, faArrowRight, faArrowLeft, faSun, faMoon,
-  faHistory, faCalendarDay, faFilter, faSort, faSortUp,
-  faSortDown, faEye, faEyeSlash, faRocket, faFire, faGem,
-  faStar, faCrown, faMagic, faWandSparkles
+  faChartBar, faSun, faHistory, faCalendarDay
 } from '@fortawesome/free-solid-svg-icons'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import * as XLSX from 'xlsx'
