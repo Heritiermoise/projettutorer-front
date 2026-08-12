@@ -6,11 +6,10 @@ import {
   faCalendar, faBriefcase, faEye, faDownload, faUserPlus, 
   faTh, faList, faEdit, faTrash, faTimes, faCopy, faCheck,
   faCheckCircle, faLink, faSpinner, faShield, faClock,
-  faUserCheck, faUserTimes, faBuilding, faHashtag, faAt,
-  faMale, faFemale, faChartLine, faCrown, faCalendarAlt,
-  faSort, faSortDown, faSortUp, faFilter, faArrowUp,
-  faArrowDown, faStar, faFire, faRocket, faGem, faMagic,
-  faWandSparkles, faCircleCheck, faCircleExclamation, faKey
+  faUserCheck, faBuilding, faHashtag, faAt,
+  faMale, faFemale, faChartLine, faCalendarAlt,
+  faSort, faSortDown, faSortUp, faFilter, faFire,
+  faCircleExclamation, faKey
 } from '@fortawesome/free-solid-svg-icons'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'

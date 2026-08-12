@@ -3,13 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faFileContract, faSearch, faPlus, faEye, faEdit, faTrash,
-  faDownload, faCalendar, faDollarSign, faUser, faTimes,
-  faUsers, faShield, faClock, faCheckCircle, faCircleCheck,
-  faCircleExclamation, faSpinner, faBuilding, faSort,
-  faSortUp, faSortDown, faFilter, faHashtag, faFileAlt,
-  faBriefcase, faCalendarAlt, faHourglassHalf, faCheck,
-  faCopy, faLink, faEnvelope, faPhone, faMapMarkerAlt,
-  faRocket, faFire, faGem, faStar, faArrowUp, faArrowDown
+  faDownload, faDollarSign, faUser, faTimes, faShield,
+  faCheckCircle, faCircleCheck, faCircleExclamation, faSpinner,
+  faSort, faSortUp, faSortDown, faFilter, faHashtag, faFileAlt,
+  faBriefcase, faCalendarAlt, faHourglassHalf, faEnvelope
 } from '@fortawesome/free-solid-svg-icons'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest } from '../../services/api'

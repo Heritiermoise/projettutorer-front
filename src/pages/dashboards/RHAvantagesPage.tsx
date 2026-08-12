@@ -4,11 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faGift, faSearch, faPlus, faEdit, faTrash, faDollarSign,
   faCalendar, faX, faSync, faSpinner, faUsers, faCheckCircle,
-  faTimesCircle, faClock, faFilter, faSort, faSortUp,
-  faSortDown, faHeart, faUtensils, faBus, faGraduationCap,
-  faMedal, faTrophy, faStar, faGem, faRocket, faFire,
-  faCircleCheck, faCircleExclamation, faEye, faEyeSlash,
-  faArrowUp, faArrowDown, faChartLine, faWallet
+  faTimesCircle, faClock, faFilter, faSortDown, faHeart, faUtensils,
+  faBus, faGraduationCap, faFire, faCircleCheck, faCircleExclamation,
+  faEye, faWallet
 } from '@fortawesome/free-solid-svg-icons'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { avantageAPI } from '../../services/api'
