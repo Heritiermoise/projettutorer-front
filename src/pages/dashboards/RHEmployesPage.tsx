@@ -39,7 +39,7 @@ const floatAnimation = {
     transition: {
       duration: 3,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 }
@@ -94,6 +94,8 @@ export const RHEmployesPage = () => {
   })
   const [submitting, setSubmitting] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
+
+  const closeAddModal = () => setShowAddModal(false)
 
   const loadData = useCallback(() => {
     setLoading(true)
@@ -1563,7 +1565,7 @@ export const RHEmployesPage = () => {
       </AnimatePresence>
 
       {/* Styles CSS supplémentaires pour animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes gradient {
           0%, 100% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
