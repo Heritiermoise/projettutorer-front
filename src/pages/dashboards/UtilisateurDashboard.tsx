@@ -1,17 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Briefcase, User, Bell, Settings, LogOut, 
   Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle
 } from 'lucide-react'
-import { mockCandidatures } from '../../data/phase5Data'
 import { BrandMark } from '../../components/BrandMark'
+import { postulationAPI } from '../../services/api'
+
+type CandidateApplication = {
+  id_postulation: number
+  statut: string
+  created_at: string
+  offre?: { titre?: string; entreprise?: { nom?: string } }
+}
 
 export const UtilisateurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [activeSection, setActiveSection] = useState('dashboard')
+  const [applications, setApplications] = useState<CandidateApplication[]>([])
+  const [loadingApplications, setLoadingApplications] = useState(true)
+  const [feedback, setFeedback] = useState('')
   const navigate = useNavigate()
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+
+  useEffect(() => {
+    postulationAPI.getMine()
+      .then((response) => setApplications(response.postulations || []))
+      .catch((error) => setFeedback(error instanceof Error ? error.message : 'Impossible de charger vos candidatures.'))
+      .finally(() => setLoadingApplications(false))
+  }, [])
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -27,10 +45,10 @@ export const UtilisateurDashboard = () => {
   ]
 
   const stats = {
-    total: mockCandidatures.length,
-    enCours: mockCandidatures.filter(c => c.statut === 'En_revision' || c.statut === 'Entretien').length,
-    acceptees: mockCandidatures.filter(c => c.statut === 'Acceptee').length,
-    refusees: mockCandidatures.filter(c => c.statut === 'Refusee').length
+    total: applications.length,
+    enCours: applications.filter(c => ['Soumise', 'En cours', 'Entretien'].includes(c.statut)).length,
+    acceptees: applications.filter(c => c.statut === 'Acceptée').length,
+    refusees: applications.filter(c => c.statut === 'Refusée').length
   }
 
   const getStatutColor = (statut: string) => {
@@ -38,6 +56,8 @@ export const UtilisateurDashboard = () => {
       'Soumise': 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300',
       'En_revision': 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300',
       'Entretien': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+      'Acceptée': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+      'Refusée': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
       'Acceptee': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
       'Refusee': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
     }
@@ -73,7 +93,7 @@ export const UtilisateurDashboard = () => {
           </nav>
 
           <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
-            <button onClick={() => navigate('/')} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <button onClick={() => { localStorage.removeItem('auth_token'); localStorage.removeItem('token'); localStorage.removeItem('user'); navigate('/login') }} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
               <LogOut className="w-5 h-5" />
               <span className="font-medium">Deconnexion</span>
             </button>
@@ -90,10 +110,10 @@ export const UtilisateurDashboard = () => {
                 </button>
                 <div className="flex items-center space-x-3 pl-4 border-l border-slate-200 dark:border-slate-700">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-500 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold">U</span>
+                    <span className="text-white font-bold">{String(storedUser.prenom || storedUser.nom || 'C').charAt(0).toUpperCase()}</span>
                   </div>
                   <div className="hidden sm:block">
-                    <p className="font-semibold text-slate-800 dark:text-white text-sm">Alain Ngoy</p>
+                    <p className="font-semibold text-slate-800 dark:text-white text-sm">{[storedUser.prenom, storedUser.nom].filter(Boolean).join(' ') || 'Candidat'}</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Candidat</p>
                   </div>
                 </div>
@@ -127,13 +147,16 @@ export const UtilisateurDashboard = () => {
 
               <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Mes candidatures recentes</h3>
+                {feedback && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{feedback}</p>}
                 <div className="space-y-3">
-                  {mockCandidatures.map(cand => (
-                    <div key={cand.id} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  {loadingApplications && <p className="text-sm text-slate-500">Chargement de vos candidatures...</p>}
+                  {!loadingApplications && applications.length === 0 && <p className="text-sm text-slate-500">Aucune candidature enregistrée.</p>}
+                  {applications.map(cand => (
+                    <div key={cand.id_postulation} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex-1">
-                          <h4 className="font-bold text-slate-800 dark:text-white">{cand.offre_titre}</h4>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">{cand.entreprise} • Postule le {cand.date_postulation}</p>
+                          <h4 className="font-bold text-slate-800 dark:text-white">{cand.offre?.titre || 'Offre d’emploi'}</h4>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">{cand.offre?.entreprise?.nom || 'Entreprise'} · Postulé le {new Date(cand.created_at).toLocaleDateString('fr-FR')}</p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatutColor(cand.statut)}`}>
                           {cand.statut}
@@ -141,9 +164,9 @@ export const UtilisateurDashboard = () => {
                       </div>
                       <div className="mt-3 flex items-center space-x-2">
                         <div className="flex-1 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
-                          <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${(cand.etape / 4) * 100}%` }}></div>
+                          <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${cand.statut === 'Acceptée' || cand.statut === 'Refusée' ? 100 : cand.statut === 'Entretien' ? 75 : 25}%` }}></div>
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">Etape {cand.etape}/4</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">{cand.statut}</span>
                       </div>
                     </div>
                   ))}

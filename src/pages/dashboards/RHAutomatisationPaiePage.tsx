@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { AlertCircle, Calendar, CheckCircle2, Clock, DollarSign, FileText, Play, RefreshCw, Users } from 'lucide-react'
+import { AlertCircle, Calendar, CheckCircle2, Clock, DollarSign, FileText, Play, RefreshCw, RotateCcw, ShieldCheck, Users } from 'lucide-react'
 import { avancesPaieAPI, type DemandeAvancePaie, fichesPaieAPI, type FichePaie } from '../../services/api'
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
-export const RHAutomatisationPaiePage = () => {
+export const RHAutomatisationPaiePage = ({ title = 'Paie mensuelle', subtitle = 'Les fiches sont calculées, contrôlées puis validées par le RH ou le DG.' }: { title?: string; subtitle?: string }) => {
   const [fiches, setFiches] = useState<FichePaie[]>([])
   const [avances, setAvances] = useState<DemandeAvancePaie[]>([])
   const [month, setMonth] = useState(String(new Date().getMonth() + 1))
@@ -25,7 +25,10 @@ export const RHAutomatisationPaiePage = () => {
     }
   }
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => {
+    const loadTimer = window.setTimeout(() => { void load() }, 0)
+    return () => window.clearTimeout(loadTimer)
+  }, [])
 
   const generate = async () => {
     setBusy(true)
@@ -64,6 +67,18 @@ export const RHAutomatisationPaiePage = () => {
     }
   }
 
+  const retryTransfer = async (id: number) => {
+    setBusy(true)
+    try {
+      const response = await fichesPaieAPI.retryTransfer(id)
+      setFeedback({ type: 'success', text: response.message })
+      await load()
+    } catch (error) {
+      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'La relance du virement a échoué.' })
+      setBusy(false)
+    }
+  }
+
   const pendingSheets = fiches.filter(fiche => fiche.statut === 'À valider')
   const total = fiches.reduce((sum, fiche) => sum + Number(fiche.montant || 0), 0)
   const pendingAdvances = avances.filter(avance => avance.statut === 'En attente')
@@ -72,8 +87,8 @@ export const RHAutomatisationPaiePage = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Paie mensuelle</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Les fiches sont générées en brouillon puis validées par le RH.</p>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{title}</h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
         </div>
         <button type="button" onClick={() => void load()} disabled={busy} title="Actualiser" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-60 dark:border-slate-600 dark:text-slate-200">
           <RefreshCw className="h-4 w-4" /> Actualiser
@@ -105,8 +120,8 @@ export const RHAutomatisationPaiePage = () => {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-        <div className="border-b border-slate-200 p-5 dark:border-slate-700"><h2 className="font-bold text-slate-800 dark:text-white">Fiches à valider</h2></div>
-        {pendingSheets.length === 0 ? <p className="p-5 text-sm text-slate-500">Aucune fiche en attente de validation.</p> : <div className="divide-y divide-slate-200 dark:divide-slate-700">{pendingSheets.map(fiche => <div key={fiche.id_paie} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold text-slate-800 dark:text-white">{fiche.employe?.prenom ?? 'Employé'} {fiche.employe?.nom ?? fiche.matricule}</p><p className="text-sm text-slate-500">Période {fiche.mois_paiement}/{fiche.annee_paiement} · Avance déduite: {money.format(Number(fiche.avance_deduite ?? 0))}</p></div><div className="flex items-center gap-3"><strong className="text-emerald-600">{money.format(Number(fiche.montant))}</strong><button type="button" onClick={() => void validate(fiche.id_paie)} disabled={busy} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60">Valider</button></div></div>)}</div>}
+        <div className="flex items-center gap-2 border-b border-slate-200 p-5 dark:border-slate-700"><ShieldCheck className="h-5 w-5 text-teal-600" /><h2 className="font-bold text-slate-800 dark:text-white">Registre de contrôle</h2></div>
+        {fiches.length === 0 ? <p className="p-5 text-sm text-slate-500">Aucune fiche générée.</p> : <div className="divide-y divide-slate-200 dark:divide-slate-700">{fiches.map(fiche => <div key={fiche.id_paie} className="flex flex-col gap-3 p-5 lg:flex-row lg:items-center lg:justify-between"><div><p className="font-semibold text-slate-800 dark:text-white">{fiche.employe?.prenom ?? 'Employé'} {fiche.employe?.nom ?? fiche.matricule}</p><p className="text-sm text-slate-500">{fiche.mois_paiement}/{fiche.annee_paiement} · Base {money.format(Number(fiche.salaire_base ?? 0))} + avantages {money.format(Number(fiche.total_avantages ?? 0))} - retenues {money.format(Number(fiche.retenues ?? 0))} - avance {money.format(Number(fiche.avance_deduite ?? 0))}</p><p className="mt-1 text-xs text-slate-500">{fiche.payment_method ? `${fiche.payment_method.type} · ${fiche.payment_method.masked_identifier}` : 'Moyen de paiement manquant'} · {fiche.payment_status || 'Non prêt'}</p></div><div className="flex flex-wrap items-center gap-3"><strong className="text-emerald-600">{money.format(Number(fiche.montant))}</strong><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200">{fiche.statut}</span>{fiche.statut === 'À valider' && <button type="button" onClick={() => void validate(fiche.id_paie)} disabled={busy || !fiche.payment_method} className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white disabled:opacity-40">Valider et virer</button>}{fiche.statut === 'Validée' && fiche.payment_status !== 'Payée' && <button type="button" onClick={() => void retryTransfer(fiche.id_paie)} disabled={busy} className="inline-flex items-center gap-2 rounded-lg border border-amber-300 px-3 py-2 text-sm font-semibold text-amber-800 disabled:opacity-60 dark:text-amber-200"><RotateCcw className="h-4 w-4" /> Relancer</button>}</div></div>)}</div>}
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">

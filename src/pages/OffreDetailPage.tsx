@@ -1,9 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, CheckCircle2, Clock, Users, FileText, X } from 'lucide-react'
-import { useEffect } from 'react'
+import { Briefcase, MapPin, DollarSign, Calendar, Building2, ArrowLeft, FileText, X, Copy, LogIn, LoaderCircle, Mail, RefreshCw } from 'lucide-react'
 import { offreAPI } from '../services/api'
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+
+type PublicCompany = {
+  nom: string
+  nom_commercial?: string | null
+  description?: string | null
+  created_at?: string | null
+}
+
+type PublicJobOffer = {
+  titre: string
+  description: string
+  localisation: string
+  salaire_base?: number | string | null
+  date_limite?: string | null
+  type_contrat?: string | null
+  experience_requise?: string | null
+  competences_requises?: string | null
+  avantages?: string | null
+  entreprise?: PublicCompany | null
+}
 
 export const OffreDetailPage = () => {
   const { id } = useParams()
@@ -19,16 +38,20 @@ export const OffreDetailPage = () => {
     lettre_motivation: '',
   })
 
-  const [offre, setOffre] = useState<any>(null)
-  const [entreprise, setEntreprise] = useState<any>(null)
+  const [offre, setOffre] = useState<PublicJobOffer | null>(null)
+  const [entreprise, setEntreprise] = useState<PublicCompany | null>(null)
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [applicationFeedback, setApplicationFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [candidateAccount, setCandidateAccount] = useState<{ email: string; temporary_password: string | null; is_new: boolean; mail_send_url?: string | null } | null>(null)
+  const [mailStatus, setMailStatus] = useState<'idle' | 'pending' | 'sent' | 'failed'>('idle')
+  const welcomeEmailsInProgress = useRef(new Set<string>())
 
   useEffect(() => {
     const load = async () => {
       try {
         const offreResponse = await offreAPI.getById(parseInt(id || '0'))
-        const currentOffre = offreResponse.offre || offreResponse
+        const currentOffre = (offreResponse.offre || offreResponse) as PublicJobOffer
         setOffre(currentOffre)
         setEntreprise(currentOffre.entreprise || null)
       } catch {
@@ -41,6 +64,22 @@ export const OffreDetailPage = () => {
 
     load()
   }, [id])
+
+  const sendWelcomeEmail = async (account = candidateAccount, retry = false) => {
+    if (!account?.mail_send_url || !account.temporary_password) return
+    const key = account.mail_send_url
+    if (!retry && welcomeEmailsInProgress.current.has(key)) return
+
+    welcomeEmailsInProgress.current.add(key)
+    setMailStatus('pending')
+    try {
+      await offreAPI.sendCandidateWelcomeEmail(key, account.temporary_password)
+      setMailStatus('sent')
+    } catch {
+      welcomeEmailsInProgress.current.delete(key)
+      setMailStatus('failed')
+    }
+  }
 
   if (loading) {
     return <div className="min-h-screen bg-slate-50 dark:bg-slate-900 grid place-items-center text-slate-600 dark:text-slate-300">Chargement de l'offre...</div>
@@ -60,6 +99,10 @@ export const OffreDetailPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submitting) return
+
+    setSubmitting(true)
+    setApplicationFeedback(null)
     try {
       const candidatureData = new FormData()
       candidatureData.append('nom', formData.nom)
@@ -76,13 +119,30 @@ export const OffreDetailPage = () => {
       const response = await offreAPI.postuler(Number(id), candidatureData)
       setApplicationFeedback({ type: 'success', message: response.message || 'Votre candidature a été enregistrée. L’entreprise examinera votre dossier.' })
       setShowPostulationModal(false)
+      setCandidateAccount(response.account || null)
+      setMailStatus(response.account?.is_new ? 'pending' : 'idle')
+      if (response.account?.is_new && response.account?.mail_send_url) {
+        setTimeout(() => void sendWelcomeEmail(response.account), 0)
+      }
+      if (response.account?.token && response.account?.user) {
+        localStorage.setItem('auth_token', response.account.token)
+        localStorage.setItem('token', response.account.token)
+        localStorage.setItem('user', JSON.stringify(response.account.user))
+        window.dispatchEvent(new Event('rh-auth-changed'))
+      }
       setFormData({ nom: '', post_nom: '', prenom: '', email: '', telephone: '', cv: null, lettre_motivation: '' })
     } catch (error) {
       setApplicationFeedback({
         type: 'error',
         message: error instanceof Error ? error.message : 'La candidature n’a pas pu être envoyée. Vérifiez les informations saisies et réessayez.',
       })
+    } finally {
+      setSubmitting(false)
     }
+  }
+
+  const copyCredential = async (value: string) => {
+    await navigator.clipboard.writeText(value)
   }
 
   return (
@@ -141,6 +201,32 @@ export const OffreDetailPage = () => {
         {applicationFeedback && <div className={`mb-6 flex items-start justify-between gap-4 rounded-lg border p-4 ${applicationFeedback.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100' : 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100'}`} role="status">
           <div><p className="font-semibold">{applicationFeedback.type === 'success' ? 'Candidature enregistrée' : 'Envoi impossible'}</p><p className="mt-1 text-sm">{applicationFeedback.message}</p></div>
           <button type="button" onClick={() => setApplicationFeedback(null)} className="shrink-0 rounded-lg p-1 hover:bg-black/5" aria-label="Fermer le message"><X className="w-5 h-5" /></button>
+        </div>}
+        {candidateAccount && <div className="mb-6 border border-teal-200 bg-white dark:border-teal-800 dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm">
+          <div className="bg-teal-700 px-5 py-4 text-white">
+            <h2 className="text-lg font-bold">Votre espace candidat est prêt</h2>
+            <p className="mt-1 text-sm text-teal-50">Conservez vos identifiants avant de consulter le suivi.</p>
+          </div>
+          <div className="p-5 space-y-3">
+            <div className="flex items-center justify-between gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <div className="min-w-0"><p className="text-xs text-slate-500">E-mail</p><p className="truncate font-mono text-sm text-slate-900 dark:text-white">{candidateAccount.email}</p></div>
+              <button type="button" onClick={() => copyCredential(candidateAccount.email)} className="p-2 text-slate-600 hover:text-teal-700" title="Copier l’e-mail"><Copy className="h-5 w-5" /></button>
+            </div>
+            {candidateAccount.temporary_password && <div className="flex items-center justify-between gap-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <div className="min-w-0"><p className="text-xs text-slate-500">Mot de passe temporaire</p><p className="break-all font-mono text-sm text-slate-900 dark:text-white">{candidateAccount.temporary_password}</p></div>
+              <button type="button" onClick={() => copyCredential(candidateAccount.temporary_password || '')} className="p-2 text-slate-600 hover:text-teal-700" title="Copier le mot de passe"><Copy className="h-5 w-5" /></button>
+            </div>}
+            {candidateAccount.is_new && <div className={`flex items-center justify-between gap-3 rounded-md border p-3 text-sm ${mailStatus === 'failed' ? 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100' : mailStatus === 'sent' ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-100' : 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-100'}`}>
+              <div className="flex items-center gap-2">
+                {mailStatus === 'pending' ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                <span>{mailStatus === 'sent' ? 'Identifiants envoyés par e-mail.' : mailStatus === 'failed' ? 'Échec de l’e-mail. Vos accès restent valides et copiables.' : 'Préparation de l’e-mail de bienvenue...'}</span>
+              </div>
+              {mailStatus === 'failed' && <button type="button" onClick={() => void sendWelcomeEmail(candidateAccount, true)} className="shrink-0 rounded-md p-2 hover:bg-amber-100 dark:hover:bg-amber-900/40" title="Renvoyer l’e-mail"><RefreshCw className="h-4 w-4" /></button>}
+            </div>}
+            <button type="button" onClick={() => navigate(candidateAccount.is_new ? '/dashboard/utilisateur' : '/login')} className="flex w-full items-center justify-center gap-2 rounded-md bg-teal-700 px-4 py-3 font-semibold text-white hover:bg-teal-800">
+              <LogIn className="h-5 w-5" /> {candidateAccount.is_new ? 'Consulter le suivi' : 'Se connecter à mon espace'}
+            </button>
+          </div>
         </div>}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -250,7 +336,7 @@ export const OffreDetailPage = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="p-4 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
                 <p className="font-semibold text-primary-800 dark:text-primary-200">{offre.titre}</p>
-                <p className="text-sm text-primary-600 dark:text-primary-300">{entreprise.nom}</p>
+                <p className="text-sm text-primary-600 dark:text-primary-300">{entreprise?.nom || 'Entreprise partenaire'}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -284,7 +370,7 @@ export const OffreDetailPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowPostulationModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600">Annuler</button>
-                <button type="submit" className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">Envoyer ma candidature</button>
+                <button type="submit" disabled={submitting} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}</button>
               </div>
             </form>
           </div>

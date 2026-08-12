@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, CheckCircle2, Clock3, LoaderCircle, Save, Settings2, ShieldCheck, SlidersHorizontal, WalletCards } from 'lucide-react'
+import { Bell, CheckCircle2, Clock3, LoaderCircle, Save, Settings2, ShieldCheck, WalletCards } from 'lucide-react'
 import { entrepriseParametresAPI } from '../../services/api'
 
 type SettingsForm = {
@@ -32,6 +32,18 @@ const defaults: SettingsForm = {
   notification_retards: true, notification_candidatures: true, notification_rapports: false,
 }
 
+const normalizeTime = (value: unknown, fallback: string) => {
+  const match = String(value ?? '').trim().match(/^([01]\d|2[0-3]):([0-5]\d)/)
+  return match ? `${match[1]}:${match[2]}` : fallback
+}
+
+const normalizeSettings = (value: Partial<SettingsForm> | undefined): SettingsForm => ({
+  ...defaults,
+  ...(value || {}),
+  heure_arrivee: normalizeTime(value?.heure_arrivee, defaults.heure_arrivee),
+  heure_depart: normalizeTime(value?.heure_depart, defaults.heure_depart),
+})
+
 const Toggle = ({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) => (
   <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)} className={`relative h-7 w-12 rounded-full transition-colors ${checked ? 'bg-primary-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
     <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -49,7 +61,7 @@ export const RHParametresPage = () => {
     const load = async () => {
       try {
         const response = await entrepriseParametresAPI.get()
-        setSettings({ ...defaults, ...(response.parametres || {}) })
+        setSettings(normalizeSettings(response.parametres))
       } catch (error) {
         setFeedback(error instanceof Error ? error.message : 'Impossible de charger les paramètres RH.')
       } finally {
@@ -65,8 +77,9 @@ export const RHParametresPage = () => {
     setSaving(true)
     setFeedback(null)
     try {
-      const response = await entrepriseParametresAPI.update(settings)
-      setSettings({ ...defaults, ...(response.parametres || settings) })
+      const normalizedSettings = normalizeSettings(settings)
+      const response = await entrepriseParametresAPI.update(normalizedSettings)
+      setSettings(normalizeSettings(response.parametres || normalizedSettings))
       setFeedback('Paramètres RH enregistrés et appliqués à votre entreprise.')
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Impossible d’enregistrer les paramètres.')

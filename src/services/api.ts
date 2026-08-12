@@ -191,10 +191,25 @@ export interface FichePaie {
   montant: number;
   statut: string;
   salaire_base?: number;
+  total_avantages?: number;
+  retenues?: number;
   avance_deduite?: number;
   validee_at?: string | null;
+  payment_status?: string;
+  payment_error?: string | null;
+  payment_method?: Pick<EmployeePaymentMethod, 'type' | 'masked_identifier'> | null;
   employe?: Pick<Employe, 'matricule' | 'nom' | 'prenom'>;
   id_entreprise?: number;
+}
+
+export interface EmployeePaymentMethod {
+  id: number;
+  type: 'Compte bancaire' | 'Airtel Money' | 'M-Pesa' | 'Orange Money';
+  account_identifier: string;
+  masked_identifier: string;
+  account_holder: string;
+  bank_name?: string | null;
+  currency: 'USD' | 'CDF';
 }
 
 export interface DemandeAvancePaie {
@@ -730,6 +745,13 @@ export const offreAPI = {
     });
   },
 
+  sendCandidateWelcomeEmail: async (sendUrl: string, password: string) => {
+    return await apiRequest(sendUrl, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  },
+
   getForCompany: async () => {
     return await apiRequest('/rh/recrutement/offres');
   },
@@ -803,8 +825,27 @@ export const fichesPaieAPI = {
     });
   },
 
+  retryTransfer: async (id: number) => {
+    return await apiRequest(`/rh/fiches_paies/${id}/relancer-virement`, {
+      method: 'POST',
+    });
+  },
+
   getMine: async () => {
     return await apiRequest('/mon-espace/mes-paies');
+  },
+};
+
+export const employeePaymentMethodAPI = {
+  getMine: async () => {
+    return await apiRequest('/mon-espace/moyen-paiement');
+  },
+
+  save: async (data: Omit<EmployeePaymentMethod, 'id' | 'masked_identifier'>) => {
+    return await apiRequest('/mon-espace/moyen-paiement', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   },
 };
 
@@ -1016,6 +1057,10 @@ export const presenceAPI = {
 // POSTULATIONS
 // ═══════════════════════════════════════════════════════════════
 export const postulationAPI = {
+  getMine: async () => {
+    return await apiRequest('/candidat/mes-postulations');
+  },
+
   getAll: async () => {
     return await apiRequest('/rh/postulations');
   },
