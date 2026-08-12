@@ -11,12 +11,21 @@ const normalizeApiBaseUrl = (baseUrl: string) => {
   return normalizedBaseUrl.endsWith('/api') ? normalizedBaseUrl : `${normalizedBaseUrl}/api`;
 };
 
+const useVercelApiProxy = (baseUrl: string) => {
+  if (typeof window === 'undefined') return baseUrl;
+
+  const isVercelDeployment = window.location.hostname.endsWith('.vercel.app');
+  const targetsRenderDirectly = /^https:\/\/[^/]+\.onrender\.com(?:\/api)?$/i.test(baseUrl);
+
+  return isVercelDeployment && targetsRenderDirectly ? '/api' : baseUrl;
+};
+
 export const API_BASE_URL = (() => {
   const chosenBaseUrl = useLocalApi
     ? (rawLocalApiBaseUrl || DEFAULT_LOCAL_API_BASE_URL)
     : (rawRemoteApiBaseUrl || DEFAULT_REMOTE_API_BASE_URL);
 
-  return normalizeApiBaseUrl(chosenBaseUrl);
+  return normalizeApiBaseUrl(useVercelApiProxy(chosenBaseUrl));
 })();
 
 export const API_CONFIG = {

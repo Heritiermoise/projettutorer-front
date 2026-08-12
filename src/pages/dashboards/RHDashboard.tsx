@@ -38,7 +38,7 @@ import { loadDashboardRHContext } from '../../services/dashboardRHData'
 
 import { RHEmployesPage } from './RHEmployesPage'
 import { RHContratsPage } from './RHContratsPage'
-import { RHPaiePage } from './RHPaiePage'
+import { RHAutomatisationPaiePage } from './RHAutomatisationPaiePage'
 import { RHCongesPage } from './RHCongesPage'
 import { RHPresencesPage } from './RHPresencesPage'
 import { RHAvantagesPage } from './RHAvantagesPage'
@@ -321,7 +321,7 @@ export const RHDashboard = () => {
     switch (activeSection) {
       case 'employes': return <RHEmployesPage />
       case 'contrats': return <RHContratsPage />
-      case 'paie': return <RHPaiePage />
+      case 'paie': return <RHAutomatisationPaiePage />
       case 'conges': return <RHCongesPage />
       case 'presences': return <RHPresencesPage />
       case 'avantages': return <RHAvantagesPage />

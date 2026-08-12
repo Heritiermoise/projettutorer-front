@@ -91,11 +91,21 @@ const requestJson = async (
     requestBody = JSON.stringify(requestBody);
   }
 
-  const response = await fetch(buildUrl(path), {
-    ...options,
-    headers,
-    body: requestBody, // Utilise le body traité (FormData natif ou chaîne JSON)
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(buildUrl(path), {
+      ...options,
+      headers,
+      body: requestBody, // Utilise le body traité (FormData natif ou chaîne JSON)
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error('Le serveur est momentanément inaccessible. Vérifiez votre connexion puis réessayez.');
+    }
+
+    throw error;
+  }
 
   if (!response.ok) {
     throw await normalizeResponseError(response);
