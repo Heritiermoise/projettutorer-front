@@ -1061,6 +1061,10 @@ export const postulationAPI = {
     return await apiRequest('/candidat/mes-postulations');
   },
 
+  getCompanyOffers: async () => {
+    return await apiRequest('/candidat/offres');
+  },
+
   getAll: async () => {
     return await apiRequest('/rh/postulations');
   },

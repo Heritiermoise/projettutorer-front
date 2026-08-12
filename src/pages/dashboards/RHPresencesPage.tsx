@@ -8,7 +8,6 @@ import {
   faChartBar, faSun, faHistory, faCalendarDay
 } from '@fortawesome/free-solid-svg-icons'
 import { ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
-import * as XLSX from 'xlsx'
 import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { apiRequest, entrepriseParametresAPI } from '../../services/api'
 
@@ -358,13 +357,15 @@ export const RHPresencesPage = () => {
         }
       })
       
-      const workbook = XLSX.utils.book_new()
-      const detailSheet = XLSX.utils.json_to_sheet(rows)
-      detailSheet['!freeze'] = { xSplit: 0, ySplit: 1 }
-      detailSheet['!autofilter'] = { ref: `A1:H${rows.length + 1}` }
-      detailSheet['!cols'] = [{ wch: 7 }, { wch: 14 }, { wch: 16 }, { wch: 28 }, { wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 46 }]
-      XLSX.utils.book_append_sheet(workbook, detailSheet, 'Présences')
-      XLSX.writeFile(workbook, `presences-${viewMode}-${new Date().toISOString().slice(0, 10)}.xlsx`)
+      const headers = Object.keys(rows[0])
+      const escapeCsv = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`
+      const csv = [headers.map(escapeCsv).join(';'), ...rows.map((row) => headers.map((header) => escapeCsv(row[header as keyof typeof row])).join(';'))].join('\r\n')
+      const downloadUrl = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }))
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = `presences-${viewMode}-${new Date().toISOString().slice(0, 10)}.csv`
+      link.click()
+      URL.revokeObjectURL(downloadUrl)
       setSuccessMsg(`${rows.length} présence(s) exportée(s) avec succès.`)
       window.setTimeout(() => setSuccessMsg(''), 4500)
     } catch (error) {

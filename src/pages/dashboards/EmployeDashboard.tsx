@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, DollarSign, Calendar, Clock, FileText,
   Award, LogOut, Menu, X, Moon, Sun, Search, Bell,
-  User, Briefcase, Settings, Download
+  User, Briefcase, Settings, Download, MessageSquare
 } from 'lucide-react'
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar,
@@ -20,6 +20,7 @@ import { EmployeParametresPage } from './EmployeParametresPage'
 import { EmployePaiePage } from './EmployePaiePage'
 import { EmployePresencesPage } from './EmployePresencesPage'
 import { EmployeAvantagesPage } from './EmployeAvantagesPage'
+import { DirecteurMessageriePage } from './DirecteurMessageriePage'
 
 export const EmployeDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -119,6 +120,7 @@ export const EmployeDashboard = () => {
     { icon: Clock, label: 'Mes Presences', id: 'presences', path: '/dashboard/employe/presences' },
     { icon: FileText, label: 'Mes Documents', id: 'documents', path: '/dashboard/employe/documents' },
     { icon: Award, label: 'Mes Avantages', id: 'avantages', path: '/dashboard/employe/avantages' },
+    { icon: MessageSquare, label: 'Messagerie', id: 'messagerie', path: '/dashboard/employe/messagerie' },
     { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/employe/notifications' },
     { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/employe/parametres' },
   ]
@@ -130,6 +132,7 @@ export const EmployeDashboard = () => {
     if (path.includes('/presences')) return 'presences'
     if (path.includes('/documents')) return 'documents'
     if (path.includes('/avantages')) return 'avantages'
+    if (path.includes('/messagerie')) return 'messagerie'
     if (path.includes('/notifications')) return 'notifications'
     if (path.includes('/parametres')) return 'parametres'
     return 'dashboard'
@@ -179,6 +182,7 @@ export const EmployeDashboard = () => {
       case 'presences': return <EmployePresencesPage />
       case 'documents': return <EmployeDocumentsPage />
       case 'avantages': return <EmployeAvantagesPage />
+      case 'messagerie': return <DirecteurMessageriePage />
       case 'notifications': return <EmployeNotificationsPage />
       case 'parametres': return <EmployeParametresPage />
       default:

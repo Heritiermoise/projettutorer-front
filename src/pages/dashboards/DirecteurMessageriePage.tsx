@@ -125,7 +125,15 @@ export const DirecteurMessageriePage = () => {
   }
 
   const createPeerConnection = (conversationId: number) => {
-    const peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] })
+    const iceServers: RTCIceServer[] = [{ urls: 'stun:stun.l.google.com:19302' }]
+    if (import.meta.env.VITE_WEBRTC_TURN_URL) {
+      iceServers.push({
+        urls: import.meta.env.VITE_WEBRTC_TURN_URL,
+        username: import.meta.env.VITE_WEBRTC_TURN_USERNAME,
+        credential: import.meta.env.VITE_WEBRTC_TURN_CREDENTIAL,
+      })
+    }
+    const peerConnection = new RTCPeerConnection({ iceServers })
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) void internalMessagingAPI.sendSignal(conversationId, 'ice-candidate', event.candidate.toJSON()).catch(() => undefined)
     }

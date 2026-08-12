@@ -4,12 +4,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, UserPlus, User, Phone, MapPin, Crown, AlertCircle, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Toast } from '../components/ui/Toast'
+import { offreAPI } from '../services/api'
+
+type RegistrationCompany = { id_entreprise: number; nom: string }
 
 export const RegisterPage = () => {
   const [formData, setFormData] = useState({
     nom: '', post_nom: '', prenom: '', email: '', telephone: '', adresse: '',
-    password: '', password_confirmation: '', role: 'utilisateur',
+    password: '', password_confirmation: '', role: 'utilisateur', id_entreprise: '',
   })
+  const [companies, setCompanies] = useState<RegistrationCompany[]>([])
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
@@ -20,10 +24,18 @@ export const RegisterPage = () => {
   const { register } = useAuth()
 
   useEffect(() => {
-    if (success) {
-      setToast({ type: 'success', message: success })
-    }
-  }, [success])
+    offreAPI.getAll()
+      .then((response) => {
+        const uniqueCompanies = new Map<number, RegistrationCompany>()
+        for (const offer of response.offres ?? []) {
+          if (offer.entreprise?.id_entreprise && offer.entreprise?.nom) {
+            uniqueCompanies.set(offer.entreprise.id_entreprise, offer.entreprise)
+          }
+        }
+        setCompanies([...uniqueCompanies.values()])
+      })
+      .catch(() => setCompanies([]))
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -62,6 +74,7 @@ export const RegisterPage = () => {
         password: formData.password,
         password_confirmation: formData.password_confirmation,
         role: formData.role,
+        id_entreprise: formData.role === 'utilisateur' ? Number(formData.id_entreprise) : undefined,
       })
 
       // Validation de la réponse selon la structure du RegisterController
@@ -93,9 +106,9 @@ export const RegisterPage = () => {
         navigate(result.redirect || '/login?registered=1')
       }, 2500)
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Capture les erreurs de validation brutes (ex: email unique) renvoyées par Axios
-      const rawError = err.response?.data?.message || err.message || "Une erreur est survenue lors de l'inscription"
+      const rawError = err instanceof Error ? err.message : "Une erreur est survenue lors de l'inscription"
       setError(rawError)
       setToast({ type: 'error', message: rawError })
     } finally {
@@ -186,6 +199,16 @@ export const RegisterPage = () => {
                   </label>
                 </div>
               </div>
+
+              {formData.role === 'utilisateur' && (
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Entreprise suivie *</label>
+                  <select name="id_entreprise" value={formData.id_entreprise} onChange={handleChange} required className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-white">
+                    <option value="">Choisir une entreprise</option>
+                    {companies.map((company) => <option key={company.id_entreprise} value={company.id_entreprise}>{company.nom}</option>)}
+                  </select>
+                </div>
+              )}
 
               {/* Identité */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

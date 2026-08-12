@@ -45,8 +45,9 @@ import { RHAvantagesPage } from './RHAvantagesPage'
 import { RHRecrutementPage } from './RHRecrutementPage'
 import { RHNotificationsPage } from './RHNotificationsPage'
 import { RHParametresPage } from './RHParametresPage'
+import { DirecteurMessageriePage } from './DirecteurMessageriePage'
 
-const SECTIONS_ROUTES = ['employes', 'contrats', 'paie', 'conges', 'presences', 'avantages', 'recrutement', 'notifications', 'parametres']
+const SECTIONS_ROUTES = ['employes', 'contrats', 'paie', 'conges', 'presences', 'avantages', 'recrutement', 'messagerie', 'notifications', 'parametres']
 
 // Animations
 const fadeInUp = {
@@ -162,6 +163,7 @@ export const RHDashboard = () => {
     { icon: faClock, label: 'Présences', id: 'presences', path: '/dashboard/rh/presences' },
     { icon: faGift, label: 'Avantages', id: 'avantages', path: '/dashboard/rh/avantages' },
     { icon: faUserPlus, label: 'Recrutement', id: 'recrutement', path: '/dashboard/rh/recrutement' },
+    { icon: faEnvelope, label: 'Messagerie', id: 'messagerie', path: '/dashboard/rh/messagerie' },
     { icon: faBell, label: 'Notifications', id: 'notifications', path: '/dashboard/rh/notifications' },
     { icon: faGear, label: 'Paramètres', id: 'parametres', path: '/dashboard/rh/parametres' },
   ], [])
@@ -324,6 +326,7 @@ export const RHDashboard = () => {
       case 'presences': return <RHPresencesPage />
       case 'avantages': return <RHAvantagesPage />
       case 'recrutement': return <RHRecrutementPage />
+      case 'messagerie': return <DirecteurMessageriePage />
       case 'notifications': return <RHNotificationsPage />
       case 'parametres': return <RHParametresPage />
       default:

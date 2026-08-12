@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   LayoutDashboard, Briefcase, User, Bell, Settings, LogOut, 
-  Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle
+  Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle, MessageSquare
 } from 'lucide-react'
 import { BrandMark } from '../../components/BrandMark'
 import { postulationAPI } from '../../services/api'
+import { DirecteurMessageriePage } from './DirecteurMessageriePage'
 
 type CandidateApplication = {
   id_postulation: number
@@ -14,19 +15,33 @@ type CandidateApplication = {
   offre?: { titre?: string; entreprise?: { nom?: string } }
 }
 
+type CompanyOffer = {
+  id_offre: number
+  titre: string
+  description?: string
+  localisation?: string
+  type_contrat?: string
+  date_limite: string
+  entreprise?: { nom?: string }
+}
+
 export const UtilisateurDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [activeSection, setActiveSection] = useState('dashboard')
   const [applications, setApplications] = useState<CandidateApplication[]>([])
+  const [offers, setOffers] = useState<CompanyOffer[]>([])
   const [loadingApplications, setLoadingApplications] = useState(true)
   const [feedback, setFeedback] = useState('')
   const navigate = useNavigate()
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
 
   useEffect(() => {
-    postulationAPI.getMine()
-      .then((response) => setApplications(response.postulations || []))
+    Promise.all([postulationAPI.getMine(), postulationAPI.getCompanyOffers()])
+      .then(([applicationResponse, offerResponse]) => {
+        setApplications(applicationResponse.postulations || [])
+        setOffers(offerResponse.offres || [])
+      })
       .catch((error) => setFeedback(error instanceof Error ? error.message : 'Impossible de charger vos candidatures.'))
       .finally(() => setLoadingApplications(false))
   }, [])
@@ -39,6 +54,8 @@ export const UtilisateurDashboard = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Mon Espace', id: 'dashboard' },
     { icon: Briefcase, label: 'Mes Candidatures', id: 'candidatures' },
+    { icon: Briefcase, label: 'Offres de mon entreprise', id: 'offres' },
+    { icon: MessageSquare, label: 'Messagerie', id: 'messagerie' },
     { icon: User, label: 'Mon Profil', id: 'profil' },
     { icon: Bell, label: 'Notifications', id: 'notifications' },
     { icon: Settings, label: 'Parametres', id: 'parametres' },
@@ -122,7 +139,7 @@ export const UtilisateurDashboard = () => {
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-            <div className="space-y-6">
+            {activeSection === 'messagerie' ? <DirecteurMessageriePage /> : <div className="space-y-6">
               <div className="mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Mon Espace Candidat</h1>
                 <p className="text-slate-600 dark:text-slate-400">Suivez vos candidatures et votre parcours</p>
@@ -172,7 +189,25 @@ export const UtilisateurDashboard = () => {
                   ))}
                 </div>
               </div>
-            </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Offres de mon entreprise</h3>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {!loadingApplications && offers.length === 0 && <p className="text-sm text-slate-500">Aucune offre active dans votre entreprise.</p>}
+                  {offers.map((offer) => (
+                    <article key={offer.id_offre} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                      <p className="text-xs font-semibold text-primary-600">{offer.entreprise?.nom}</p>
+                      <h4 className="mt-1 font-bold text-slate-800 dark:text-white">{offer.titre}</h4>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{offer.description}</p>
+                      <div className="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
+                        <span>{offer.type_contrat || 'Contrat'} · {offer.localisation || 'À préciser'}</span>
+                        <button onClick={() => navigate(`/offres/${offer.id_offre}`)} className="font-semibold text-primary-600 hover:text-primary-700">Voir et postuler</button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>}
           </main>
         </div>
       </div>

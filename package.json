@@ -22,8 +22,7 @@
     "react-dom": "^19.2.6",
     "react-intersection-observer": "^10.0.3",
     "react-router-dom": "^7.17.0",
-    "recharts": "^3.8.1",
-    "xlsx": "^0.18.5"
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
