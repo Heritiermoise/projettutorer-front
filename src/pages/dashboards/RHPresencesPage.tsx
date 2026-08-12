@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { Variants } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faClock, faSearch, faCheckCircle, faTimesCircle, faExclamationCircle,
@@ -18,13 +19,13 @@ const fadeInUp = {
   exit: { opacity: 0, y: -30, scale: 0.95 }
 }
 
-const floatAnimation = {
+const floatAnimation: Variants = {
   animate: {
     y: [0, -10, 0],
     transition: {
       duration: 3,
       repeat: Infinity,
-      ease: "easeInOut" as const
+      ease: 'easeInOut'
     }
   }
 }
