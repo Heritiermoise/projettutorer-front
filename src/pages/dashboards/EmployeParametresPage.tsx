@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faUser, faBell, faShield, faPalette, faSave,
-  faCheckCircle, faLock, faEnvelope, faPhone,
+  faCheckCircle, faTimesCircle, faLock, faEnvelope, faPhone,
   faMapMarkerAlt, faUserCircle, faCamera,
   faMoon, faSun, faDesktop, faEye, faEyeSlash,
   faSpinner, faKey, faShieldAlt, faMobileAlt, faGlobe
