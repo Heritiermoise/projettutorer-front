@@ -4,14 +4,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faAward, faSearch, faDollarSign, faCheckCircle,
   faGift, faHeart, faUtensils, faBus, faGraduationCap,
-  faShoppingBag, faPlane, faHotel, faPhone,
-  faWifi, faTv, faGamepad, faBook, faMusic, faFilm,
-  faCoffee, faCircle, faClock, faTimesCircle, faSpinner,
-  faArrowRight, faCalendarAlt, faCoins, faXmark
+  faShoppingBag, faPlane, faCircle, faClock, faTimesCircle,
+  faSpinner, faArrowRight, faCalendarAlt, faCoins, faXmark
 } from '@fortawesome/free-solid-svg-icons'
-import { loadDashboardContext } from '../../services/dashboardData'
+import { employeAvantagesAPI } from '../../services/api'
 
-// Animations
 const slideUp = {
   initial: { opacity: 0, y: 20, scale: 0.96 },
   animate: { opacity: 1, y: 0, scale: 1 },
@@ -40,15 +37,6 @@ const getTypeIcon = (type: string) => {
   if (t.includes('formation')) return faGraduationCap
   if (t.includes('shopping')) return faShoppingBag
   if (t.includes('voyage')) return faPlane
-  if (t.includes('hotel')) return faHotel
-  if (t.includes('telephone')) return faPhone
-  if (t.includes('internet') || t.includes('wifi')) return faWifi
-  if (t.includes('tv')) return faTv
-  if (t.includes('jeu') || t.includes('game')) return faGamepad
-  if (t.includes('livre') || t.includes('book')) return faBook
-  if (t.includes('musique')) return faMusic
-  if (t.includes('film')) return faFilm
-  if (t.includes('cafe') || t.includes('café')) return faCoffee
   return faGift
 }
 
@@ -97,15 +85,15 @@ const getStatusIcon = (statut: string) => {
 export const EmployeAvantagesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [avantages, setAvantages] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedAvantage, setSelectedAvantage] = useState<any>(null)
 
-  const loadData = useCallback(async () => {
+  const loadAvantages = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await loadDashboardContext()
-      setDashboardData(data)
+      const response = await employeAvantagesAPI.getMine()
+      setAvantages(response.avantages ?? [])
     } catch (error) {
       console.error('Erreur de chargement:', error)
     } finally {
@@ -114,29 +102,25 @@ export const EmployeAvantagesPage = () => {
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const user = dashboardData?.user
-  const userAvantages = useMemo(() => {
-    if (!user || !dashboardData?.avantages) return []
-    return dashboardData.avantages.filter((a: any) => a.matricule === user.matricule)
-  }, [user, dashboardData])
+    loadAvantages()
+  }, [loadAvantages])
 
   const filteredAvantages = useMemo(() => {
-    return userAvantages.filter(a => {
+    return avantages.filter(a => {
       const matchesSearch = a.libelle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             a.type_avantage.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesType = filterType === 'all' || a.type_avantage === filterType
       return matchesSearch && matchesType
     })
-  }, [userAvantages, searchTerm, filterType])
+  }, [avantages, searchTerm, filterType])
 
   const stats = useMemo(() => ({
-    total: userAvantages.length,
-    actifs: userAvantages.filter((a: any) => a.statut === 'Actif').length,
-    valeurTotale: userAvantages.reduce((sum: number, a: any) => sum + parseFloat(a.valeur || '0'), 0),
-  }), [userAvantages])
+    total: avantages.length,
+    actifs: avantages.filter((a: any) => a.statut === 'Actif').length,
+    valeurTotale: avantages.reduce((sum: number, a: any) => sum + parseFloat(a.valeur || '0'), 0),
+  }), [avantages])
+
+  const types = ['Sante', 'Alimentation', 'Transport', 'Formation', 'Shopping', 'Voyage']
 
   const statsCards = [
     { 
@@ -161,8 +145,6 @@ export const EmployeAvantagesPage = () => {
       bg: 'bg-amber-50 dark:bg-amber-950/20'
     },
   ]
-
-  const types = ['Sante', 'Alimentation', 'Transport', 'Formation', 'Shopping', 'Voyage', 'Autre']
 
   return (
     <motion.div 
@@ -282,8 +264,6 @@ export const EmployeAvantagesPage = () => {
             const typeBg = getTypeBg(avantage.type_avantage)
             const StatusIcon = getStatusIcon(avantage.statut)
             const statusColor = getStatusColor(avantage.statut)
-            const isActive = avantage.statut === 'Actif'
-
             return (
               <motion.div 
                 key={avantage.id_avantage}

@@ -556,6 +556,90 @@ export const employeAPI = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// EMPLOYE (ESPACE PERSONNEL) - NOUVEAUX ENDPOINTS
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+
+// === DASHBOARD EMPLOYE ===
+export const employeDashboardAPI = {
+  getDashboard: async () => {
+    return await apiRequest('/employe/dashboard', { method: 'GET' });
+  },
+  getStats: async () => {
+    return await apiRequest('/employe/dashboard/stats', { method: 'GET' });
+  },
+};
+
+// === DOCUMENTS EMPLOYE ===
+export const employeDocumentsAPI = {
+  getMine: async () => {
+    return await apiRequest('/employe/mes-documents', { method: 'GET' });
+  },
+  upload: async (data: FormData) => {
+    return await apiRequest('/employe/mes-documents/store', {
+      method: 'POST',
+      body: data,
+    });
+  },
+};
+
+// === AVANTAGES EMPLOYE ===
+export const employeAvantagesAPI = {
+  getMine: async () => {
+    return await apiRequest('/employe/mes-avantages', { method: 'GET' });
+  },
+};
+
+// === PRESENCES EMPLOYE ===
+export const employePresencesAPI = {
+  getMine: async () => {
+    return await apiRequest('/employe/mes-presences', { method: 'GET' });
+  },
+  pointer: async () => {
+    return await apiRequest('/employe/mes-presences/pointer', { method: 'POST' });
+  },
+};
+
+// === PA IES EMPLOYE ===
+export const employePaiesAPI = {
+  getMine: async () => {
+    return await apiRequest('/employe/mes-paies', { method: 'GET' });
+  },
+  demanderAvance: async (montant: number, motif: string) => {
+    return await apiRequest('/employe/avances-paie', {
+      method: 'POST',
+      body: JSON.stringify({ montant, motif }),
+    });
+  },
+};
+
+// === CONGES EMPLOYE ===
+export const employeCongesAPI = {
+  getMine: async () => {
+    return await apiRequest('/employe/mes-conges', { method: 'GET' });
+  },
+  create: async (data: { type_conge: string; date_debut: string; date_fin: string; motif: string }) => {
+    return await apiRequest('/employe/mes-conges/store', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// === TICKET RH EMPLOYE ===
+export const employeTicketAPI = {
+  send: async (sujet: string, message: string) => {
+    return await apiRequest('/employe/ticket-rh', {
+      method: 'POST',
+      body: JSON.stringify({ sujet, message }),
+    });
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
 // SERVICES
 // ═══════════════════════════════════════════════════════════════
 export const serviceAPI = {

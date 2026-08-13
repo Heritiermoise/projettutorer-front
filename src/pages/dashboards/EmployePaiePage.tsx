@@ -1,18 +1,17 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faFileInvoice, faDollarSign, faCheckCircle,
-  faExclamationCircle, faPaperPlane, faWallet, faCoins, faReceipt,
+  faCircleExclamation, faPaperPlane, faWallet, faCoins, faReceipt,
   faClock, faArrowRight, faCircle,
-  faTimes, faHourglassHalf, faMoneyBillWave,
+  faXmark, faHourglassHalf, faMoneyBillWave,
   faSpinner, faHistory
 } from '@fortawesome/free-solid-svg-icons'
 import { avancesPaieAPI, fichesPaieAPI, type FichePaie } from '../../services/api'
 
 const money = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' })
 
-// Animations
 const slideUp = {
   initial: { opacity: 0, y: 20, scale: 0.96 },
   animate: { opacity: 1, y: 0, scale: 1 },
@@ -28,10 +27,9 @@ const staggerContainer = {
   }
 }
 
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 }
+const scaleOnHover = {
+  whileHover: { scale: 1.02 },
+  whileTap: { scale: 0.98 }
 }
 
 export const EmployePaiePage = () => {
@@ -42,8 +40,9 @@ export const EmployePaiePage = () => {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [selectedFiche, setSelectedFiche] = useState<FichePaie | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fichesPaieAPI.getMine()
@@ -56,9 +55,21 @@ export const EmployePaiePage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { void load() }, [])
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await load()
+    setIsRefreshing(false)
+  }, [load])
+
+  useEffect(() => { load() }, [load])
+
+  // Auto-refresh toutes les 60 secondes
+  useEffect(() => {
+    const intervalId = setInterval(refresh, 60000)
+    return () => clearInterval(intervalId)
+  }, [refresh])
 
   const requestAdvance = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -69,6 +80,7 @@ export const EmployePaiePage = () => {
       setFeedback({ type: 'success', text: response.message })
       setAmount('')
       setReason('')
+      await refresh()
     } catch (error) {
       setFeedback({ 
         type: 'error', 
@@ -102,7 +114,7 @@ export const EmployePaiePage = () => {
       'payée': faCheckCircle,
       'Générée': faClock,
       'En attente': faHourglassHalf,
-      'Annulée': faTimes,
+      'Annulée': faXmark,
     }
     return icons[statut] || faCircle
   }
@@ -142,13 +154,6 @@ export const EmployePaiePage = () => {
     },
   ]
 
-  // Données pour le graphique
-  const chartData = fiches.slice(0, 6).reverse().map(fiche => ({
-    mois: `${fiche.mois_paiement}/${fiche.annee_paiement}`,
-    montant: Number(fiche.montant),
-    base: Number(fiche.salaire_base || 0),
-  }))
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -162,20 +167,31 @@ export const EmployePaiePage = () => {
         animate="animate"
         className="bg-white dark:bg-[#1E293B] rounded-xl p-5 shadow-sm border border-[#E2E8F0] dark:border-[#334155]"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 dark:bg-[#10B981]/20 flex items-center justify-center">
-            <FontAwesomeIcon icon={faFileInvoice} className="w-5 h-5 text-[#10B981]" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 dark:bg-[#10B981]/20 flex items-center justify-center">
+              <FontAwesomeIcon icon={faFileInvoice} className="w-5 h-5 text-[#10B981]" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-[#0F172A] dark:text-white">Mes fiches de paie</h1>
+              <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                Consultez vos fiches et gérez vos demandes d'avance
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-[#0F172A] dark:text-white">Mes fiches de paie</h1>
-            <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-              Consultez vos fiches et gérez vos demandes d'avance
-            </p>
-          </div>
+          <button 
+            onClick={refresh}
+            disabled={isRefreshing || loading}
+            className="p-2.5 rounded-lg border border-[#E2E8F0] dark:border-[#334155] bg-white dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors disabled:opacity-50"
+            title="Actualiser"
+          >
+            <FontAwesomeIcon icon={faSpinner} className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-[#10B981]' : ''}`} />
+          </button>
         </div>
       </motion.div>
 
-      {/* Feedback */}
+      {/* Reste du code identique ... */}
+      {/* Feedback, Stats, Demande d'avance, Historique, Modal */}
       <AnimatePresence>
         {feedback && (
           <motion.div 
@@ -189,7 +205,7 @@ export const EmployePaiePage = () => {
             }`}
           >
             <FontAwesomeIcon 
-              icon={feedback.type === 'success' ? faCheckCircle : faExclamationCircle} 
+              icon={feedback.type === 'success' ? faCheckCircle : faCircleExclamation} 
               className={`mt-0.5 w-5 h-5 ${feedback.type === 'success' ? 'text-emerald-600' : 'text-rose-600'}`} 
             />
             <p className="text-sm font-medium text-[#0F172A] dark:text-white">{feedback.text}</p>
@@ -197,7 +213,6 @@ export const EmployePaiePage = () => {
         )}
       </AnimatePresence>
 
-      {/* Stats */}
       <motion.div 
         variants={staggerContainer}
         initial="initial"
@@ -277,7 +292,7 @@ export const EmployePaiePage = () => {
               />
             </label>
           </div>
-            <motion.button 
+          <motion.button 
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit" 
@@ -399,7 +414,7 @@ export const EmployePaiePage = () => {
                   </h3>
                 </div>
                 <button onClick={() => setSelectedFiche(null)} className="p-2 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors">
-                  <FontAwesomeIcon icon={faTimes} className="w-4 h-4 text-[#64748B] dark:text-[#94A3B8]" />
+                  <FontAwesomeIcon icon={faXmark} className="w-4 h-4 text-[#64748B] dark:text-[#94A3B8]" />
                 </button>
               </div>
 

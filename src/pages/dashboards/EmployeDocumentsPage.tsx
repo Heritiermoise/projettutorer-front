@@ -5,11 +5,9 @@ import {
   faFileLines, faDownload, faUpload, faEye, faSearch,
   faCheckCircle, faClock, faXmark, faFilePdf,
   faFileImage, faFileWord, faFileExcel, faFileAlt,
-  faSpinner, faCircle,
-  faFileArchive, faFileAudio, faFileVideo, faFileCode,
-  faFolderOpen, faTimesCircle
+  faSpinner, faCircle, faFolderOpen, faTimesCircle
 } from '@fortawesome/free-solid-svg-icons'
-import { loadDashboardContext } from '../../services/dashboardData'
+import { employeDocumentsAPI } from '../../services/api'
 
 // Animations
 const slideUp = {
@@ -38,10 +36,6 @@ const getFileIcon = (type: string) => {
   if (t.includes('image') || t.includes('jpg') || t.includes('png') || t.includes('jpeg')) return faFileImage
   if (t.includes('word') || t.includes('doc')) return faFileWord
   if (t.includes('excel') || t.includes('xls')) return faFileExcel
-  if (t.includes('archive') || t.includes('zip')) return faFileArchive
-  if (t.includes('audio') || t.includes('mp3')) return faFileAudio
-  if (t.includes('video') || t.includes('mp4')) return faFileVideo
-  if (t.includes('code') || t.includes('js') || t.includes('html')) return faFileCode
   return faFileAlt
 }
 
@@ -78,15 +72,16 @@ export const EmployeDocumentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatut, setFilterStatut] = useState('all')
   const [showUploadModal, setShowUploadModal] = useState(false)
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
+  const [uploading, setUploading] = useState(false)
 
-  const loadData = useCallback(async () => {
+  const loadDocuments = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await loadDashboardContext()
-      setDashboardData(data)
+      const response = await employeDocumentsAPI.getMine()
+      setDocuments(response.documents ?? [])
     } catch (error) {
       console.error('Erreur de chargement:', error)
     } finally {
@@ -95,29 +90,39 @@ export const EmployeDocumentsPage = () => {
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const user = dashboardData?.user
-  const userDocuments = useMemo(() => {
-    if (!user || !dashboardData?.documents) return []
-    return dashboardData.documents.filter((d: any) => d.matricule === user.matricule)
-  }, [user, dashboardData])
+    loadDocuments()
+  }, [loadDocuments])
 
   const filteredDocuments = useMemo(() => {
-    return userDocuments.filter(d => {
+    return documents.filter(d => {
       const matchesSearch = d.type_document.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatut = filterStatut === 'all' || d.statut === filterStatut
       return matchesSearch && matchesStatut
     })
-  }, [userDocuments, searchTerm, filterStatut])
+  }, [documents, searchTerm, filterStatut])
 
   const stats = useMemo(() => ({
-    total: userDocuments.length,
-    valides: userDocuments.filter(d => d.statut === 'Valide').length,
-    enAttente: userDocuments.filter(d => d.statut === 'En attente' || d.statut === 'Soumis').length,
-    rejetes: userDocuments.filter(d => d.statut === 'Rejeté').length,
-  }), [userDocuments])
+    total: documents.length,
+    valides: documents.filter(d => d.statut === 'Valide').length,
+    enAttente: documents.filter(d => d.statut === 'En attente' || d.statut === 'Soumis').length,
+    rejetes: documents.filter(d => d.statut === 'Rejeté').length,
+  }), [documents])
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setUploading(true)
+    try {
+      // Simuler l'upload
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      alert('Document uploadé avec succès !')
+      setShowUploadModal(false)
+      await loadDocuments()
+    } catch (error) {
+      alert('Erreur lors de l\'upload')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const statsCards = [
     { 
@@ -306,7 +311,7 @@ export const EmployeDocumentsPage = () => {
                   Ajouté le {new Date(doc.created_at).toLocaleDateString('fr-FR')}
                 </p>
                 <div className="mt-4 pt-4 border-t border-[#E2E8F0] dark:border-[#334155] flex items-center gap-2">
-                  <button className="flex-1 px-3 py-2 bg-[#F1F5F9] dark:bg-[#334155] text-[#64748B] dark:text-[#94A3B8] rounded-lg text-xs font-medium hover:bg-[#E2E8F0] dark:hover:bg-[#475569] transition-colors flex items-center justify-center gap-1.5 group-hover:bg-[#E2E8F0] dark:group-hover:bg-[#475569]">
+                  <button className="flex-1 px-3 py-2 bg-[#F1F5F9] dark:bg-[#334155] text-[#64748B] dark:text-[#94A3B8] rounded-lg text-xs font-medium hover:bg-[#E2E8F0] dark:hover:bg-[#475569] transition-colors flex items-center justify-center gap-1.5">
                     <FontAwesomeIcon icon={faEye} className="w-3.5 h-3.5" />
                     <span>Voir</span>
                   </button>
@@ -350,7 +355,7 @@ export const EmployeDocumentsPage = () => {
                 </button>
               </div>
 
-              <div className="p-5 space-y-4">
+              <form onSubmit={handleUpload} className="p-5 space-y-4">
                 <div className="border-2 border-dashed border-[#E2E8F0] dark:border-[#334155] rounded-xl p-8 text-center hover:border-[#10B981] transition-colors">
                   <FontAwesomeIcon icon={faUpload} className="w-12 h-12 mx-auto mb-4 text-[#94A3B8] dark:text-[#475569]" />
                   <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mb-2">
@@ -359,7 +364,7 @@ export const EmployeDocumentsPage = () => {
                   <p className="text-xs text-[#94A3B8] dark:text-[#64748B]">
                     PDF, JPG, PNG, DOC, XLS (max 5MB)
                   </p>
-                  <button className="mt-4 px-4 py-2 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg text-sm font-medium shadow-lg shadow-[#10B981]/25 transition-all">
+                  <button type="button" className="mt-4 px-4 py-2 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg text-sm font-medium shadow-lg shadow-[#10B981]/25 transition-all">
                     Sélectionner un fichier
                   </button>
                 </div>
@@ -380,23 +385,26 @@ export const EmployeDocumentsPage = () => {
 
                 <div className="flex gap-3 pt-4 border-t border-[#E2E8F0] dark:border-[#334155]">
                   <button 
+                    type="button"
                     onClick={() => setShowUploadModal(false)} 
                     className="flex-1 px-4 py-2.5 bg-[#F1F5F9] dark:bg-[#334155] text-[#64748B] dark:text-[#94A3B8] rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#475569] transition-colors text-sm font-medium"
                   >
                     Annuler
                   </button>
                   <button 
-                    onClick={() => {
-                      alert('Document uploadé avec succès !')
-                      setShowUploadModal(false)
-                    }} 
-                    className="flex-1 px-4 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg text-sm font-medium shadow-lg shadow-[#10B981]/25 transition-all flex items-center justify-center gap-2"
+                    type="submit"
+                    disabled={uploading}
+                    className="flex-1 px-4 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-lg text-sm font-medium shadow-lg shadow-[#10B981]/25 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                   >
-                    <FontAwesomeIcon icon={faUpload} className="w-4 h-4" />
+                    {uploading ? (
+                      <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <FontAwesomeIcon icon={faUpload} className="w-4 h-4" />
+                    )}
                     Uploader
                   </button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

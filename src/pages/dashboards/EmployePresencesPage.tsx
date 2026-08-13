@@ -1,15 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  faClock, faCheckCircle, faExclamationCircle, faTimesCircle,
+  faClock, faCheckCircle, faCircleExclamation, faTimesCircle,
   faRefresh, faSignInAlt, faSignOutAlt, faCalendarDay,
   faChartBar, faUserCheck, faUserClock, faUserTimes,
   faCircle, faSpinner, faCheck, faCloudSun
 } from '@fortawesome/free-solid-svg-icons'
 import { presenceAPI, type Presence } from '../../services/api'
 
-// Animations
 const slideUp = {
   initial: { opacity: 0, y: 20, scale: 0.96 },
   animate: { opacity: 1, y: 0, scale: 1 },
@@ -52,7 +51,7 @@ const getStatusColor = (statut: string) => {
 const getStatusIcon = (statut: string) => {
   const s = statut.toLowerCase()
   if (s === 'present' || s === 'présent') return faCheckCircle
-  if (s === 'retard') return faExclamationCircle
+  if (s === 'retard') return faCircleExclamation
   if (s === 'absent') return faTimesCircle
   return faCircle
 }
@@ -62,8 +61,9 @@ export const EmployePresencesPage = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [pointing, setPointing] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const response = await presenceAPI.getMine()
@@ -76,9 +76,21 @@ export const EmployePresencesPage = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  useEffect(() => { void load() }, [])
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await load()
+    setIsRefreshing(false)
+  }, [load])
+
+  useEffect(() => { load() }, [load])
+
+  // Auto-refresh toutes les 60 secondes
+  useEffect(() => {
+    const intervalId = setInterval(refresh, 60000)
+    return () => clearInterval(intervalId)
+  }, [refresh])
 
   const point = async () => {
     setPointing(true)
@@ -86,7 +98,7 @@ export const EmployePresencesPage = () => {
     try {
       const response = await presenceAPI.pointerMine()
       setFeedback({ type: 'success', text: response.message })
-      await load()
+      await refresh()
     } catch (error) {
       setFeedback({ 
         type: 'error', 
@@ -166,14 +178,14 @@ export const EmployePresencesPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <motion.button 
-              {...scaleOnHover}
-              onClick={() => void load()} 
-              disabled={loading || pointing} 
+            <button 
+              onClick={refresh}
+              disabled={loading || pointing}
               className="p-2.5 rounded-lg border border-[#E2E8F0] dark:border-[#334155] bg-white dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors disabled:opacity-50"
+              title="Actualiser"
             >
-              <FontAwesomeIcon icon={faRefresh} className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-            </motion.button>
+              <FontAwesomeIcon icon={faRefresh} className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-[#10B981]' : ''}`} />
+            </button>
             <motion.button 
               {...scaleOnHover}
               onClick={() => void point()} 
@@ -201,7 +213,7 @@ export const EmployePresencesPage = () => {
         </div>
       </motion.div>
 
-      {/* Feedback */}
+      {/* Feedback, Stats, Aujourd'hui, Historique - identiques au code précédent */}
       <AnimatePresence>
         {feedback && (
           <motion.div 
@@ -215,7 +227,7 @@ export const EmployePresencesPage = () => {
             }`}
           >
             <FontAwesomeIcon 
-              icon={feedback.type === 'success' ? faCheckCircle : faExclamationCircle} 
+              icon={feedback.type === 'success' ? faCheckCircle : faCircleExclamation} 
               className={`mt-0.5 w-5 h-5 ${feedback.type === 'success' ? 'text-emerald-600' : 'text-rose-600'}`} 
             />
             <p className="text-sm font-medium text-[#0F172A] dark:text-white">{feedback.text}</p>
@@ -223,7 +235,6 @@ export const EmployePresencesPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Stats */}
       <motion.div 
         variants={staggerContainer}
         initial="initial"
@@ -253,7 +264,6 @@ export const EmployePresencesPage = () => {
         ))}
       </motion.div>
 
-      {/* Aujourd'hui */}
       <motion.div 
         variants={slideUp}
         initial="initial"
@@ -288,7 +298,6 @@ export const EmployePresencesPage = () => {
         </div>
       </motion.div>
 
-      {/* Historique */}
       <motion.div 
         variants={slideUp}
         initial="initial"

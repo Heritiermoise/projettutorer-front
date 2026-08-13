@@ -14,7 +14,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import { NotificationBell } from '../../components/NotificationBell'
-import { notificationAPI, apiRequest } from '../../services/api'
+import { notificationAPI } from '../../services/api'
+import { employeDashboardAPI } from '../../services/api'
 import { EmployeCongesPage } from './EmployeCongesPage'
 import { EmployeDocumentsPage } from './EmployeDocumentsPage'
 import { EmployeNotificationsPage } from './EmployeNotificationsPage'
@@ -30,28 +31,11 @@ const slideUp = {
   exit: { opacity: 0, y: -30, scale: 0.96 }
 }
 
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 }
-}
-
 const staggerContainer = {
   animate: {
     transition: {
       staggerChildren: 0.05,
       delayChildren: 0.08
-    }
-  }
-}
-
-const floatAnimation = {
-  animate: {
-    y: [0, -5, 0],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: "easeInOut"
     }
   }
 }
@@ -112,7 +96,7 @@ export const EmployeDashboard = () => {
   const fetchDashboardData = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      const response = await apiRequest('/employe/dashboard', { method: 'GET' })
+      const response = await employeDashboardAPI.getDashboard()
       if (response.success) {
         setDashboardData(response.data)
         setLoadError(null)

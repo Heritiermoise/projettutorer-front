@@ -11,6 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { notificationAPI } from '../../services/api'
 
+
 // Animations
 const slideUp = {
   initial: { opacity: 0, y: 20, scale: 0.96 },

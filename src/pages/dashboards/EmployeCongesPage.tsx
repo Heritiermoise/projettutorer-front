@@ -8,8 +8,7 @@ import {
   faSpinner, faCheck, faHourglassHalf, faCalendarDay,
   faSun, faCloudSun, faClock as faClockIcon
 } from '@fortawesome/free-solid-svg-icons'
-import { loadDashboardContext } from '../../services/dashboardData'
-import { apiRequest } from '../../services/api'
+import { employeCongesAPI } from '../../services/api'
 
 // Animations
 const slideUp = {
@@ -27,12 +26,6 @@ const staggerContainer = {
   }
 }
 
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 }
-}
-
 const scaleOnHover = {
   whileHover: { scale: 1.02 },
   whileTap: { scale: 0.98 }
@@ -40,7 +33,7 @@ const scaleOnHover = {
 
 export const EmployeCongesPage = () => {
   const [showDemandeModal, setShowDemandeModal] = useState(false)
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [conges, setConges] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -51,52 +44,47 @@ export const EmployeCongesPage = () => {
     motif: '',
   })
 
-  const loadData = useCallback(async () => {
+  const loadConges = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await loadDashboardContext()
-      setDashboardData(data)
+      const response = await employeCongesAPI.getMine()
+      setConges(response.conges ?? [])
     } catch (error) {
-      setFeedback({ type: 'error', text: 'Impossible de charger vos données.' })
+      setFeedback({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Impossible de charger vos congés.' 
+      })
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const user = dashboardData?.user
-  const userConges = useMemo(() => {
-    if (!user || !dashboardData?.conges) return []
-    return dashboardData.conges.filter((c: any) => c.matricule === user.matricule)
-  }, [user, dashboardData])
+    loadConges()
+  }, [loadConges])
 
   const stats = useMemo(() => ({
-    total: userConges.length,
-    approuves: userConges.filter((c: any) => c.statut === 'Approuve').length,
-    enAttente: userConges.filter((c: any) => c.statut === 'En attente').length,
-    refuses: userConges.filter((c: any) => c.statut === 'Refuse').length,
-  }), [userConges])
+    total: conges.length,
+    approuves: conges.filter((c: any) => c.statut === 'Approuve').length,
+    enAttente: conges.filter((c: any) => c.statut === 'En attente').length,
+    refuses: conges.filter((c: any) => c.statut === 'Refuse').length,
+  }), [conges])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
     setFeedback(null)
     try {
-      const response = await apiRequest('/rh/conges', {
-        method: 'POST',
-        body: JSON.stringify({
-          matricule: user?.matricule,
-          ...formData,
-          nombre_jours: calculateDays(formData.date_debut, formData.date_fin)
-        })
+      const response = await employeCongesAPI.create({
+        type_conge: formData.type_conge,
+        date_debut: formData.date_debut,
+        date_fin: formData.date_fin,
+        motif: formData.motif
       })
       setFeedback({ type: 'success', text: response.message || 'Demande de congé envoyée avec succès !' })
       setShowDemandeModal(false)
       setFormData({ type_conge: 'Annuel', date_debut: '', date_fin: '', motif: '' })
-      loadData()
+      await loadConges()
     } catch (error: any) {
       setFeedback({ type: 'error', text: error.message || 'Erreur lors de l\'envoi de la demande.' })
     } finally {
@@ -317,7 +305,7 @@ export const EmployeCongesPage = () => {
             <h3 className="font-semibold text-[#0F172A] dark:text-white">Historique des demandes</h3>
           </div>
           <span className="text-xs text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#334155] px-2.5 py-1 rounded-full">
-            {userConges.length} demandes
+            {conges.length} demandes
           </span>
         </div>
 
@@ -326,7 +314,7 @@ export const EmployeCongesPage = () => {
             <FontAwesomeIcon icon={faSpinner} className="w-8 h-8 text-[#10B981] animate-spin mb-3" />
             <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">Chargement...</p>
           </div>
-        ) : userConges.length === 0 ? (
+        ) : conges.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <FontAwesomeIcon icon={faCalendarAlt} className="w-10 h-10 text-[#94A3B8] dark:text-[#475569] mb-3" />
             <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">Aucune demande de congé</p>
@@ -336,7 +324,7 @@ export const EmployeCongesPage = () => {
           </div>
         ) : (
           <div className="divide-y divide-[#E2E8F0] dark:divide-[#334155]">
-            {userConges.map((conge: any, index: number) => {
+            {conges.map((conge: any, index: number) => {
               const TypeIcon = getTypeIcon(conge.type_conge)
               const typeColor = getTypeColor(conge.type_conge)
               const StatusIcon = getStatusIcon(conge.statut)
