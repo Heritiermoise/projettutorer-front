@@ -3,12 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBell, faCheckCircle, faExclamationCircle, faInfoCircle,
-  faWarning, faEnvelope, faCalendar, faClock, faUsers,
+  faWarning, faCalendar, faClock, faUsers,
   faFileAlt, faGift, faDollarSign, faBriefcase, faUser,
   faCheck, faTimes, faTrash, faCheckDouble, faSpinner,
-  faCircle, faArrowRight, faFilter, faSearch, faEye,
-  faEyeSlash, faBookmark, faBookmark as faBookmarkRegular,
-  faStar, faStar as faStarRegular
+  faCircle, faSearch, faEye,
+  faEyeSlash
 } from '@fortawesome/free-solid-svg-icons'
 import { notificationAPI } from '../../services/api'
 
