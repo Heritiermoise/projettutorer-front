@@ -5,6 +5,7 @@ import {
   Menu, X, Moon, Sun, FileText, CheckCircle2, Clock, XCircle, MessageSquare
 } from 'lucide-react'
 import { BrandMark } from '../../components/BrandMark'
+import { NotificationsCenter } from '../../components/notifications/NotificationsCenter'
 import { postulationAPI } from '../../services/api'
 import { DirecteurMessageriePage } from './DirecteurMessageriePage'
 
@@ -81,6 +82,130 @@ export const UtilisateurDashboard = () => {
     return colors[statut] || colors['Soumise']
   }
 
+  const applicationsContent = (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+      <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Mes candidatures récentes</h3>
+      {feedback && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{feedback}</p>}
+      <div className="space-y-3">
+        {loadingApplications && <p className="text-sm text-slate-500">Chargement de vos candidatures...</p>}
+        {!loadingApplications && applications.length === 0 && <p className="text-sm text-slate-500">Aucune candidature enregistrée.</p>}
+        {applications.map(cand => (
+          <div key={cand.id_postulation} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex-1">
+                <h4 className="font-bold text-slate-800 dark:text-white">{cand.offre?.titre || 'Offre d’emploi'}</h4>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{cand.offre?.entreprise?.nom || 'Entreprise'} · Postulé le {new Date(cand.created_at).toLocaleDateString('fr-FR')}</p>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatutColor(cand.statut)}`}>
+                {cand.statut}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center space-x-2">
+              <div className="flex-1 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
+                <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${cand.statut === 'Acceptée' || cand.statut === 'Refusée' ? 100 : cand.statut === 'Entretien' ? 75 : 25}%` }}></div>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{cand.statut}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const offersContent = (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="mb-5">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Offres disponibles</h1>
+        <p className="mt-1 text-slate-600 dark:text-slate-400">Consultez les offres actives et postulez depuis leur fiche détaillée.</p>
+      </div>
+      {feedback && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{feedback}</p>}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {loadingApplications && <p className="text-sm text-slate-500">Chargement des offres...</p>}
+        {!loadingApplications && offers.length === 0 && <p className="text-sm text-slate-500">Aucune offre active pour le moment.</p>}
+        {offers.map((offer) => (
+          <article key={offer.id_offre} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+            <p className="text-xs font-semibold text-primary-600">{offer.entreprise?.nom}</p>
+            <h4 className="mt-1 font-bold text-slate-800 dark:text-white">{offer.titre}</h4>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{offer.description}</p>
+            <div className="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
+              <span>{offer.type_contrat || 'Contrat'} · {offer.localisation || 'À préciser'}</span>
+              <button onClick={() => navigate(`/offres/${offer.id_offre}`)} className="font-semibold text-primary-600 hover:text-primary-700">Voir et postuler</button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  )
+
+  const renderContent = () => {
+    if (activeSection === 'messagerie') return <DirecteurMessageriePage />
+    if (activeSection === 'candidatures') return applicationsContent
+    if (activeSection === 'offres') return offersContent
+    if (activeSection === 'notifications') {
+      return <NotificationsCenter title="Notifications" description="Retrouvez les événements liés à votre parcours candidat." accentClassName="bg-primary-600 hover:bg-primary-700" />
+    }
+    if (activeSection === 'profil') {
+      return (
+        <section className="space-y-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Mon profil</h1>
+            <p className="mt-1 text-slate-600 dark:text-slate-400">Informations utilisées pour votre espace candidat.</p>
+          </div>
+          <div className="max-w-2xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <dl className="grid gap-5 sm:grid-cols-2">
+              <div><dt className="text-xs font-semibold uppercase text-slate-500">Nom</dt><dd className="mt-1 font-medium text-slate-800 dark:text-white">{[storedUser.prenom, storedUser.nom].filter(Boolean).join(' ') || 'Candidat'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase text-slate-500">Adresse e-mail</dt><dd className="mt-1 font-medium text-slate-800 dark:text-white">{storedUser.email || 'Non renseignée'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase text-slate-500">Téléphone</dt><dd className="mt-1 font-medium text-slate-800 dark:text-white">{storedUser.telephone || 'Non renseigné'}</dd></div>
+              <div><dt className="text-xs font-semibold uppercase text-slate-500">Rôle</dt><dd className="mt-1 font-medium capitalize text-slate-800 dark:text-white">{storedUser.role || 'utilisateur'}</dd></div>
+            </dl>
+          </div>
+        </section>
+      )
+    }
+    if (activeSection === 'parametres') {
+      return (
+        <section className="space-y-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Paramètres</h1>
+            <p className="mt-1 text-slate-600 dark:text-slate-400">Préférences de votre espace candidat.</p>
+          </div>
+          <div className="max-w-2xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between gap-4">
+              <div><p className="font-semibold text-slate-800 dark:text-white">Mode sombre</p><p className="text-sm text-slate-500 dark:text-slate-400">Adapter l’affichage à votre préférence.</p></div>
+              <button type="button" onClick={toggleDark} className="rounded-lg bg-slate-100 p-2.5 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600" aria-label="Changer le thème">
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Mon Espace Candidat</h1>
+          <p className="text-slate-600 dark:text-slate-400">Suivez vos candidatures et votre parcours</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {[
+            { label: 'Total candidatures', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
+            { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
+            { label: 'Acceptées', value: stats.acceptees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
+            { label: 'Refusées', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-primary-600' }
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}><stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" /></div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-1">{stat.label}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+        {applicationsContent}
+      </div>
+    )
+  }
+
   return (
     <div className={isDark ? 'dark' : ''}>
       <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900">
@@ -139,75 +264,7 @@ export const UtilisateurDashboard = () => {
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-            {activeSection === 'messagerie' ? <DirecteurMessageriePage /> : <div className="space-y-6">
-              <div className="mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">Mon Espace Candidat</h1>
-                <p className="text-slate-600 dark:text-slate-400">Suivez vos candidatures et votre parcours</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                {[
-                  { label: 'Total candidatures', value: stats.total, icon: FileText, color: 'from-primary-500 to-primary-600' },
-                  { label: 'En cours', value: stats.enCours, icon: Clock, color: 'from-primary-500 to-primary-600' },
-                  { label: 'Acceptees', value: stats.acceptees, icon: CheckCircle2, color: 'from-primary-500 to-primary-600' },
-                  { label: 'Refusees', value: stats.refusees, icon: XCircle, color: 'from-red-500 to-primary-600' }
-                ].map((stat, i) => (
-                  <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center shadow-lg mb-3`}>
-                      <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mb-1">{stat.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Mes candidatures recentes</h3>
-                {feedback && <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{feedback}</p>}
-                <div className="space-y-3">
-                  {loadingApplications && <p className="text-sm text-slate-500">Chargement de vos candidatures...</p>}
-                  {!loadingApplications && applications.length === 0 && <p className="text-sm text-slate-500">Aucune candidature enregistrée.</p>}
-                  {applications.map(cand => (
-                    <div key={cand.id_postulation} className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-slate-800 dark:text-white">{cand.offre?.titre || 'Offre d’emploi'}</h4>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">{cand.offre?.entreprise?.nom || 'Entreprise'} · Postulé le {new Date(cand.created_at).toLocaleDateString('fr-FR')}</p>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatutColor(cand.statut)}`}>
-                          {cand.statut}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex items-center space-x-2">
-                        <div className="flex-1 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
-                          <div className="bg-primary-500 h-2 rounded-full" style={{ width: `${cand.statut === 'Acceptée' || cand.statut === 'Refusée' ? 100 : cand.statut === 'Entretien' ? 75 : 25}%` }}></div>
-                        </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">{cand.statut}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Offres de mon entreprise</h3>
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                  {!loadingApplications && offers.length === 0 && <p className="text-sm text-slate-500">Aucune offre active dans votre entreprise.</p>}
-                  {offers.map((offer) => (
-                    <article key={offer.id_offre} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                      <p className="text-xs font-semibold text-primary-600">{offer.entreprise?.nom}</p>
-                      <h4 className="mt-1 font-bold text-slate-800 dark:text-white">{offer.titre}</h4>
-                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 line-clamp-3">{offer.description}</p>
-                      <div className="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
-                        <span>{offer.type_contrat || 'Contrat'} · {offer.localisation || 'À préciser'}</span>
-                        <button onClick={() => navigate(`/offres/${offer.id_offre}`)} className="font-semibold text-primary-600 hover:text-primary-700">Voir et postuler</button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </div>
-            </div>}
+            {renderContent()}
           </main>
         </div>
       </div>
