@@ -50,7 +50,7 @@ export const NotificationBell = ({ notifications, onMarkAsRead, onMarkAllAsRead,
       >
         <Bell className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-5 h-5 bg-warm-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute top-1 right-1 min-w-5 h-5 bg-red-500 px-1 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-sm shadow-red-500/30">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -90,7 +90,7 @@ export const NotificationBell = ({ notifications, onMarkAsRead, onMarkAllAsRead,
                       <div className="flex items-start justify-between">
                         <p className="font-semibold text-sm text-slate-800 dark:text-white">
                           {notif.title}
-                          {!notif.read && <span className="ml-2 w-2 h-2 bg-primary-500 rounded-full inline-block"></span>}
+                          {!notif.read && <span className="ml-2 inline-block h-2 w-2 rounded-full bg-red-500"></span>}
                         </p>
                         <button
                           onClick={() => onDelete(notif.id)}

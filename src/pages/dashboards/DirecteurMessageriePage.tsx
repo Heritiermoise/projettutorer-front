@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Check, CheckCheck, MapPin, Phone, Search, Send, Video, X } from 'lucide-react'
 import { internalMessagingAPI } from '../../services/api'
 
@@ -29,26 +29,27 @@ export const DirecteurMessageriePage = () => {
   const localStreamRef = useRef<MediaStream | null>(null)
   const selectedConversationRef = useRef<Conversation | null>(null)
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     const response = await internalMessagingAPI.getConversations()
     setConversations(response.conversations || [])
-  }
+  }, [])
 
-  const loadMessages = async (conversationId: number) => {
+  const loadMessages = useCallback(async (conversationId: number) => {
     const response = await internalMessagingAPI.getMessages(conversationId)
     setMessages(response.messages || [])
-  }
+    await loadConversations()
+  }, [loadConversations])
 
   useEffect(() => {
     void Promise.all([internalMessagingAPI.getContacts(), loadConversations()])
       .then(([contactsResponse]) => setContacts(contactsResponse.contacts || []))
       .catch((error) => setFeedback(error instanceof Error ? error.message : 'Impossible de charger la messagerie.'))
-  }, [])
+  }, [loadConversations])
 
   useEffect(() => {
     selectedConversationRef.current = selectedConversation
     if (selectedConversation) void loadMessages(selectedConversation.id).catch(() => undefined)
-  }, [selectedConversation])
+  }, [selectedConversation, loadMessages])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -58,7 +59,7 @@ export const DirecteurMessageriePage = () => {
     }, 3000)
 
     return () => window.clearInterval(intervalId)
-  }, [])
+  }, [loadConversations, loadMessages])
 
   useEffect(() => {
     if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current
@@ -257,14 +258,14 @@ export const DirecteurMessageriePage = () => {
               {visibleContacts.map((contact) => {
                 const conversation = conversations.find((item) => item.contact_id === contact.id)
                 return (
-                  <button key={contact.id} onClick={() => conversation ? setSelectedConversation(conversation) : void openConversation(contact)} className={`w-full text-left p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 ${selectedConversation?.contact_id === contact.id ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
+                  <button key={contact.id} onClick={() => conversation ? setSelectedConversation(conversation) : void openConversation(contact)} className={`w-full text-left p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 ${selectedConversation?.contact_id === contact.id ? 'bg-emerald-50 dark:bg-emerald-950/20' : ''}`}>
                     <div className="flex items-center gap-3">
-                      <span className="w-11 h-11 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">{initials(contact.prenom, contact.nom)}</span>
+                      <span className="w-11 h-11 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shadow-sm shadow-emerald-600/20">{initials(contact.prenom, contact.nom)}</span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-semibold text-slate-800 dark:text-white truncate">{contact.prenom} {contact.nom}</span>
                         <span className="block text-sm text-slate-600 dark:text-slate-400 truncate">{conversation?.dernier_message || 'Démarrer une conversation'}</span>
                       </span>
-                      {conversation && conversation.non_lus > 0 && <span className="w-5 h-5 bg-blue-600 text-white rounded-full text-xs flex items-center justify-center">{conversation.non_lus}</span>}
+                      {conversation && conversation.non_lus > 0 && <span className="w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-sm shadow-red-500/25">{conversation.non_lus > 9 ? '9+' : conversation.non_lus}</span>}
                     </div>
                   </button>
                 )
@@ -277,7 +278,7 @@ export const DirecteurMessageriePage = () => {
               <header className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button onClick={() => setSelectedConversation(null)} className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" aria-label="Retour"><ArrowLeft className="w-5 h-5" /></button>
-                  <span className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">{initials(selectedConversation.contact_prenom, selectedConversation.contact_nom)}</span>
+                  <span className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shadow-sm shadow-emerald-600/20">{initials(selectedConversation.contact_prenom, selectedConversation.contact_nom)}</span>
                   <div><p className="font-semibold text-slate-800 dark:text-white">{selectedConversation.contact_prenom} {selectedConversation.contact_nom}</p><p className="text-xs text-slate-500">Collègue de votre entreprise</p></div>
                 </div>
                 <div className="flex gap-2">
@@ -295,7 +296,7 @@ export const DirecteurMessageriePage = () => {
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((message) => <div key={message.id} className={`flex ${message.sender_id === selectedConversation.contact_id ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`max-w-xs sm:max-w-md px-4 py-2 rounded-2xl ${message.sender_id === selectedConversation.contact_id ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white' : 'bg-blue-600 text-white'}`}>
+                  <div className={`max-w-xs sm:max-w-md px-4 py-2 rounded-2xl shadow-sm ${message.sender_id === selectedConversation.contact_id ? 'bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white' : 'bg-emerald-500 text-white'}`}>
                     <p className="text-sm whitespace-pre-wrap">{message.body}</p>
                     <div className="flex justify-end items-center gap-1 mt-1 text-xs opacity-75"><span>{time(message.created_at)}</span>{message.sender_id !== selectedConversation.contact_id && (message.read_at ? <CheckCheck className="w-3 h-3" /> : <Check className="w-3 h-3" />)}</div>
                   </div>

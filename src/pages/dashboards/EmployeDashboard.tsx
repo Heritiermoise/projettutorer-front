@@ -125,6 +125,8 @@ export const EmployeDashboard = () => {
   const userPresences = dashboardData.presences || []
   const userDocuments = dashboardData.documents || []
   const userAvantages = dashboardData.avantages || []
+  const unreadNotificationCount = notifications.filter((notification) => !notification.read).length
+  const unreadMessageCount = recentConversations.reduce((total, conversation) => total + Number(conversation.non_lus || 0), 0)
 
   const toggleDark = () => {
     setIsDark(!isDark)
@@ -150,8 +152,8 @@ export const EmployeDashboard = () => {
     { icon: Clock, label: 'Mes Presences', id: 'presences', path: '/dashboard/employe/presences' },
     { icon: FileText, label: 'Mes Documents', id: 'documents', path: '/dashboard/employe/documents' },
     { icon: Award, label: 'Mes Avantages', id: 'avantages', path: '/dashboard/employe/avantages' },
-    { icon: MessageSquare, label: 'Messagerie', id: 'messagerie', path: '/dashboard/employe/messagerie' },
-    { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/employe/notifications' },
+    { icon: MessageSquare, label: 'Messagerie', id: 'messagerie', path: '/dashboard/employe/messagerie', badge: unreadMessageCount },
+    { icon: Bell, label: 'Notifications', id: 'notifications', path: '/dashboard/employe/notifications', badge: unreadNotificationCount },
     { icon: Settings, label: 'Parametres', id: 'parametres', path: '/dashboard/employe/parametres' },
   ]
 
@@ -470,6 +472,11 @@ export const EmployeDashboard = () => {
               >
                 <item.icon className="w-5 h-5" />
                 <span className="font-medium text-sm">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="ml-auto inline-flex min-w-6 items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white shadow-sm shadow-red-500/25">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
