@@ -8,7 +8,7 @@ import {
   faBus, faGraduationCap, faFire, faCircleCheck, faCircleExclamation,
   faEye, faWallet
 } from '@fortawesome/free-solid-svg-icons'
-import { loadDashboardContext } from '../../services/dashboardData'
+import { loadDashboardRHContext } from '../../services/dashboardRHData'
 import { avantageAPI } from '../../services/api'
 
 // Animations artistiques
@@ -50,21 +50,6 @@ const rotateIn = {
   exit: { opacity: 0, rotate: 180, scale: 0.5 }
 }
 
-const pulseGlow = {
-  animate: {
-    boxShadow: [
-      "0 0 20px rgba(251, 191, 36, 0.3)",
-      "0 0 40px rgba(251, 191, 36, 0.6)",
-      "0 0 20px rgba(251, 191, 36, 0.3)"
-    ],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  }
-}
-
 const scaleIn = {
   initial: { scale: 0.8, opacity: 0 },
   animate: { scale: 1, opacity: 1 },
@@ -104,13 +89,13 @@ export const RHAvantagesPage = () => {
   const loadData = useCallback(async () => {
     setLoading(true)
     try {
-      const [dashRes, avRes] = await Promise.all([
-        loadDashboardContext().catch(() => null),
-        avantageAPI.getAll().catch(() => null)
-      ])
-
+      // Chargement du contexte RH avec les données de l'entreprise connectée
+      const dashRes = await loadDashboardRHContext()
       setDashboardData(dashRes)
 
+      // Récupérer les avantages via l'API
+      const avRes = await avantageAPI.getAll().catch(() => null)
+      
       if (avRes) {
         const list = avRes.data || avRes.avantages || (Array.isArray(avRes) ? avRes : [])
         setAvantagesData(list)
@@ -129,9 +114,34 @@ export const RHAvantagesPage = () => {
     loadData()
   }, [loadData])
 
-  const employes = useMemo(() => dashboardData?.employes || [], [dashboardData])
-  const utilisateurConnecte = useMemo(() => dashboardData?.user || null, [dashboardData])
+  // Récupérer l'entreprise connectée depuis le dashboard
   const entrepriseActuelle = useMemo(() => dashboardData?.entreprise || null, [dashboardData])
+  const entrepriseId = useMemo(() => entrepriseActuelle?.id_entreprise || null, [entrepriseActuelle])
+
+  // Filtrer les employés de l'entreprise connectée
+  const employes = useMemo(() => {
+    if (!dashboardData?.employes) return []
+    if (!entrepriseId) return dashboardData.employes
+    
+    // Filtrer les employés qui appartiennent à l'entreprise
+    return dashboardData.employes.filter((emp: any) => {
+      // Si l'employé a un champ id_entreprise ou company_id
+      if (emp.id_entreprise) return Number(emp.id_entreprise) === Number(entrepriseId)
+      if (emp.company_id) return Number(emp.company_id) === Number(entrepriseId)
+      
+      // Sinon, vérifier via le poste -> service -> entreprise
+      if (emp.id_poste) {
+        const poste = dashboardData.postes?.find((p: any) => Number(p.id_poste) === Number(emp.id_poste))
+        if (poste?.id_service) {
+          const service = dashboardData.services?.find((s: any) => Number(s.id_service) === Number(poste.id_service))
+          if (service?.id_entreprise) {
+            return Number(service.id_entreprise) === Number(entrepriseId)
+          }
+        }
+      }
+      return false
+    })
+  }, [dashboardData, entrepriseId])
 
   const getEmployeName = useCallback((matricule: string) => {
     const emp = employes.find((e: any) => String(e.matricule) === String(matricule))
@@ -142,17 +152,17 @@ export const RHAvantagesPage = () => {
     return employes.find((e: any) => String(e.matricule) === String(matricule))
   }, [employes])
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('desc')
-    }
-  }
-
+  // Filtrer les avantages par entreprise ET par matricule des employés de l'entreprise
   const filteredAndSortedAvantages = useMemo(() => {
+    // Récupérer tous les matricules des employés de l'entreprise
+    const employeMatricules = new Set(employes.map((e: any) => String(e.matricule)))
+    
     let filtered = avantagesData.filter((a: any) => {
+      // Vérifier si l'avantage appartient à un employé de l'entreprise
+      if (!employeMatricules.has(String(a.matricule))) {
+        return false
+      }
+
       const empName = getEmployeName(a.matricule).toLowerCase()
       const libelle = (a.libelle || '').toLowerCase()
       const searchLower = searchTerm.toLowerCase()
@@ -188,22 +198,26 @@ export const RHAvantagesPage = () => {
     })
 
     return filtered
-  }, [avantagesData, searchTerm, filterType, filterStatut, getEmployeName, sortField, sortDirection])
+  }, [avantagesData, employes, searchTerm, filterType, filterStatut, getEmployeName, sortField, sortDirection])
 
+  // Statistiques filtrées par entreprise
   const stats = useMemo(() => {
     if (statsData && statsData.total > 0) {
+      // Si les stats viennent de l'API, on les utilise
       return statsData
     }
-    const actifs = avantagesData.filter((a: any) => a.statut?.toLowerCase() === 'actif').length
-    const expires = avantagesData.filter((a: any) => a.statut?.toLowerCase() === 'expiré').length
-    const valeurTotale = avantagesData.reduce((sum: number, a: any) => sum + parseFloat(a.valeur || '0'), 0)
+    
+    // Sinon on calcule à partir des données filtrées
+    const actifs = filteredAndSortedAvantages.filter((a: any) => a.statut?.toLowerCase() === 'actif').length
+    const expires = filteredAndSortedAvantages.filter((a: any) => a.statut?.toLowerCase() === 'expiré').length
+    const valeurTotale = filteredAndSortedAvantages.reduce((sum: number, a: any) => sum + parseFloat(a.valeur || '0'), 0)
     return {
-      total: avantagesData.length,
+      total: filteredAndSortedAvantages.length,
       actifs,
       expires,
       valeurTotale
     }
-  }, [avantagesData, statsData])
+  }, [filteredAndSortedAvantages, statsData])
 
   const getTypeIcon = (type: string) => {
     const icons: { [key: string]: any } = {
@@ -463,20 +477,6 @@ export const RHAvantagesPage = () => {
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          {utilisateurConnecte && (
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="hidden md:flex items-center space-x-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-xl shadow-sm"
-            >
-              <div className="w-7 h-7 bg-gradient-to-br from-amber-500 to-orange-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
-                {utilisateurConnecte.prenom?.[0] || 'U'}
-              </div>
-              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
-                {utilisateurConnecte.prenom} {utilisateurConnecte.nom || ''}
-              </span>
-            </motion.div>
-          )}
-
           <motion.button 
             whileHover={{ scale: 1.05, rotate: 180 }}
             whileTap={{ scale: 0.95 }}
@@ -622,7 +622,7 @@ export const RHAvantagesPage = () => {
           className="bg-white/80 dark:bg-slate-800/80 rounded-2xl p-12 text-center border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm"
         >
           <FontAwesomeIcon icon={faGift} className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Aucun avantage trouvé</p>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">Aucun avantage trouvé pour votre entreprise</p>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
