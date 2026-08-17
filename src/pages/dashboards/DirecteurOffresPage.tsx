@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Briefcase, Plus, Search, Edit, Eye, Send, Pause, Users, Calendar, DollarSign, X, AlertCircle, Trash2, Loader2 } from 'lucide-react'
 import { offreAPI } from '../../services/api'
+import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal'
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
 
@@ -29,6 +30,7 @@ export const DirecteurOffresPage = () => {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedOffre, setSelectedOffre] = useState<OfferDisplay | null>(null)
   const [deletingOfferId, setDeletingOfferId] = useState<number | null>(null)
+  const [offerToDelete, setOfferToDelete] = useState<OfferDisplay | null>(null)
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'draft' | 'expired'>('all')
 
   const [formData, setFormData] = useState({
@@ -129,16 +131,14 @@ export const DirecteurOffresPage = () => {
     }
   }
 
-  const handleDelete = async (offre: OfferDisplay) => {
-    const impact = offre.nombre_candidatures > 0
-      ? ` Ses ${offre.nombre_candidatures} candidature(s) et les entretiens associés seront aussi supprimés.`
-      : ''
+  const handleDelete = async () => {
+    if (!offerToDelete) return
 
-    if (!window.confirm(`Supprimer définitivement l'offre « ${offre.titre} » ?${impact}`)) return
-
+    const offre = offerToDelete
     setDeletingOfferId(offre.id)
     try {
       const response = await offreAPI.deleteForCompany(offre.id)
+      setOfferToDelete(null)
       setShowDetailModal(false)
       setSelectedOffre(null)
       await loadOffres()
@@ -281,7 +281,7 @@ export const DirecteurOffresPage = () => {
                     <button onClick={() => { setSelectedOffre(offre); setShowDetailModal(true) }} className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200">
                       <Eye className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDelete(offre)} disabled={deletingOfferId === offre.id} className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 disabled:opacity-60" title="Supprimer définitivement">
+                    <button onClick={() => setOfferToDelete(offre)} disabled={deletingOfferId === offre.id} className="p-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 disabled:opacity-60" title="Supprimer définitivement">
                       {deletingOfferId === offre.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                     </button>
                   </div>
@@ -398,7 +398,7 @@ export const DirecteurOffresPage = () => {
                   <p className="text-xs text-slate-600 dark:text-slate-400">Expiration</p>
                 </div>
               </div>
-              <button onClick={() => handleDelete(selectedOffre)} disabled={deletingOfferId === selectedOffre.id} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60">
+              <button onClick={() => setOfferToDelete(selectedOffre)} disabled={deletingOfferId === selectedOffre.id} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60">
                 {deletingOfferId === selectedOffre.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 <span>{deletingOfferId === selectedOffre.id ? 'Suppression...' : 'Supprimer définitivement cette offre'}</span>
               </button>
@@ -406,6 +406,16 @@ export const DirecteurOffresPage = () => {
           </div>
         </div>
       )}
+      <DeleteConfirmationModal
+        isOpen={offerToDelete !== null}
+        title="Supprimer cette offre ?"
+        description={offerToDelete
+          ? `L'offre « ${offerToDelete.titre} » sera supprimée définitivement.${offerToDelete.nombre_candidatures > 0 ? ` Ses ${offerToDelete.nombre_candidatures} candidature(s) et les entretiens associés seront également supprimés.` : ''}`
+          : ''}
+        isSubmitting={deletingOfferId !== null}
+        onCancel={() => setOfferToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

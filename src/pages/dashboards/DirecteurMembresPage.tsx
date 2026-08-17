@@ -3,6 +3,7 @@ import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, UserPlus,
 import { clearDashboardContextCache, loadDashboardContext } from '../../services/dashboardData'
 import { membreAPI, posteAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
+import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal'
 
 // Définition statique et figée des rôles applicatifs
 const ROLES_OPTIONS = [
@@ -57,6 +58,7 @@ export const DirecteurMembresPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingMemberMatricule, setDeletingMemberMatricule] = useState<string | null>(null)
+  const [showMemberDeleteConfirmation, setShowMemberDeleteConfirmation] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de rafraîchissement
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -412,14 +414,10 @@ export const DirecteurMembresPage = () => {
       return
     }
 
-    const fullName = `${selectedMember.prenom || ''} ${selectedMember.nom || ''}`.trim() || selectedMember.matricule
-    if (!window.confirm(`Supprimer définitivement ${fullName} ? Cette action efface son compte et toutes ses données RH associées.`)) {
-      return
-    }
-
     setDeletingMemberMatricule(selectedMember.matricule)
     try {
       const response = await membreAPI.delete(selectedMember.matricule)
+      setShowMemberDeleteConfirmation(false)
       setSelectedMember(null)
       clearDashboardContextCache()
       await loadData(true, true)
@@ -606,7 +604,7 @@ export const DirecteurMembresPage = () => {
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button
                   type="button"
-                  onClick={handleDeleteMember}
+                  onClick={() => setShowMemberDeleteConfirmation(true)}
                   disabled={deletingMemberMatricule === selectedMember.matricule}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 disabled:opacity-60"
                 >
@@ -810,6 +808,14 @@ export const DirecteurMembresPage = () => {
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      <DeleteConfirmationModal
+        isOpen={showMemberDeleteConfirmation}
+        title="Supprimer ce membre ?"
+        description={`Le compte de ${selectedMember ? `${selectedMember.prenom || ''} ${selectedMember.nom || ''}`.trim() : 'ce membre'} et toutes ses données RH associées seront supprimés définitivement.`}
+        isSubmitting={deletingMemberMatricule !== null}
+        onCancel={() => setShowMemberDeleteConfirmation(false)}
+        onConfirm={handleDeleteMember}
+      />
     </div>
   )
 }

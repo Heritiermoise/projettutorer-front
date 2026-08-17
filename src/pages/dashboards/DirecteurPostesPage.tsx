@@ -6,6 +6,7 @@ import {
 import { posteAPI, serviceAPI } from '../../services/api'
 import { loadDashboardContext } from '../../services/dashboardData'
 import { Toast } from '../../components/ui/Toast'
+import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal'
 
 type Poste = {
   id: number
@@ -52,6 +53,7 @@ export const DirecteurPostesPage = () => {
   const [isSubmittingCreate, setIsSubmittingCreate] = useState(false)
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
   const [deletingPosteId, setDeletingPosteId] = useState<number | null>(null)
+  const [posteToDelete, setPosteToDelete] = useState<Poste | null>(null)
   const [archivingPosteId, setArchivingPosteId] = useState<number | null>(null)
   
   // Data States
@@ -259,14 +261,15 @@ export const DirecteurPostesPage = () => {
   }
 
   // Supprimer définitivement un poste
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer définitivement ce poste ?')) {
-      return
-    }
+  const handleDelete = async () => {
+    if (!posteToDelete) return
+
+    const id = posteToDelete.id
 
     setDeletingPosteId(id)
     try {
       await posteAPI.delete(id)
+      setPosteToDelete(null)
       
       // 🔄 Rechargement immédiat et silencieux
       await loadData(true)
@@ -444,7 +447,7 @@ export const DirecteurPostesPage = () => {
                       </button>
                       <button 
                         type="button" 
-                        onClick={() => handleDelete(pItem.id)} 
+                        onClick={() => setPosteToDelete(pItem)}
                         disabled={deletingPosteId === pItem.id} 
                         className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-all flex items-center justify-center"
                       >
@@ -496,7 +499,7 @@ export const DirecteurPostesPage = () => {
                           </button>
                           <button 
                             type="button" 
-                            onClick={() => handleDelete(pItem.id)} 
+                            onClick={() => setPosteToDelete(pItem)}
                             disabled={deletingPosteId === pItem.id} 
                             className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                           >
@@ -659,6 +662,16 @@ export const DirecteurPostesPage = () => {
           </div>
         </div>
       )}
+      <DeleteConfirmationModal
+        isOpen={posteToDelete !== null}
+        title="Supprimer ce poste ?"
+        description={posteToDelete
+          ? `Le poste « ${posteToDelete.titre} » sera supprimé définitivement. Cette suppression est possible uniquement lorsqu'il n'est attribué à aucun membre.`
+          : ''}
+        isSubmitting={deletingPosteId !== null}
+        onCancel={() => setPosteToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { Briefcase, Users, Plus, Edit, Trash2, Search, Grid, List, X, Loader2, E
 import { loadDashboardContext } from '../../services/dashboardData'
 import { serviceAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
+import { DeleteConfirmationModal } from '../../components/ui/DeleteConfirmationModal'
 
 export const DirecteurServicesPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -16,6 +17,7 @@ export const DirecteurServicesPage = () => {
   const [isSubmittingCreate, setIsSubmittingCreate] = useState(false)
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
   const [deletingServiceId, setDeletingServiceId] = useState<number | null>(null)
+  const [serviceToDelete, setServiceToDelete] = useState<any>(null)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
   const [formData, setFormData] = useState({ nom: '', description: '', statut: 'Actif' })
   
@@ -175,12 +177,15 @@ export const DirecteurServicesPage = () => {
   }
 
   // ACTIONS : SUPPRESSION DEFINITIVE D'UN SERVICE VIDE
-  const handleDelete = async (idService: number) => {
-    if (!window.confirm('Supprimer définitivement ce service ? Il doit être vide de tout poste.')) return
+  const handleDelete = async () => {
+    if (!serviceToDelete) return
+
+    const idService = serviceToDelete.id_service
 
     setDeletingServiceId(idService)
     try {
       await serviceAPI.delete(idService)
+      setServiceToDelete(null)
       
       // 🔄 Synchronisation silencieuse
       await loadData(true)
@@ -350,7 +355,7 @@ export const DirecteurServicesPage = () => {
                     <span>Modifier</span>
                   </button>
                   <button 
-                    onClick={() => handleDelete(service.id_service)} 
+                            onClick={() => setServiceToDelete(service)}
                     disabled={deletingServiceId === service.id_service} 
                     className="p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl transition-all disabled:opacity-50"
                   >
@@ -406,7 +411,7 @@ export const DirecteurServicesPage = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleDelete(service.id_service)} 
+                              onClick={() => setServiceToDelete(service)}
                           disabled={deletingServiceId === service.id_service} 
                           className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-all disabled:opacity-50"
                         >
@@ -551,6 +556,16 @@ export const DirecteurServicesPage = () => {
           </div>
         </div>
       )}
+      <DeleteConfirmationModal
+        isOpen={serviceToDelete !== null}
+        title="Supprimer ce service ?"
+        description={serviceToDelete
+          ? `Le service « ${serviceToDelete.nom} » sera supprimé définitivement. Cette suppression est possible uniquement lorsqu'il ne contient aucun poste.`
+          : ''}
+        isSubmitting={deletingServiceId !== null}
+        onCancel={() => setServiceToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   )
 }
