@@ -10,6 +10,7 @@ export const RHRecrutementPage = () => {
   const [postulations, setPostulations] = useState<any[]>([])
   const [postes, setPostes] = useState<any[]>([])
   const [selectedPostes, setSelectedPostes] = useState<Record<number, string>>({})
+  const [recruitmentSalaries, setRecruitmentSalaries] = useState<Record<number, string>>({})
   const [feedback, setFeedback] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<string | null>(null)
@@ -61,15 +62,21 @@ export const RHRecrutementPage = () => {
 
   const handleRecruit = async (postulationId: number) => {
     const posteId = Number(selectedPostes[postulationId])
+    const postulation = postulations.find((item) => item.id_postulation === postulationId)
+    const salary = Number(recruitmentSalaries[postulationId] ?? postulation?.offre?.salaire_base ?? 0)
     if (!posteId) {
       setFeedback('Sélectionnez un poste vacant avant de recruter le candidat.')
+      return
+    }
+    if (!Number.isFinite(salary) || salary <= 0) {
+      setFeedback('Saisissez un salaire de base strictement supérieur à zéro avant de recruter le candidat.')
       return
     }
 
     setPendingAction(`recruit-${postulationId}`)
     try {
-      const response = await postulationAPI.recruit(postulationId, posteId)
-      setSuccessMsg(`Candidat recruté. Matricule attribué : ${response.matricule}`)
+      const response = await postulationAPI.recruit(postulationId, posteId, salary)
+      setSuccessMsg(`Candidat recruté. Matricule : ${response.matricule} · salaire de base : $${Number(response.salaire_base).toLocaleString('en-US')}`)
       await loadRecruitment()
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Impossible de recruter ce candidat.')
@@ -320,6 +327,17 @@ export const RHRecrutementPage = () => {
                           <option value="">Choisir un poste vacant</option>
                           {postes.map((poste) => <option key={poste.id_poste} value={poste.id_poste}>{poste.titre_poste}</option>)}
                         </select>
+                        <input
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          required
+                          value={recruitmentSalaries[post.id_postulation] ?? post.offre?.salaire_base ?? ''}
+                          onChange={(event) => setRecruitmentSalaries({ ...recruitmentSalaries, [post.id_postulation]: event.target.value })}
+                          className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
+                          aria-label="Salaire de base mensuel"
+                          title="Salaire de base mensuel"
+                        />
                         <button onClick={() => { setInterviewPostulation(post); setInterviewForm({ scheduled_at: '', mode: 'Visioconférence', lieu: '', note: '' }) }} disabled={pendingAction !== null} className="inline-flex items-center justify-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
                           <Calendar className="h-4 w-4" /> Entretien
                         </button>

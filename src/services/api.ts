@@ -1187,10 +1187,10 @@ export const postulationAPI = {
     });
   },
 
-  recruit: async (id: number, idPoste: number) => {
+  recruit: async (id: number, idPoste: number, salaireBase: number) => {
     return await apiRequest(`/rh/recrutement/decider/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ id_poste: idPoste }),
+      body: JSON.stringify({ id_poste: idPoste, salaire_base: salaireBase }),
     });
   },
 

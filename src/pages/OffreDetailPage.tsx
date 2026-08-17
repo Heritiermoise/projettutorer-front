@@ -198,7 +198,7 @@ export const OffreDetailPage = () => {
 
       {/* Contenu */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {applicationFeedback && <div className={`mb-6 flex items-start justify-between gap-4 rounded-lg border p-4 ${applicationFeedback.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100' : 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-100'}`} role="status">
+        {applicationFeedback && <div className={`mb-6 flex items-start justify-between gap-4 rounded-2xl border border-white/40 p-4 shadow-xl backdrop-blur-2xl ${applicationFeedback.type === 'success' ? 'bg-emerald-500/15 text-emerald-950 shadow-emerald-950/10 dark:border-emerald-300/20 dark:bg-emerald-400/15 dark:text-emerald-100' : 'bg-red-500/15 text-red-950 shadow-red-950/10 dark:border-red-300/20 dark:bg-red-400/15 dark:text-red-100'}`} role="status">
           <div><p className="font-semibold">{applicationFeedback.type === 'success' ? 'Candidature enregistrée' : 'Envoi impossible'}</p><p className="mt-1 text-sm">{applicationFeedback.message}</p></div>
           <button type="button" onClick={() => setApplicationFeedback(null)} className="shrink-0 rounded-lg p-1 hover:bg-black/5" aria-label="Fermer le message"><X className="w-5 h-5" /></button>
         </div>}
