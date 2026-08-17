@@ -42,6 +42,7 @@ export const OffreDetailPage = () => {
   const [entreprise, setEntreprise] = useState<PublicCompany | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [submissionStartedAt, setSubmissionStartedAt] = useState<number | null>(null)
   const [applicationFeedback, setApplicationFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [candidateAccount, setCandidateAccount] = useState<{ email: string; temporary_password: string | null; is_new: boolean; mail_send_url?: string | null } | null>(null)
   const [mailStatus, setMailStatus] = useState<'idle' | 'pending' | 'sent' | 'failed'>('idle')
@@ -102,6 +103,7 @@ export const OffreDetailPage = () => {
     if (submitting) return
 
     setSubmitting(true)
+    setSubmissionStartedAt(Date.now())
     setApplicationFeedback(null)
     try {
       const candidatureData = new FormData()
@@ -138,6 +140,7 @@ export const OffreDetailPage = () => {
       })
     } finally {
       setSubmitting(false)
+      setSubmissionStartedAt(null)
     }
   }
 
@@ -370,7 +373,7 @@ export const OffreDetailPage = () => {
               </div>
               <div className="flex space-x-3 pt-4">
                 <button type="button" onClick={() => setShowPostulationModal(false)} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600">Annuler</button>
-                <button type="submit" disabled={submitting} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}</button>
+                <button type="submit" disabled={submitting} className="flex-1 px-4 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60">{submitting ? `Envoi en cours${submissionStartedAt ? '...' : ''}` : 'Envoyer ma candidature'}</button>
               </div>
             </form>
           </div>

@@ -56,7 +56,8 @@ const normalizeResponseError = async (response: Response) => {
 
 const requestJson = async (
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs = 30000,
 ): Promise<any> => {
   const token = localStorage.getItem('auth_token');
   
@@ -93,18 +94,28 @@ const requestJson = async (
 
   let response: Response;
 
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     response = await fetch(buildUrl(path), {
       ...options,
       headers,
       body: requestBody, // Utilise le body traité (FormData natif ou chaîne JSON)
+      signal: controller.signal,
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('L’envoi prend trop de temps. Vérifiez votre connexion puis réessayez.');
+    }
+
     if (error instanceof TypeError) {
       throw new Error('Le serveur est momentanément inaccessible. Vérifiez votre connexion puis réessayez.');
     }
 
     throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
   }
 
   if (!response.ok) {
@@ -827,10 +838,33 @@ export const offreAPI = {
 
   postuler: async (offreId: number, candidatureData: FormData | Record<string, any>) => {
     if (candidatureData instanceof FormData) {
-      return await requestJson(`/offres/${offreId}/postuler`, {
-        method: 'POST',
-        body: candidatureData,
-      });
+      const path = `/offres/${offreId}/postuler`;
+      try {
+        return await requestJson(path, { method: 'POST', body: candidatureData }, 15000);
+      } catch (error) {
+        const isNetworkFailure = error instanceof Error && (
+          error.message.includes('serveur est momentanément inaccessible')
+          || error.message.includes('L’envoi prend trop de temps')
+        );
+
+        if (!isNetworkFailure || !window.location.hostname.endsWith('.vercel.app')) {
+          throw error;
+        }
+
+        const directUrl = `https://rhmanager-877l.onrender.com/api${path}`;
+        const directResponse = await fetch(directUrl, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: candidatureData,
+          signal: AbortSignal.timeout(30000),
+        });
+
+        if (!directResponse.ok) {
+          throw await normalizeResponseError(directResponse);
+        }
+
+        return await directResponse.json();
+      }
     }
 
     return await apiRequest(`/offres/${offreId}/postuler`, {
