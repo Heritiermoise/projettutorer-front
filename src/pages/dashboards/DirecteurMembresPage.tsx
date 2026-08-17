@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
-import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, UserPlus, Grid, List, Loader2, RefreshCw, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon } from 'lucide-react'
+import { Users, Search, Mail, Phone, MapPin, Calendar, Briefcase, Eye, UserPlus, Grid, List, Loader2, RefreshCw, Copy, Check, CheckCircle2, AlertTriangle, Link as LinkIcon, Trash2 } from 'lucide-react'
 import { clearDashboardContextCache, loadDashboardContext } from '../../services/dashboardData'
 import { membreAPI, posteAPI } from '../../services/api'
 import { Toast } from '../../components/ui/Toast'
@@ -56,6 +56,7 @@ export const DirecteurMembresPage = () => {
   const [dashboardData, setDashboardData] = useState<any>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deletingMemberMatricule, setDeletingMemberMatricule] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false) // 👈 Indicateur de rafraîchissement
   const [toast, setToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
@@ -405,6 +406,31 @@ export const DirecteurMembresPage = () => {
     }
   }
 
+  const handleDeleteMember = async () => {
+    if (!selectedMember?.matricule) {
+      setToast({ type: 'error', message: 'Matricule du membre introuvable.' })
+      return
+    }
+
+    const fullName = `${selectedMember.prenom || ''} ${selectedMember.nom || ''}`.trim() || selectedMember.matricule
+    if (!window.confirm(`Supprimer définitivement ${fullName} ? Cette action efface son compte et toutes ses données RH associées.`)) {
+      return
+    }
+
+    setDeletingMemberMatricule(selectedMember.matricule)
+    try {
+      const response = await membreAPI.delete(selectedMember.matricule)
+      setSelectedMember(null)
+      clearDashboardContextCache()
+      await loadData(true, true)
+      setToast({ type: 'success', message: response?.message || 'Membre supprimé définitivement de la base de données.' })
+    } catch (error) {
+      setToast({ type: 'error', message: error instanceof Error ? error.message : 'Impossible de supprimer ce membre.' })
+    } finally {
+      setDeletingMemberMatricule(null)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -576,6 +602,17 @@ export const DirecteurMembresPage = () => {
                     <p className="font-semibold text-slate-800 dark:text-white text-sm flex items-center space-x-2"><item.icon className="w-4 h-4 text-amber-500" /><span>{item.value}</span></p>
                   </div>
                 ))}
+              </div>
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button
+                  type="button"
+                  onClick={handleDeleteMember}
+                  disabled={deletingMemberMatricule === selectedMember.matricule}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 disabled:opacity-60"
+                >
+                  {deletingMemberMatricule === selectedMember.matricule ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  <span>{deletingMemberMatricule === selectedMember.matricule ? 'Suppression...' : 'Supprimer définitivement ce membre'}</span>
+                </button>
               </div>
             </div>
           </div>

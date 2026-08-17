@@ -273,7 +273,7 @@ export const DirecteurPostesPage = () => {
       setFeedback({ type: 'success', text: 'Poste supprimé définitivement.' })
     } catch (error) {
       console.error('Erreur suppression poste:', error)
-      setFeedback({ type: 'error', text: 'Erreur lors de la suppression.' })
+      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la suppression.' })
     } finally {
       setDeletingPosteId(null)
     }

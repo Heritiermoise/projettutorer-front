@@ -897,6 +897,12 @@ export const offreAPI = {
       body: JSON.stringify({ statut }),
     });
   },
+
+  deleteForCompany: async (id: number) => {
+    return await apiRequest(`/direction/offres/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════

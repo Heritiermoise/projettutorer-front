@@ -174,9 +174,9 @@ export const DirecteurServicesPage = () => {
     }
   }
 
-  // ACTIONS : DESACTIVATION (SUPPRESSION LOGIQUE)
+  // ACTIONS : SUPPRESSION DEFINITIVE D'UN SERVICE VIDE
   const handleDelete = async (idService: number) => {
-    if (!window.confirm('Voulez-vous vraiment désactiver ce service ?')) return
+    if (!window.confirm('Supprimer définitivement ce service ? Il doit être vide de tout poste.')) return
 
     setDeletingServiceId(idService)
     try {
@@ -184,9 +184,9 @@ export const DirecteurServicesPage = () => {
       
       // 🔄 Synchronisation silencieuse
       await loadData(true)
-      setFeedback({ type: 'success', text: 'Service désactivé avec succès (statut Inactif).' })
+      setFeedback({ type: 'success', text: 'Service supprimé définitivement de la base de données.' })
     } catch (error) {
-      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la désactivation' })
+      setFeedback({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la suppression' })
     } finally {
       setDeletingServiceId(null)
     }
